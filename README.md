@@ -59,6 +59,7 @@ and [extended markup](https://python-markdown.github.io/extensions/).
 Sound changes are defined in `changes.lsc`, 
 and applied using Lexurgy.
 
+### Lexicon
 Pyconlang's lexicon is defined in `lexicon.txt`.
 You define basic entries using the `entry` declaration:
 ```
@@ -129,7 +130,7 @@ entry &noun <apple> *saka (n.) apple, any kind of tree-fruit
 You can see the diagrams for the lexicon syntax
 [here](https://htmlpreview.github.io/?https://github.com/neta-elad/pyconlang/blob/main/diagrams.html).
 
-### Complete Example
+#### Example
 Given the sound changes `changes.lsc`:
 ```
 Class vowel {a, e, i, o, u}
@@ -181,6 +182,15 @@ The following entries will appear in the book:
 >
 > ...
 
+### Markdown Extensions
+Inline translations (using the lexicon)
+can be inserted between two hash signs:
+```
+**An example: #*aki@after-palatalization <stone>.PL#.**
+```
+will turn out as
+> **An example: agi abagigim.**
+
 
 
 ## TODO
@@ -202,4 +212,4 @@ The following entries will appear in the book:
   - [ ] Affixes list
   - [ ] Phonology tables
   - [ ] Conjugation tables
-  - [ ] Inline translation
+  - [x] Inline translation

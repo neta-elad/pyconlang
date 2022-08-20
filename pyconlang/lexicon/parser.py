@@ -1,15 +1,13 @@
 from pathlib import Path
-from typing import Any, Callable, TypeVar, Union
+from typing import Any, Callable, List, TypeVar, Union, cast
 
 from pyparsing import (
     Group,
-    OneOrMore,
     Opt,
     ParserElement,
     ParseResults,
     Suppress,
     Word,
-    ZeroOrMore,
     alphanums,
     alphas,
     pyparsing_unicode,
@@ -23,6 +21,7 @@ from ..types import (
     AffixType,
     Canonical,
     Entry,
+    Form,
     Fusion,
     PartOfSpeech,
     Proto,
@@ -60,13 +59,17 @@ def parse_lexicon(string: str) -> Lexicon:
     result = lexicon.parse_string(string, parse_all=True)[0]
 
     if not isinstance(result, Lexicon):
-        raise RuntimeError("Bad parsing")
+        raise RuntimeError(f"Could not parse {string}")
 
     return result
 
 
 def parse_lexicon_file(filename: Path = Path("lexicon.txt")) -> Lexicon:
     return parse_lexicon(filename.read_text())
+
+
+def parse_sentence(string: str) -> List[Form]:
+    return cast(List[Form], list(sentence.parse_string(string, parse_all=True)))
 
 
 ident = Word(alphanums + "-").set_name("ident")
@@ -107,23 +110,23 @@ suffix = (
 )
 affix = (prefix | suffix).set_name("affix")
 var = (
-    (ZeroOrMore(prefix) + Suppress("$") + ZeroOrMore(suffix))
+    (prefix[...] + Suppress("$") + suffix[...])
     .set_parse_action(Var.from_iterable)
     .set_name("var")
 )
 template = (
-    (Suppress("template") + template_name + OneOrMore(var))
+    (Suppress("template") + template_name + var[1, ...])
     .set_parse_action(tokens_map(Template.from_args))
     .set_name("template")
 )
 fusion = (
-    (Group(ZeroOrMore(prefix), True) + canonical + Group(ZeroOrMore(suffix), True))
+    (Group(prefix[...], True) + canonical + Group(suffix[...], True))
     .set_parse_action(tokens_map(Fusion.from_prefixes_and_suffixes))
     .set_name("fusion")
 )
 form = (proto | fusion).set_name("form")
 lexical_sources = (
-    Suppress("(") + OneOrMore(canonical).set_parse_action(tuple) + Suppress(")")
+    Suppress("(") + canonical[1, ...].set_parse_action(tuple) + Suppress(")")
 )
 affix_definition = (
     (
@@ -153,11 +156,12 @@ entry = (
     .set_name("entry")
 )
 lexicon = (
-    ZeroOrMore(entry | affix_definition | template)
+    (entry | affix_definition | template)[...]
     .set_parse_action(Lexicon.from_iterable)
     .set_name("lexicon")
 )
 
+sentence = form[...]
 
 if __name__ == "__main__":
     make_diagrams()

@@ -7,6 +7,7 @@ from pyconlang.lexicon.parser import (
     form,
     fusion,
     lexical_sources,
+    parse_sentence,
     part_of_speech,
     proto,
     rule,
@@ -181,5 +182,14 @@ def test_var(sample_lexicon):
     )
 
 
+def test_sentence():
+    assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start")) == (
+        Proto("aka", None),
+        Fusion(Canonical("strong"), ()),
+        Fusion(Canonical("with space"), (Affix("COL", AffixType.PREFIX),)),
+        Proto("taka", Rule("start")),
+    )
+
+
 def parse(parser, string):
-    return parser.parse_string(string)[0]
+    return parser.parse_string(string, parse_all=True)[0]

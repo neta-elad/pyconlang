@@ -10,7 +10,8 @@ from watchdog.observers import Observer
 from .. import PYCONLANG_PATH
 from .block import Boxed
 from .inline import InlineDelete, InlineInsert
-from .preprocess import LexiconInserter, SkipLine
+from .lexicon_inserter import LexiconInserter
+from .preprocess import SkipLine
 
 
 class Compiler:

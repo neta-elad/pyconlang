@@ -3,12 +3,21 @@ from pyconlang.cli import compile_book
 
 
 def test_book(simple_pyconlang):
+    (simple_pyconlang / "grammar.md").write_text(
+        "**This is an example: #*kika@era1 <stone>.PL#**"
+    )
+
     compile_book()
 
     html = (PYCONLANG_PATH / "output.html").read_text()
 
     assert "By Mr. Tester" in html
     assert "TestLang" in html
+
+    assert (
+        "<p><strong>This is an example: <span>kiga abagigi</span></strong></p>" in html
+    )
+
     assert (
         "<p><strong>abagigi</strong> <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
         in html
