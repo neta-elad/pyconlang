@@ -1,0 +1,67 @@
+<!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="description" content="$name Reference Grammar and Lexicon">
+        <meta name="author" content="$author">
+        <title>$name Reference Grammar and Lexicon</title>
+        <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+        <style>
+        #title {
+            font-size: 48px;
+            text-align: center;
+        }
+        #subtitle {
+            font-size: 32px;
+            text-align: center;
+        }
+        body {
+            counter-reset: h1
+        }
+
+        h1 {
+            counter-reset: h2
+        }
+
+        h2 {
+            counter-reset: h3
+        }
+
+        h3 {
+            counter-reset: h4
+        }
+
+        h1:before {
+            counter-increment: h1;
+            content: counter(h1) ". "
+        }
+
+        h2:before {
+            counter-increment: h2;
+            content: counter(h1) "." counter(h2) ". "
+        }
+
+        h3:before {
+            counter-increment: h3;
+            content: counter(h1) "." counter(h2) "." counter(h3) ". "
+        }
+
+        h4:before {
+            counter-increment: h4;
+            content: counter(h1) "." counter(h2) "." counter(h3) "." counter(h4) ". "
+        }
+
+        .boxed {
+            //display: inline-block;
+            border: 1px solid red;
+        }
+        </style>
+    </head>
+    <body>
+        <main class="container">
+            <header id="title">$name Reference Grammar and Lexicon</header>
+            <header id="subtitle">By $author</header>
+            $content
+        </main>
+    </body>
+</html>

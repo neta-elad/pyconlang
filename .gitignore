@@ -1,0 +1,6 @@
+.env
+.mypy_cache
+.pyconlang
+.pytest_cache
+build
+*.egg-info

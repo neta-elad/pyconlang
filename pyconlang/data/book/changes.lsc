@@ -1,0 +1,170 @@
+# +--------------+
+# | ~ Features ~ |
+# +--------------+
+Feature voicing                 (voiceless, voiced)
+Feature place                   (labial, dental, alveolar, postalveolar, retroflex, palatal, velar, uvular, pharyngeal, glottal)
+Feature manner                  (nasal, stop, trill, tap, fricative, affricate, approximant)
+Feature type                    (*consonant, vowel)
+Feature +lateral
+
+Feature +labialized
+Feature +palatalized
+Feature +velarized
+Feature +pharyngealized
+Feature +aspirated
+
+Feature height                  (low, mid, high)
+Feature frontness               (front, central, back)
+
+Feature +round
+Feature +long
+Feature +nasalized
+
+Feature (syllable) stress       (*unstressed, primary, secondary)
+Feature (syllable) rhyme        (open, semiopen, closed)
+
+# +----------------+
+# | ~ Diacritics ~ |
+# +----------------+
+Diacritic ʷ [+labialized]       (floating)
+Diacritic ʲ [+palatalized]      (floating)
+Diacritic ˠ [+velarized]        (floating)
+Diacritic ˤ [+pharyngealized]   (floating)
+Diacritic ʰ [+aspirated]        (floating)
+
+Diacritic ː [+long]             (floating)
+Diacritic  ̴ [+nasalized]        (floating)
+
+Diacritic ˈ [primary]           (before)
+Diacritic ˌ [secondary]         (before)
+
+Diacritic ˚ [open]
+Diacritic ˘ [semiopen]
+Diacritic ˙ [closed]
+
+# +----------------+
+# | ~ Consonants ~ |
+# +----------------+
+# Labial
+Symbol m [voiced labial nasal]
+Symbol p [voiceless labial stop]
+Symbol b [voiced labial stop]
+Symbol ʙ [voiced labial trill]
+Symbol ⱱ [voiced labial tap]
+Symbol f [voiceless labial fricative]
+Symbol v [voiced labial fricative]
+Symbol p͡f [voiceless labial affricate]
+Symbol b͡v [voiced labial affricate]
+Symbol ʋ [voiced labial approximant]
+Symbol ʍ [voiceless labial +velarized approximant]
+Symbol w [voiced labial +velarized approximant]
+
+# Dental
+Symbol θ [voiceless dental fricative]
+Symbol ð [voiced dental fricative]
+
+# Alveolar
+Symbol n [voiced alveolar nasal]
+Symbol t [voiceless alveolar stop]
+Symbol d [voiced alveolar stop]
+Symbol r [voiced alveolar trill]
+Symbol ɾ [voiced alveolar tap]
+Symbol s [voiceless alveolar fricative]
+Symbol z [voiced alveolar fricative]
+Symbol ɬ [voiceless alveolar +lateral fricative]
+Symbol ɮ [voiced alveolar +lateral fricative]
+Symbol t͡s [voiceless alveolar affricate]
+Symbol d͡z [voiced alveolar affricate]
+Symbol ɹ [voiced alveolar approximant]
+Symbol l [voiced alveolar +lateral approximant]
+
+# Post-alveolar
+Symbol ʃ [voiceless postalveolar fricative]
+Symbol ʒ [voiced postalveolar fricative]
+Symbol t͡ʃ [voiceless postalveolar affricate]
+Symbol d͡ʒ [voiced postalveolar affricate]
+
+# Retroflex
+Symbol ɳ [voiced retroflex nasal]
+Symbol ʈ [voiceless retroflex stop]
+Symbol ɖ [voiced retroflex stop]
+Symbol ɽ [voiced retroflex tap]
+Symbol ʂ [voiceless retroflex fricative]
+Symbol ʐ [voiced retroflex fricative]
+Symbol ɻ [voiced retroflex approximant]
+Symbol ɭ [voiced retroflex +lateral approximant]
+
+# Palatal
+Symbol ɲ [voiced palatal nasal]
+Symbol c [voiceless palatal stop]
+Symbol ɟ [voiced palatal stop]
+Symbol ç [voiceless palatal fricative]
+Symbol ʝ [voiced palatal fricative]
+Symbol j [voiced palatal approximant]
+Symbol ʎ [voiced palatal +lateral approximant]
+
+# Velar
+Symbol ŋ [voiced velar nasal]]
+Symbol k [voiceless velar stop]
+Symbol g [voiced velar stop]
+Symbol x [voiceless velar fricative]
+Symbol ɣ [voiced velar fricative]
+Symbol ɰ [voiced velar approximant]
+Symbol ʟ [voiced velar +lateral approximant]
+
+# Uvular
+Symbol ɴ [voiced uvular nasal]
+Symbol q [voiceless uvular stop]
+Symbol ɢ [voiced uvular stop]
+Symbol ʀ [voiced uvular trill]
+Symbol χ [voiceless uvular fricative]
+Symbol ʁ [voiced uvular fricative]
+
+# Pharyngeal
+Symbol ħ [voiceless pharyngeal fricative]
+Symbol ʕ [voiced pharyngeal fricative]
+
+# Glottal
+Symbol ʔ [voiceless glottal stop]
+Symbol h [voiceless glottal fricative]
+Symbol ɦ [voiced glottal fricative]
+
+# +------------+
+# | ~ Vowels ~ |
+# +------------+
+# High
+Symbol i [high front -round vowel]
+Symbol y [high front +round vowel]
+Symbol ɨ [high central -round vowel]
+Symbol ʉ [high central +round vowel]
+Symbol ɯ [high back -round vowel]
+Symbol u [high back +round vowel]
+
+# Mid
+Symbol e [mid front -round vowel]
+Symbol ø [mid front +round vowel]
+Symbol ə [mid central -round vowel]
+Symbol ɤ [mid back -round vowel]
+Symbol o [mid back +round vowel]]
+
+# Low
+Symbol ɛ [low front -round vowel]
+Symbol œ [low front +round vowel]
+Symbol a [low central -round vowel]
+Symbol ɶ [low central +round vowel]
+Symbol ɑ [low back -round vowel]
+Symbol ɒ [low back +round vowel]]
+
+# +-------------+
+# | ~ Classes ~ |
+# +-------------+
+Class rhotics       {r, ɾ, ɹ, ɻ, ʀ, ʁ}
+Class sibilants     {s, z, ʃ, ʒ}
+Class glides        {w, j}
+
+# +--------------+
+# | ~ Elements ~ |
+# +--------------+
+Element liquids     {@rhotics, [+lateral approximant]}
+Element sonorants   {[nasal], @liquids}
+Element obstruents  {[stop], [fricative], [affricate]}
