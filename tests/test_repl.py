@@ -39,3 +39,9 @@ def test_repl(capsys, mock_input, simple_pyconlang):
     captured = capsys.readouterr()
 
     assert captured.out == "abashi\nGoodbye.\n"
+
+    run_repl("p *apaki *baki")
+
+    captured = capsys.readouterr()
+
+    assert captured.out == "abaʃi baʃi\n"

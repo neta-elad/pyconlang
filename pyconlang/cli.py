@@ -1,6 +1,7 @@
 import shutil
 from importlib.resources import files
 from pathlib import Path
+from typing import List
 
 import click
 import toml
@@ -62,7 +63,10 @@ def init(directory: Path, name: str, author: str, overwrite: bool) -> None:
         metadata.write_text(toml.dumps({"name": name, "author": author}))
 
 
-run.command(name="repl")(run_repl)
+@run.command
+@click.argument("command", nargs=-1)
+def repl(command: List[str]) -> None:
+    run_repl(" ".join(command))
 
 
 @run.group

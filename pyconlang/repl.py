@@ -45,5 +45,10 @@ class ReplSession(Cmd):
         self.do_simple(line)
 
 
-def run() -> None:
-    ReplSession().run()
+def run(command: str = "") -> None:
+    session = ReplSession()
+
+    if command:
+        session.onecmd(command)
+    else:
+        session.run()
