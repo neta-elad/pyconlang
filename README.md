@@ -166,19 +166,19 @@ entry <monument> COL.<stone> (n.) monument, memorial site
 The following entries will appear in the book:
 > ...
 > ## A
-> **abagigim** _\*apak_ + _\*ikim_ (n.) gravel, a pile of stones
+> **abagigim** [abagigim] _\*apak_ + _\*ikim_ (n.) gravel, a pile of stones
 > 
-> **abak**, **abagigim**, **maabak** _\*apak_ (n.) stone, pebble
+> **abak**, **abagigim**, **maabak** [abak] _\*apak_ (n.) stone, pebble
 > 
 > ...
 > ## I
-> **ishi** _\*iki_ (adj.) big, great
+> **ishi** [iʃi] _\*iki_ (adj.) big, great
 > 
 > ...
 > ## M
-> **ma** _\*ma_ (n.) pile, heap
+> **ma** [ma] _\*ma_ (n.) pile, heap
 >
-> **maabak** _\*ma_ + _\*apak_ (n.) monument, memorial site
+> **maabak** [maabak] _\*ma_ + _\*apak_ (n.) monument, memorial site
 >
 > ...
 

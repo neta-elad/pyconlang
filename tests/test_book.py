@@ -19,17 +19,22 @@ def test_book(simple_pyconlang):
     )
 
     assert (
-        "<p><strong>abagigi</strong> <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
+        "<p><strong>abagigi</strong> [abagigi] <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
         in html
     )
 
     assert (
-        "<p><strong>abak</strong>, <strong>abagigi</strong> <em>*apak</em> (n.) stone, pebble</p>"
+        "<p><strong>abak</strong>, <strong>abagigi</strong> [abak] <em>*apak</em> (n.) stone, pebble</p>"
         in html
     )
 
+    assert "<p><strong>ishi</strong> [iʃi] <em>*iki</em> (adj.) big, great</p>" in html
+
     assert '<h2 id="k">K</h2>' in html
-    assert "<p><strong>kibu</strong> <em>*kipu</em> (adj.) strong, stable</p>" in html
+    assert (
+        "<p><strong>kibu</strong> [kibu] <em>*kipu</em> (adj.) strong, stable</p>"
+        in html
+    )
 
     k_index = html.index("K</h2>")
     l_index = html.index("L</h2>")

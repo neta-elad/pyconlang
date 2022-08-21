@@ -7,8 +7,8 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
-from ..evolve import evolve
-from ..lexicon import Lexicon, parse_lexicon_file, parse_sentence
+from ..evolve import Evolved, evolve
+from ..lexicon import Lexicon, parse_lexicon_file
 from ..types import AffixType, Entry, Form, ResolvedForm
 
 
@@ -23,10 +23,10 @@ class LexiconPreprocessor(Preprocessor):
         new_lines = []
         for line in lines:
             if line.strip() == "!lexicon":
-                lexicon: Dict[str, List[Tuple[List[str], Entry]]] = {}
+                lexicon: Dict[str, List[Tuple[List[Evolved], Entry]]] = {}
                 for entry in self.lexicon.entries:
                     evolved = self.evolve_all(entry)
-                    letter = evolved[0][0]
+                    letter = evolved[0].modern[0]
                     lexicon.setdefault(letter, [])
                     lexicon[letter].append((evolved, entry))
                 for letter in string.ascii_lowercase:
@@ -35,15 +35,19 @@ class LexiconPreprocessor(Preprocessor):
                     if letter not in lexicon:
                         continue
 
-                    lexicon[letter].sort()
+                    lexicon[letter].sort(
+                        key=lambda lexicon_entry: lexicon_entry[0][0].modern
+                    )
                     for evolved, entry in lexicon[letter]:
                         protos = " + ".join(
                             f"_\\*{proto}_" for proto in self.form_to_protos(entry.form)
                         )
-                        all_evolved = ", ".join(f"**{each}**" for each in evolved)
+                        all_evolved = ", ".join(
+                            f"**{each.modern}**" for each in evolved
+                        )
                         new_lines.append(
                             f"""
-                        {all_evolved} {protos} ({entry.part_of_speech.name}.) {entry.definition}
+                        {all_evolved} [{evolved[0].phonetic}] {protos} ({entry.part_of_speech.name}.) {entry.definition}
                         """.strip()
                         )
                         new_lines.append("")
@@ -65,9 +69,9 @@ class LexiconPreprocessor(Preprocessor):
 
         return list(chain(*protos))
 
-    def evolve_all(self, entry: Entry) -> List[str]:
+    def evolve_all(self, entry: Entry) -> List[Evolved]:
         return [
-            evolve(self.lexicon.substitute(var, entry.form)).modern  # todo change
+            evolve(self.lexicon.substitute(var, entry.form))
             for var in self.lexicon.get_vars(entry.template)
         ]
 
@@ -90,10 +94,7 @@ class LexiconInlineProcessor(InlineProcessor):
         return element, m.start(), m.end()
 
     def evolve(self, raw: str) -> str:
-        return " ".join(
-            evolve(self.lexicon.resolve(form)).modern
-            for form in parse_sentence(raw)  # todo change
-        )
+        return " ".join(evolved.modern for evolved in self.lexicon.evolve_string(raw))
 
 
 class LexiconInserter(Extension):

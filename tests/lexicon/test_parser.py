@@ -135,6 +135,13 @@ def test_lexicon(parsed_lexicon):
                 "strong, stable",
             ),
             Entry(
+                None,
+                Canonical("big"),
+                Proto("iki", None),
+                PartOfSpeech("adj"),
+                "big, great",
+            ),
+            Entry(
                 TemplateName("plural"),
                 Canonical("stone"),
                 Proto("apak", None),
