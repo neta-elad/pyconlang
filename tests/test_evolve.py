@@ -1,51 +1,51 @@
-from pyconlang.evolve import Evolved, evolve, evolve_proto, evolve_word, glom_at
-from pyconlang.types import Affix, AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
+from pyconlang.evolve import Evolved, Evolver
+from pyconlang.types import AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
 
 
-def test_evolve(simple_pyconlang):
-    assert evolve_word("apaki") == Evolved("apaki", "abashi", "abaʃi")
-    assert evolve_word("apakí") == Evolved("apakí", "abashí", "abaʃí")
-    assert evolve_proto(Proto("apaki", None)) == Evolved("apaki", "abashi", "abaʃi")
+def test_evolve(simple_evolver):
+    assert Evolver.evolve_word("apaki") == Evolved("apaki", "abashi", "abaʃi")
+    assert Evolver.evolve_word("apakí") == Evolved("apakí", "abashí", "abaʃí")
+    assert simple_evolver.evolve_single(Proto("apaki")) == Evolved(
+        "apaki", "abashi", "abaʃi"
+    )
 
-    assert evolve_word("apaki", end=Rule("era1")) == Evolved("apaki", "apaʃi", "apaʃi")
+    assert Evolver.evolve_word("apaki", end="era1") == Evolved(
+        "apaki", "apaʃi", "apaʃi"
+    )
 
-    assert evolve_word("apaki", start=Rule("era1")) == Evolved(
+    assert Evolver.evolve_word("apaki", start="era1") == Evolved(
         "apaki", "abagi", "abagi"
     )
-    assert evolve_proto(Proto("apaki", Rule("era1"))) == Evolved(
+    assert simple_evolver.evolve_single(Proto("apaki", Rule("era1"))) == Evolved(
         "apaki", "abagi", "abagi"
     )
 
-    assert glom_at("apak", "iki", Rule("era1")) == Evolved(
-        "apakiʃi", "abagishi", "abagiʃi"
-    )
-
-    assert evolve(
+    assert simple_evolver.evolve_single(
         ResolvedForm(
-            Proto("apak", None),
+            Proto("apak"),
             (
                 ResolvedAffix(
                     False,
-                    Affix("PL", AffixType.SUFFIX),
+                    AffixType.SUFFIX,
                     Rule("era1"),
-                    ResolvedForm(Proto("iki", None), ()),
+                    ResolvedForm(Proto("iki"), ()),
                 ),
             ),
         )
     ) == Evolved("apakiʃi", "abagishi", "abagiʃi")
 
 
-def test_proto_glom(simple_pyconlang):
+def test_proto_glom(simple_evolver):
     assert (
-        evolve(
+        simple_evolver.evolve_single(
             ResolvedForm(
-                Proto("apak", None),
+                Proto("apak"),
                 (
                     ResolvedAffix(
                         False,
-                        Affix("PL", AffixType.PREFIX),
+                        AffixType.PREFIX,
                         None,
-                        ResolvedForm(Proto("ma", None), ()),
+                        ResolvedForm(Proto("ma"), ()),
                     ),
                 ),
             )

@@ -1,8 +1,8 @@
 import pytest
 
-from pyconlang.lexicon import Lexicon, parse_lexicon
+from pyconlang.lexicon import Lexicon
 
 
 @pytest.fixture
 def parsed_lexicon(sample_lexicon) -> Lexicon:
-    return parse_lexicon(sample_lexicon)
+    return Lexicon.from_string(sample_lexicon)

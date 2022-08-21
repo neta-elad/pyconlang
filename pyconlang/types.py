@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Iterable, List, Optional, Tuple, Union
 
@@ -16,7 +16,7 @@ class Canonical:
 @dataclass(eq=True, frozen=True)
 class Proto:
     form: str
-    era: Optional[Rule]
+    era: Optional[Rule] = field(default=None)
 
 
 @dataclass(eq=True, frozen=True)
@@ -33,6 +33,13 @@ class AffixType(Enum):
     PREFIX = auto()
     SUFFIX = auto()
 
+    def fuse(self, stem: str, affix: str) -> str:
+        match self:
+            case AffixType.PREFIX:
+                return affix + stem
+            case AffixType.SUFFIX:
+                return stem + affix
+
 
 @dataclass(eq=True, frozen=True)
 class Affix:
@@ -40,26 +47,37 @@ class Affix:
     type: AffixType
 
 
+SimpleForm = Union[Proto, Canonical]
+
+
 @dataclass(eq=True, frozen=True)
-class Fusion:
-    stem: Canonical
-    affixes: Tuple[Affix, ...]
+class Compound:
+    stem: SimpleForm
+    affixes: Tuple[Affix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Affix], stem: Canonical, suffixes: List[Affix]
-    ) -> "Fusion":
+        cls, prefixes: List[Affix], stem: SimpleForm, suffixes: List[Affix]
+    ) -> "Compound":
         return cls(stem, tuple(prefixes + suffixes))
 
+    @classmethod
+    def from_form(cls, form: "Form") -> "Compound":
+        match form:
+            case Compound():
+                return form
+            case _:
+                return Compound(form)
 
-Form = Union[Proto, Fusion]
+
+Form = Union[SimpleForm, Compound]
 
 
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: Optional[TemplateName]
     canonical: Canonical
-    form: Form
+    form: Compound
     part_of_speech: PartOfSpeech
     definition: str
 
@@ -69,8 +87,8 @@ class AffixDefinition:
     stressed: bool
     affix: Affix
     era: Optional[Rule]
-    form: Optional[Form]
-    sources: Tuple[Canonical, ...]
+    form: Optional[SimpleForm]
+    sources: Tuple[Canonical, ...]  # or Form - can bare Proto appear?
     description: str
 
     def get_era(self) -> Optional[Rule]:
@@ -81,11 +99,11 @@ class AffixDefinition:
         else:
             return None
 
-    def get_form(self) -> Form:
+    def get_form(self) -> SimpleForm:
         if self.form is not None:
             return self.form
         elif len(self.sources) == 1:
-            return Fusion(self.sources[0], ())
+            return self.sources[0]
         else:
             raise RuntimeError(f"Bad affix definition {self}")
 
@@ -93,13 +111,16 @@ class AffixDefinition:
 @dataclass(eq=True, frozen=True)
 class ResolvedForm:
     stem: Proto
-    affixes: Tuple["ResolvedAffix", ...]
+    affixes: Tuple["ResolvedAffix", ...] = field(default=())
+
+    def extend(self, affixes: Tuple["ResolvedAffix", ...]) -> "ResolvedForm":
+        return ResolvedForm(self.stem, self.affixes + affixes)
 
 
 @dataclass(eq=True, frozen=True)
 class ResolvedAffix:
     stressed: bool
-    affix: Affix
+    type: AffixType
     era: Optional[Rule]
     form: ResolvedForm
 

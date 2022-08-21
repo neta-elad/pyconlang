@@ -1,15 +1,16 @@
-from pyconlang.lexicon import Lexicon, parse_sentence
+from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.parser import (
     affix,
     affix_definition,
     canonical,
+    compound,
     entry,
-    form,
-    fusion,
     lexical_sources,
+    parse_sentence,
     part_of_speech,
     proto,
     rule,
+    simple_form,
     template_name,
     var,
 )
@@ -18,8 +19,8 @@ from pyconlang.types import (
     AffixDefinition,
     AffixType,
     Canonical,
+    Compound,
     Entry,
-    Fusion,
     PartOfSpeech,
     Proto,
     Rule,
@@ -29,12 +30,54 @@ from pyconlang.types import (
 )
 
 
-def test_entry_parts():
+def test_simple_form():
     assert parse(rule, "@era1") == Rule("era1")
-    assert parse(canonical, "<name of the-rule>") == Canonical("name of the-rule")
-    assert parse(proto, "*proto") == Proto("proto", None)
-    assert parse(proto, "*protó") == Proto("protó", None)
+    assert parse(canonical, "<name of the-form>") == Canonical("name of the-form")
+    assert parse(simple_form, "<name of the-form>") == Canonical("name of the-form")
+    assert parse(proto, "*proto") == Proto("proto")
+    assert parse(simple_form, "*proto") == Proto("proto")
+    assert parse(proto, "*protó") == Proto("protó")
+    assert parse(simple_form, "*protó") == Proto("protó")
     assert parse(proto, "*proto@era1") == Proto("proto", Rule("era1"))
+    assert parse(simple_form, "*proto@era1") == Proto("proto", Rule("era1"))
+
+
+def test_affix():
+    assert parse(affix, ".PL") == Affix("PL", AffixType.SUFFIX)
+    assert parse(affix, "PL.") == Affix("PL", AffixType.PREFIX)
+
+
+def test_compound():
+    assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
+        Canonical("stone"),
+        (
+            Affix("DEF", AffixType.PREFIX),
+            Affix("PL", AffixType.SUFFIX),
+            Affix("ACC", AffixType.SUFFIX),
+        ),
+    )
+
+    assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
+        Canonical("stone"),
+        (
+            Affix("DEF", AffixType.PREFIX),
+            Affix("PL", AffixType.SUFFIX),
+            Affix("ACC", AffixType.SUFFIX),
+        ),
+    )
+
+    assert parse(compound, "*proto@era1") == Compound(Proto("proto", Rule("era1")))
+
+    assert parse(compound, "DEF.*proto@era1.PL") == Compound(
+        Proto("proto", Rule("era1")),
+        (
+            Affix("DEF", AffixType.PREFIX),
+            Affix("PL", AffixType.SUFFIX),
+        ),
+    )
+
+
+def test_entry_parts():
     assert parse(template_name, "&template") == TemplateName("template")
     assert parse(part_of_speech, "(adj.)") == PartOfSpeech("adj")
 
@@ -43,63 +86,49 @@ def test_entry():
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Canonical("strong"),
-        Proto("kipu", Rule("era1")),
+        Compound(Proto("kipu", Rule("era1"))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
+
     assert parse(
-        entry, "entry &plural <strong> *kipu@era1 (adj.) strong, stable"
+        entry, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
         Canonical("strong"),
-        Proto("kipu", Rule("era1")),
+        Compound(Proto("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
+        PartOfSpeech("adj"),
+        "strong, stable",
+    )
+
+    assert parse(
+        entry, "entry &plural <strong> <heavy>.PL (adj.) strong, stable"
+    ) == Entry(
+        TemplateName("plural"),
+        Canonical("strong"),
+        Compound(Canonical("heavy"), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
 
 
-def test_form():
-    assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
-        Canonical("stone"),
-        (
-            Affix("DEF", AffixType.PREFIX),
-            Affix("PL", AffixType.SUFFIX),
-            Affix("ACC", AffixType.SUFFIX),
-        ),
-    )
-
-    assert parse(form, "DEF.<stone>.PL.ACC") == Fusion(
-        Canonical("stone"),
-        (
-            Affix("DEF", AffixType.PREFIX),
-            Affix("PL", AffixType.SUFFIX),
-            Affix("ACC", AffixType.SUFFIX),
-        ),
-    )
-
-    assert parse(form, "*proto@era1") == Proto("proto", Rule("era1"))
-
-
-def test_affix():
-    assert parse(affix, ".PL") == Affix("PL", AffixType.SUFFIX)
-    assert parse(affix, "PL.") == Affix("PL", AffixType.PREFIX)
+def test_affix_definition():
     assert parse(lexical_sources, "(<big> <pile>)") == (
         Canonical("big"),
         Canonical("pile"),
     )
 
-
-def test_affix_definition():
     assert parse(
         affix_definition, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         True,
         Affix("PL", AffixType.SUFFIX),
         Rule("era"),
-        Proto("proto", None),
+        Proto("proto"),
         (Canonical("big"), Canonical("pile")),
         "plural for inanimate",
     )
+
     assert parse(
         affix_definition, "affix .PL *proto@era plural for inanimate"
     ) == AffixDefinition(
@@ -110,6 +139,7 @@ def test_affix_definition():
         (),
         "plural for inanimate",
     )
+
     assert parse(
         affix_definition, "affix .PL (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
@@ -130,28 +160,28 @@ def test_lexicon(parsed_lexicon):
             Entry(
                 None,
                 Canonical("strong"),
-                Proto("kipu", Rule("era1")),
+                Compound(Proto("kipu", Rule("era1"))),
                 PartOfSpeech("adj"),
                 "strong, stable",
             ),
             Entry(
                 None,
                 Canonical("big"),
-                Proto("iki", None),
+                Compound(Proto("iki")),
                 PartOfSpeech("adj"),
                 "big, great",
             ),
             Entry(
                 TemplateName("plural"),
                 Canonical("stone"),
-                Proto("apak", None),
+                Compound(Proto("apak")),
                 PartOfSpeech("n"),
                 "stone, pebble",
             ),
             Entry(
                 None,
                 Canonical("gravel"),
-                Fusion(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),)),
+                Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),)),
                 PartOfSpeech("n"),
                 "gravel",
             ),
@@ -193,11 +223,11 @@ def test_var(sample_lexicon):
 
 
 def test_sentence():
-    assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start")) == (
-        Proto("aka", None),
-        Fusion(Canonical("strong"), ()),
-        Fusion(Canonical("with space"), (Affix("COL", AffixType.PREFIX),)),
-        Proto("taka", Rule("start")),
+    assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
+        Compound(Proto("aka")),
+        Compound(Canonical("strong"), ()),
+        Compound(Canonical("with space"), (Affix("COL", AffixType.PREFIX),)),
+        Compound(Proto("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
     )
 
 

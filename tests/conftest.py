@@ -8,6 +8,7 @@ from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
 from pyconlang.cli import init
+from pyconlang.evolve import Evolver
 
 
 @pytest.fixture
@@ -67,6 +68,11 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
     (tmp_pyconlang / "lexicon.txt").write_text(sample_lexicon)
 
     yield tmp_pyconlang
+
+
+@pytest.fixture
+def simple_evolver(simple_pyconlang):
+    yield Evolver()  # todo fixture with cache?
 
 
 @pytest.fixture(autouse=True, scope="function")

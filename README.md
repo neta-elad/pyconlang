@@ -207,20 +207,28 @@ will turn out as
   - [x] Get phonetic modern form
   - [x] Get simplified (no accents) romanized modern form
   - [ ] Traces
+  - [ ] History
+  - [ ] Auto-complete
+  - [ ] Error handling
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [ ] Handle stress
+  - [ ] Lexurgy error handling
   - [ ] Traces
 - [ ] `lexicon`: Interactive lexicon
   - [ ] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
   - [ ] ? Protos to take affixes as well
+  - [ ] Batch evolve, using dependency graph?
 - [ ] `translator`: Automatic translation according to gloss
   - [ ] Evolve each form (with affixes)
   - [ ] Match-up forms and glosses
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
+  - [ ] Only rebuild lexicon when changed
   - [ ] Affixes list
   - [ ] Phonology tables
   - [ ] Conjugation tables
   - [x] Inline translation
+  - [ ] Robust against errors
+- [ ] Complete example project

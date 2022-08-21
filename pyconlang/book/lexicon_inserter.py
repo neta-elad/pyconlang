@@ -7,8 +7,8 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
-from ..evolve import Evolved, evolve
-from ..lexicon import Lexicon, parse_lexicon_file
+from ..evolve import Evolved
+from ..translate import Translator
 from ..types import AffixType, Entry, Form, ResolvedForm
 
 
@@ -20,16 +20,16 @@ class LexiconPreprocessor(Preprocessor):
         self.extension = extension
 
     @property
-    def lexicon(self) -> Lexicon:
-        return self.extension.lexicon
+    def translator(self) -> Translator:
+        return self.extension.translator
 
     def run(self, lines: List[str]) -> List[str]:
         new_lines = []
         for line in lines:
             if line.strip() == "!lexicon":
                 lexicon: Dict[str, List[Tuple[List[Evolved], Entry]]] = {}
-                for entry in self.lexicon.entries:
-                    evolved = self.evolve_all(entry)
+                for entry, evolved in self.translator.batch_evolve().items():
+
                     letter = evolved[0].modern[0]
                     lexicon.setdefault(letter, [])
                     lexicon[letter].append((evolved, entry))
@@ -60,24 +60,20 @@ class LexiconPreprocessor(Preprocessor):
         return new_lines
 
     def form_to_protos(self, form: Form) -> List[str]:
-        return self.resolved_form_to_protos(self.lexicon.resolve(form))
+        return self.resolved_form_to_protos(
+            self.translator.lexicon.resolve(form)
+        )  # todo differently
 
     def resolved_form_to_protos(self, form: ResolvedForm) -> List[str]:
         protos = [[form.stem.form]]
         for affix in form.affixes:
             affix_protos = self.resolved_form_to_protos(affix.form)
-            if affix.affix.type is AffixType.PREFIX:
+            if affix.type is AffixType.PREFIX:
                 protos.insert(0, affix_protos)
             else:
                 protos.append(affix_protos)
 
         return list(chain(*protos))
-
-    def evolve_all(self, entry: Entry) -> List[Evolved]:
-        return [
-            evolve(self.lexicon.substitute(var, entry.form))
-            for var in self.lexicon.get_vars(entry.template)
-        ]
 
 
 class LexiconInlineProcessor(InlineProcessor):
@@ -88,8 +84,8 @@ class LexiconInlineProcessor(InlineProcessor):
         self.extension = extension
 
     @property
-    def lexicon(self) -> Lexicon:
-        return self.extension.lexicon
+    def translator(self) -> Translator:
+        return self.extension.translator
 
     # InlineProcessor and its parent Pattern
     # have contradictory type annotations,
@@ -102,16 +98,18 @@ class LexiconInlineProcessor(InlineProcessor):
         return element, m.start(), m.end()
 
     def evolve(self, raw: str) -> str:
-        return " ".join(evolved.modern for evolved in self.lexicon.evolve_string(raw))
+        return " ".join(
+            evolved.modern for evolved in self.translator.evolve_string(raw)
+        )
 
 
 class LexiconInserter(Extension):
-    lexicon: Lexicon
+    translator: Translator
 
     def __init__(self) -> None:
         super().__init__()
 
-        self.lexicon = parse_lexicon_file()
+        self.translator = Translator()
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.registerExtension(self)
@@ -119,4 +117,6 @@ class LexiconInserter(Extension):
         md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
 
     def reset(self) -> None:
-        self.lexicon = parse_lexicon_file()
+        self.translator = (
+            Translator()
+        )  # todo something smarter, only reload what's necessary

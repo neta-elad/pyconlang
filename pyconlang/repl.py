@@ -4,12 +4,12 @@ from dataclasses import dataclass, field
 from prompt_toolkit import PromptSession
 from unidecode import unidecode
 
-from .lexicon import Lexicon, parse_lexicon_file
+from .translate import Translator
 
 
 @dataclass
 class ReplSession(Cmd):
-    lexicon: Lexicon = field(default_factory=parse_lexicon_file)
+    translator: Translator = field(default_factory=Translator)
     session: PromptSession[str] = field(default_factory=PromptSession)
 
     def run(self) -> None:
@@ -26,10 +26,10 @@ class ReplSession(Cmd):
             return
 
     def default(self, line: str) -> None:
-        print(" ".join(form.modern for form in self.lexicon.evolve_string(line)))
+        print(" ".join(form.modern for form in self.translator.evolve_string(line)))
 
     def do_phonetic(self, line: str) -> None:
-        print(" ".join(form.phonetic for form in self.lexicon.evolve_string(line)))
+        print(" ".join(form.phonetic for form in self.translator.evolve_string(line)))
 
     def do_p(self, line: str) -> None:
         self.do_phonetic(line)
@@ -37,7 +37,7 @@ class ReplSession(Cmd):
     def do_simple(self, line: str) -> None:
         print(
             " ".join(
-                unidecode(form.modern) for form in self.lexicon.evolve_string(line)
+                unidecode(form.modern) for form in self.translator.evolve_string(line)
             )
         )
 
