@@ -13,11 +13,15 @@ from ..types import AffixType, Entry, Form, ResolvedForm
 
 
 class LexiconPreprocessor(Preprocessor):
-    lexicon: Lexicon
+    extension: "LexiconInserter"
 
-    def __init__(self, md: Markdown, lexicon: Lexicon) -> None:
+    def __init__(self, md: Markdown, extension: "LexiconInserter") -> None:
         super().__init__(md)
-        self.lexicon = lexicon
+        self.extension = extension
+
+    @property
+    def lexicon(self) -> Lexicon:
+        return self.extension.lexicon
 
     def run(self, lines: List[str]) -> List[str]:
         new_lines = []
@@ -77,11 +81,15 @@ class LexiconPreprocessor(Preprocessor):
 
 
 class LexiconInlineProcessor(InlineProcessor):
-    lexicon: Lexicon
+    extension: "LexiconInserter"
 
-    def __init__(self, lexicon: Lexicon) -> None:
+    def __init__(self, extension: "LexiconInserter") -> None:
         super().__init__(r"#(.*?)#")
-        self.lexicon = lexicon
+        self.extension = extension
+
+    @property
+    def lexicon(self) -> Lexicon:
+        return self.extension.lexicon
 
     # InlineProcessor and its parent Pattern
     # have contradictory type annotations,
@@ -107,7 +115,8 @@ class LexiconInserter(Extension):
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.registerExtension(self)
-        md.preprocessors.register(LexiconPreprocessor(md, self.lexicon), "lexicon", 0)
-        md.inlinePatterns.register(
-            LexiconInlineProcessor(self.lexicon), "inline-lexicon", 200
-        )
+        md.preprocessors.register(LexiconPreprocessor(md, self), "lexicon", 0)
+        md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
+
+    def reset(self) -> None:
+        self.lexicon = parse_lexicon_file()
