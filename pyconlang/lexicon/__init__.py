@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional, Set, Tuple, Union
+from pathlib import Path
+from typing import Iterable, List, Optional, Set, Tuple, Union, cast
 
+from ..evolve import Evolved, evolve
 from ..types import (
     Affix,
     AffixDefinition,
@@ -14,6 +16,7 @@ from ..types import (
     TemplateName,
     Var,
 )
+from .parser import lexicon, sentence
 
 
 @dataclass
@@ -76,6 +79,12 @@ class Lexicon:
                 resolved = self.resolve(self.get_entry(form.stem).form)
                 return ResolvedForm(resolved.stem, resolved.affixes + affixes)
 
+    def evolve(self, form: Form) -> Evolved:
+        return evolve(self.resolve(form))
+
+    def evolve_string(self, string: str) -> List[Evolved]:
+        return [self.evolve(form) for form in parse_sentence(string)]
+
     def resolve_with_affixes(
         self, form: Form, affixes: Tuple[Affix, ...]
     ) -> ResolvedForm:
@@ -97,3 +106,15 @@ class Lexicon:
                     return template.vars
 
             raise KeyError(name)
+
+
+def parse_sentence(string: str) -> List[Form]:
+    return cast(List[Form], list(sentence.parse_string(string, parse_all=True)))
+
+
+def parse_lexicon(string: str) -> Lexicon:
+    return Lexicon.from_iterable(lexicon.parse_string(string, parse_all=True))
+
+
+def parse_lexicon_file(filename: Path = Path("lexicon.txt")) -> Lexicon:
+    return parse_lexicon(filename.read_text())

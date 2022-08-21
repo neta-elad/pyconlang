@@ -194,16 +194,27 @@ will turn out as
 
 
 ## TODO
+- [ ] ? Combined, general repl
+  - [ ] Working with proto-forms
+  - [ ] Working with lexicon
+    - [ ] Defining words, affixes and templates in session
+    - [ ] Saving session
+    - [ ] Search for a word
+  - [ ] Working with book
+    - [ ] Compile
 - [ ] `repl`: Interactive session with Lexurgy
   - [x] Enter proto form, get romanized modern form
-  - [ ] Get phonetic modern form
-  - [ ] Get simplified (no accents) romanized modern form
-- [ ] `lexurgy`: Evolving forms and auto-glomination
+  - [x] Get phonetic modern form
+  - [x] Get simplified (no accents) romanized modern form
+  - [ ] Traces
+- [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [ ] Handle stress
+  - [ ] Traces
 - [ ] `lexicon`: Interactive lexicon
   - [ ] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
+  - [ ] ? Protos to take affixes as well
 - [ ] `translator`: Automatic translation according to gloss
   - [ ] Evolve each form (with affixes)
   - [ ] Match-up forms and glosses

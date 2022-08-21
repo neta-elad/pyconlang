@@ -7,9 +7,8 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
-from ..lexicon import Lexicon
-from ..lexicon.parser import parse_lexicon_file, parse_sentence
-from ..lexurgy import evolve
+from ..evolve import evolve
+from ..lexicon import Lexicon, parse_lexicon_file, parse_sentence
 from ..types import AffixType, Entry, Form, ResolvedForm
 
 
@@ -68,7 +67,7 @@ class LexiconPreprocessor(Preprocessor):
 
     def evolve_all(self, entry: Entry) -> List[str]:
         return [
-            evolve(self.lexicon.substitute(var, entry.form))
+            evolve(self.lexicon.substitute(var, entry.form)).modern  # todo change
             for var in self.lexicon.get_vars(entry.template)
         ]
 
@@ -92,7 +91,8 @@ class LexiconInlineProcessor(InlineProcessor):
 
     def evolve(self, raw: str) -> str:
         return " ".join(
-            evolve(self.lexicon.resolve(form)) for form in parse_sentence(raw)
+            evolve(self.lexicon.resolve(form)).modern
+            for form in parse_sentence(raw)  # todo change
         )
 
 

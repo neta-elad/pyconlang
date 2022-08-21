@@ -1,4 +1,4 @@
-from pyconlang.lexicon import Lexicon
+from pyconlang.lexicon import Lexicon, parse_sentence
 from pyconlang.lexicon.parser import (
     affix,
     affix_definition,
@@ -7,7 +7,6 @@ from pyconlang.lexicon.parser import (
     form,
     fusion,
     lexical_sources,
-    parse_sentence,
     part_of_speech,
     proto,
     rule,
@@ -30,13 +29,17 @@ from pyconlang.types import (
 )
 
 
-def test_entry():
+def test_entry_parts():
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(canonical, "<name of the-rule>") == Canonical("name of the-rule")
     assert parse(proto, "*proto") == Proto("proto", None)
+    assert parse(proto, "*protó") == Proto("protó", None)
     assert parse(proto, "*proto@era1") == Proto("proto", Rule("era1"))
     assert parse(template_name, "&template") == TemplateName("template")
     assert parse(part_of_speech, "(adj.)") == PartOfSpeech("adj")
+
+
+def test_entry():
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Canonical("strong"),

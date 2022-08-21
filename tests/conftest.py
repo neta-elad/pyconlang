@@ -53,6 +53,9 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
     
     intervocalic-voicing:
         {p, t, k, s} => {b, d, g, z} / @vowel _ @vowel
+        
+    romanizer-phonetic:
+        unchanged
     
     romanizer:
         ʃ => sh

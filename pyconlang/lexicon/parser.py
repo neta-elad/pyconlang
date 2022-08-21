@@ -1,5 +1,5 @@
-from pathlib import Path
-from typing import Any, Callable, List, TypeVar, Union, cast
+from string import digits, punctuation, whitespace
+from typing import Any, Callable, TypeVar, Union
 
 from pyparsing import (
     Group,
@@ -21,7 +21,6 @@ from ..types import (
     AffixType,
     Canonical,
     Entry,
-    Form,
     Fusion,
     PartOfSpeech,
     Proto,
@@ -30,7 +29,6 @@ from ..types import (
     TemplateName,
     Var,
 )
-from . import Lexicon
 
 T = TypeVar("T")
 
@@ -55,23 +53,6 @@ def make_diagrams() -> None:
     lexicon.create_diagram("diagrams.html", show_results_names=True)
 
 
-def parse_lexicon(string: str) -> Lexicon:
-    result = lexicon.parse_string(string, parse_all=True)[0]
-
-    if not isinstance(result, Lexicon):
-        raise RuntimeError(f"Could not parse {string}")
-
-    return result
-
-
-def parse_lexicon_file(filename: Path = Path("lexicon.txt")) -> Lexicon:
-    return parse_lexicon(filename.read_text())
-
-
-def parse_sentence(string: str) -> List[Form]:
-    return cast(List[Form], list(sentence.parse_string(string, parse_all=True)))
-
-
 ident = Word(alphanums + "-").set_name("ident")
 rule = (Suppress("@") + ident).set_parse_action(token_map(Rule)).set_name("rule")
 canonical = (
@@ -79,9 +60,10 @@ canonical = (
     .set_parse_action(token_map(Canonical))
     .set_name("canonical")
 )
-unicode_word = Word(pyparsing_unicode.BasicMultilingualPlane.alphas).set_name(
-    "unicode_word"
-)
+unicode_word = Word(
+    pyparsing_unicode.BasicMultilingualPlane.printables,
+    exclude_chars=whitespace + digits + punctuation,
+).set_name("unicode_word")
 proto = (
     (Suppress("*") + unicode_word + explicit_opt(rule))
     .set_parse_action(tokens_map(Proto))
@@ -155,11 +137,7 @@ entry = (
     .set_parse_action(tokens_map(Entry))
     .set_name("entry")
 )
-lexicon = (
-    (entry | affix_definition | template)[...]
-    .set_parse_action(Lexicon.from_iterable)
-    .set_name("lexicon")
-)
+lexicon = (entry | affix_definition | template)[...].set_name("lexicon")
 
 sentence = form[...]
 

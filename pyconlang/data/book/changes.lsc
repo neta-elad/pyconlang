@@ -104,7 +104,7 @@ Symbol j [voiced palatal approximant]
 Symbol ʎ [voiced palatal +lateral approximant]
 
 # Velar
-Symbol ŋ [voiced velar nasal]]
+Symbol ŋ [voiced velar nasal]
 Symbol k [voiceless velar stop]
 Symbol g [voiced velar stop]
 Symbol x [voiceless velar fricative]
@@ -145,7 +145,7 @@ Symbol e [mid front -round vowel]
 Symbol ø [mid front +round vowel]
 Symbol ə [mid central -round vowel]
 Symbol ɤ [mid back -round vowel]
-Symbol o [mid back +round vowel]]
+Symbol o [mid back +round vowel]
 
 # Low
 Symbol ɛ [low front -round vowel]
@@ -153,7 +153,7 @@ Symbol œ [low front +round vowel]
 Symbol a [low central -round vowel]
 Symbol ɶ [low central +round vowel]
 Symbol ɑ [low back -round vowel]
-Symbol ɒ [low back +round vowel]]
+Symbol ɒ [low back +round vowel]
 
 # +-------------+
 # | ~ Classes ~ |
