@@ -198,7 +198,7 @@ def test_three_nodes_two_eras():
 def test_node_query():
     a_b = NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"))
 
-    assert a_b.query == "ab"
+    assert a_b.get_query({}) == "ab"
 
     a_b = NodeEvolveQuery(
         AffixType.SUFFIX,
@@ -207,7 +207,7 @@ def test_node_query():
         start="1",
     )
 
-    assert a_b.query == "ab"
+    assert a_b.get_query({}) == "ab"
 
     with pytest.raises(AssertionError):
         a_b = NodeEvolveQuery(
@@ -217,7 +217,7 @@ def test_node_query():
             start="1",
         )
 
-        assert a_b.query
+        assert a_b.get_query({})
 
 
 def test_single_layer():
@@ -227,7 +227,7 @@ def test_single_layer():
         LeafEvolveQuery("c"),
     )
 
-    assert query.query == "abc"
+    assert query.get_query({}) == "abc"
 
     assert order_in_layers([query]) == [[query]]
 

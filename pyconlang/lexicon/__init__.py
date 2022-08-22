@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional, Set, Tuple, Union
 
+from ..checksum import checksum
 from ..types import (
     Affix,
     AffixDefinition,
@@ -28,8 +29,8 @@ class Lexicon:
     templates: Set[Template]
 
     @staticmethod
-    def checksum() -> int:
-        return hash(LEXICON_PATH.read_text())
+    def checksum() -> bytes:
+        return checksum(LEXICON_PATH)
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":

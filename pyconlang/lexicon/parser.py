@@ -57,6 +57,10 @@ def make_diagrams() -> None:
     lexicon.create_diagram("diagrams.html", show_results_names=True)
 
 
+ParserElement.set_default_whitespace_chars(
+    " \t"
+)  # todo consider explicit record terminator
+
 ident = Word(alphanums + "-").set_name("ident")
 
 rule = (Suppress("@") + ident).set_parse_action(token_map(Rule)).set_name("rule")
@@ -156,7 +160,11 @@ entry = (
     .set_name("entry")
 )
 
-lexicon = (entry | affix_definition | template)[...].set_name("lexicon")
+record = ((entry | affix_definition | template) + Suppress("\n")[...]).set_name(
+    "record"
+)
+
+lexicon = (Suppress("\n")[...] + record[...]).set_name("lexicon")
 
 sentence = compound[...]
 

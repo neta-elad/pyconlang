@@ -4,42 +4,52 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from ..types import AffixType, ResolvedForm
 from .types import Evolved
 
+Cache = Dict["EvolveQuery", Evolved]
 
-@dataclass
+
+@dataclass(eq=True, frozen=True)
 class LeafEvolveQuery:
     query: str
     start: Optional[str] = field(default=None, kw_only=True)
     end: Optional[str] = field(default=None, kw_only=True)
-    result: Optional[Evolved] = field(default=None, kw_only=True)
+
+    def get_query(self, cache: Cache) -> str:
+        return self.query
+
+    def set_end(self, end: Optional[str]) -> "LeafEvolveQuery":
+        return LeafEvolveQuery(self.query, start=self.start, end=end)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class NodeEvolveQuery:
     affix_type: AffixType
     stem: "EvolveQuery"
     affix: "EvolveQuery"
     start: Optional[str] = field(default=None, kw_only=True)
     end: Optional[str] = field(default=None, kw_only=True)
-    result: Optional[Evolved] = field(default=None, kw_only=True)
 
-    @property
-    def query(self) -> str:
+    def get_query(self, cache: Cache) -> str:
         assert self.stem.end == self.start
         assert self.affix.end == self.start
 
         if self.stem.start != self.start:
-            assert self.stem.result is not None
-            stem = self.stem.result.phonetic
+            assert self.stem in cache
+            stem = cache[self.stem].phonetic
         else:
-            stem = self.stem.query
+            stem = self.stem.get_query(cache)
 
         if self.affix.start != self.start:
-            assert self.affix.result is not None
-            affix = self.affix.result.phonetic
+            assert self.affix in cache
+            affix = cache[self.affix].phonetic
         else:
-            affix = self.affix.query
+            affix = self.affix.get_query(cache)
 
         return self.affix_type.fuse(stem, affix)
+
+    def set_end(self, end: Optional[str]) -> "NodeEvolveQuery":
+        return NodeEvolveQuery(
+            self.affix_type, self.stem, self.affix, start=self.start, end=end
+        )
 
     def is_dependent(self) -> bool:
         return self.start != self.stem.start or self.start != self.affix.start
@@ -129,16 +139,16 @@ def build_query(form: ResolvedForm) -> EvolveQuery:
 
         elif affix_era is not None and stem_query.start != affix_era:
             # assume affix.era > stem_query.start
-            affix_query.end = affix_era
-            stem_query.end = affix_era
+            affix_query = affix_query.set_end(affix_era)
+            stem_query = stem_query.set_end(affix_era)
 
             stem_query = NodeEvolveQuery(
                 affix.type, stem_query, affix_query, start=affix_era
             )
 
         else:  # affix start == query_start != None
-            affix_query.end = affix_era
-            stem_query.end = affix_era
+            affix_query = affix_query.set_end(affix_era)
+            stem_query = stem_query.set_end(affix_era)
             stem_query = NodeEvolveQuery(
                 affix.type, stem_query, affix_query, start=stem_query.start
             )
@@ -151,6 +161,7 @@ def build_and_order(
 ) -> Tuple[Mapping[ResolvedForm, EvolveQuery], List[List[EvolveQuery]]]:
     mapping: Dict[ResolvedForm, EvolveQuery] = {}
     queries: List[EvolveQuery] = []
+    # todo cache resolved form to query
 
     for form in forms:
         query = build_query(form)
