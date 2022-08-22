@@ -7,7 +7,7 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
-from ..evolve import Evolved
+from ..evolve.types import Evolved
 from ..translate import Translator
 from ..types import AffixType, Entry, Form, ResolvedForm
 
@@ -117,6 +117,4 @@ class LexiconInserter(Extension):
         md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
 
     def reset(self) -> None:
-        self.translator = (
-            Translator()
-        )  # todo something smarter, only reload what's necessary
+        self.translator.validate_cache()

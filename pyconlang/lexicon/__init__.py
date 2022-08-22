@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Set, Tuple, Union
+from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from ..types import (
     Affix,
@@ -26,6 +26,10 @@ class Lexicon:
     entries: Set[Entry]
     affixes: Set[AffixDefinition]
     templates: Set[Template]
+
+    @staticmethod
+    def checksum() -> int:
+        return hash(LEXICON_PATH.read_text())
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
@@ -87,7 +91,7 @@ class Lexicon:
             case Proto():
                 return ResolvedForm(stem, affixes)
             case Canonical():
-                return self.resolve(self.get_entry(stem).form).extend(affixes)
+                return self.resolve(self.get_entry(stem).form).extend(*affixes)
 
     def resolve_with_affixes(
         self, form: Form, affixes: Tuple[Affix, ...]
@@ -108,3 +112,8 @@ class Lexicon:
                     return template.vars
 
             raise KeyError(name)
+
+    def resolve_entry(self, entry: Entry) -> List[ResolvedForm]:
+        return [
+            self.substitute(var, entry.form) for var in self.get_vars(entry.template)
+        ]

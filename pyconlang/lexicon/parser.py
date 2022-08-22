@@ -78,7 +78,7 @@ proto = (
     .set_name("proto")
 )
 
-simple_form = (canonical | proto).set_name('simple_form')
+simple_form = (canonical | proto).set_name("simple_form")
 
 prefix = (
     (ident + Suppress("."))

@@ -18,6 +18,11 @@ class Proto:
     form: str
     era: Optional[Rule] = field(default=None)
 
+    def era_name(self) -> Optional[str]:
+        if self.era is None:
+            return None
+        return self.era.name
+
 
 @dataclass(eq=True, frozen=True)
 class TemplateName:
@@ -113,7 +118,7 @@ class ResolvedForm:
     stem: Proto
     affixes: Tuple["ResolvedAffix", ...] = field(default=())
 
-    def extend(self, affixes: Tuple["ResolvedAffix", ...]) -> "ResolvedForm":
+    def extend(self, *affixes: "ResolvedAffix") -> "ResolvedForm":
         return ResolvedForm(self.stem, self.affixes + affixes)
 
 
@@ -123,6 +128,11 @@ class ResolvedAffix:
     type: AffixType
     era: Optional[Rule]
     form: ResolvedForm
+
+    def era_name(self) -> Optional[str]:
+        if self.era is None:
+            return None
+        return self.era.name
 
 
 @dataclass(eq=True, frozen=True)

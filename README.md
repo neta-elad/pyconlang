@@ -215,14 +215,17 @@ will turn out as
   - [ ] Handle stress
   - [ ] Lexurgy error handling
   - [ ] Traces
+  - [ ] Better cache
 - [ ] `lexicon`: Interactive lexicon
   - [ ] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
-  - [ ] ? Protos to take affixes as well
-  - [ ] Batch evolve, using dependency graph?
+  - [x] Protos to take affixes as well
+  - [x] Batch evolve, using dependency graph?
+  - [ ] Better cache
 - [ ] `translator`: Automatic translation according to gloss
-  - [ ] Evolve each form (with affixes)
+  - [x] Evolve each form (with affixes)
   - [ ] Match-up forms and glosses
+  - [ ] Better cache
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
   - [ ] Only rebuild lexicon when changed

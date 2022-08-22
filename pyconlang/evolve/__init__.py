@@ -2,12 +2,14 @@ import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import run
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 from unicodedata import normalize
 
-from . import PYCONLANG_PATH
-from .data import LEXURGY_VERSION
-from .types import Proto, ResolvedForm, Rule
+from .. import PYCONLANG_PATH
+from ..data import LEXURGY_VERSION
+from ..types import Proto, ResolvedForm, Rule
+from .batch import build_and_order, segment_by_start_end
+from .types import Evolved
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"
@@ -15,7 +17,7 @@ CHANGES_PATH = Path("changes.lsc")
 CACHE_PATH = EVOLVE_PATH / "cache.pickle"
 
 Evolvable = Union[str, Proto, ResolvedForm]
-Evolvables = Union[Evolvable, List[Evolvable]]
+Evolvables = Union[Evolvable, Sequence[Evolvable]]
 
 
 def get_checksum() -> int:
@@ -31,24 +33,18 @@ def normalize_form(form: Evolvable) -> ResolvedForm:
     return form
 
 
-def normalize_forms(forms: Evolvables) -> List[ResolvedForm]:
-    if not isinstance(forms, list):
+def normalize_forms(forms: Evolvables) -> Sequence[ResolvedForm]:
+    if not isinstance(forms, Sequence):
         forms = [forms]
 
     return [normalize_form(form) for form in forms]
-
-
-@dataclass(eq=True, frozen=True)
-class Evolved:
-    proto: str
-    modern: str
-    phonetic: str
 
 
 @dataclass
 class Evolver:
     checksum: int = field(default_factory=get_checksum)
     cache: Dict[ResolvedForm, Evolved] = field(default_factory=dict)
+    # todo word cache as well?
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -79,8 +75,32 @@ class Evolver:
         return self.evolve(form)[0]
 
     def evolve(self, forms: Evolvables) -> List[Evolved]:
+        resolved_forms = normalize_forms(forms)
 
-        return [self._evolve(form) for form in normalize_forms(forms)]
+        mapping, layers = build_and_order(resolved_forms)
+
+        for layer in layers:
+            segments = segment_by_start_end(layer)
+
+            for (start, end), queries in segments.items():
+                # cache queries, not forms...
+                evolved_forms = self.evolve_words(
+                    [query.query for query in queries], start=start, end=end
+                )
+
+                for evolved, query in zip(evolved_forms, queries):
+                    query.result = evolved
+
+        # todo cache
+
+        result: List[Evolved] = []
+
+        for form in resolved_forms:
+            evolved_result = mapping[form].result
+            assert evolved_result is not None
+            result.append(evolved_result)
+
+        return result
 
     def _evolve(self, form: ResolvedForm) -> Evolved:  # todo temp - delete
         if form in self.cache:
@@ -109,21 +129,15 @@ class Evolver:
         return self.evolve_words([proto.form], start=start_name, end=end_name)[0]
 
     @staticmethod
-    def evolve_word(
-        word: str,
-        *,  # todo delete
-        start: Optional[str] = None,
-        end: Optional[str] = None,
-    ) -> Evolved:
-        return Evolver.evolve_words([word], start=start, end=end)[0]
-
-    @staticmethod
     def evolve_words(
         words: List[str],
         *,
         start: Optional[str] = None,
         end: Optional[str] = None,
     ) -> List[Evolved]:
+        if not words:
+            return []
+
         input_words = EVOLVE_PATH / "words.wli"
         input_words.write_text("\n".join(words))
 

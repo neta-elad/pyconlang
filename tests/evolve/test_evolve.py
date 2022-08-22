@@ -3,19 +3,23 @@ from pyconlang.types import AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
 
 
 def test_evolve(simple_evolver):
-    assert Evolver.evolve_word("apaki") == Evolved("apaki", "abashi", "abaʃi")
-    assert Evolver.evolve_word("apakí") == Evolved("apakí", "abashí", "abaʃí")
+    assert Evolver.evolve_words(["apaki", "apakí"]) == [
+        Evolved("apaki", "abashi", "abaʃi"),
+        Evolved("apakí", "abashí", "abaʃí"),
+    ]
+
+    assert Evolver.evolve_words(["apaki"], end="era1") == [
+        Evolved("apaki", "apaʃi", "apaʃi")
+    ]
+
+    assert Evolver.evolve_words(["apaki"], start="era1") == [
+        Evolved("apaki", "abagi", "abagi")
+    ]
+
     assert simple_evolver.evolve_single(Proto("apaki")) == Evolved(
         "apaki", "abashi", "abaʃi"
     )
 
-    assert Evolver.evolve_word("apaki", end="era1") == Evolved(
-        "apaki", "apaʃi", "apaʃi"
-    )
-
-    assert Evolver.evolve_word("apaki", start="era1") == Evolved(
-        "apaki", "abagi", "abagi"
-    )
     assert simple_evolver.evolve_single(Proto("apaki", Rule("era1"))) == Evolved(
         "apaki", "abagi", "abagi"
     )
