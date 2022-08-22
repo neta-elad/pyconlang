@@ -3,19 +3,41 @@ from dataclasses import dataclass, field
 
 from prompt_toolkit import PromptSession
 from unidecode import unidecode
+from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
+from watchdog.observers import Observer
 
 from .translate import Translator
+
+
+class Handler(PatternMatchingEventHandler):
+    changed: bool
+
+    def __init__(self) -> None:
+        super().__init__(["changes.lsc", "lexicon.txt"])
+        self.changed = False
+
+    def on_any_event(self, event: FileSystemEvent) -> None:
+        self.changed = True
 
 
 @dataclass
 class ReplSession(Cmd):
     translator: Translator = field(default_factory=Translator)
     session: PromptSession[str] = field(default_factory=PromptSession)
+    watcher: Handler = field(default_factory=Handler)
 
     def run(self) -> None:
+        observer = Observer()
+        observer.schedule(self.watcher, ".")
+        observer.start()
         try:
             while True:
                 line = self.session.prompt("> ")
+
+                if self.watcher.changed:
+                    self.watcher.changed = False
+                    if not self.translator.validate_cache():
+                        print("Detected changes, reloading.")
 
                 if not line:
                     continue
@@ -29,6 +51,8 @@ class ReplSession(Cmd):
             return
         finally:
             self.translator.save()
+            observer.stop()
+            observer.join()
 
     def default(self, line: str) -> None:
         print(" ".join(form.modern for form in self.translator.evolve_string(line)))
@@ -48,7 +72,6 @@ class ReplSession(Cmd):
 
     def do_s(self, line: str) -> None:
         self.do_simple(line)
-
 
 
 def run(command: str = "") -> None:
