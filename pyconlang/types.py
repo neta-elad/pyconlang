@@ -9,10 +9,16 @@ from pyconlang.errors import AffixDefinitionMissingForm
 class Rule:
     name: str
 
+    def __str__(self) -> str:
+        return f"@{self.name}"
+
 
 @dataclass(eq=True, frozen=True)
 class Canonical:
     name: str
+
+    def __str__(self) -> str:
+        return f"<{self.name}>"
 
 
 @dataclass(eq=True, frozen=True)
@@ -24,6 +30,9 @@ class Proto:
         if self.era is None:
             return None
         return self.era.name
+
+    def __str__(self) -> str:
+        return f"*{self.form}{self.era or ''}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -75,6 +84,21 @@ class Compound:
                 return form
             case _:
                 return Compound(form)
+
+    def __str__(self) -> str:
+        return (
+            "".join(
+                affix.name + "."
+                for affix in self.affixes
+                if affix.type == AffixType.PREFIX
+            )
+            + str(self.stem)
+            + "".join(
+                "." + affix.name
+                for affix in self.affixes
+                if affix.type == AffixType.SUFFIX
+            )
+        )
 
 
 Form = Union[SimpleForm, Compound]

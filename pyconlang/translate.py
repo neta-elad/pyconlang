@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Mapping
+from typing import List, Mapping, Sequence, Tuple
 
 from .evolve import Evolver
 from .evolve.types import Evolved
@@ -17,10 +17,15 @@ class Translator:
     def evolve(self, form: Form) -> Evolved:
         return self.evolver.evolve_single(self.lexicon.resolve(form))
 
+    def resolve_and_evolve(self, forms: Sequence[Form]) -> List[Evolved]:
+        return self.evolver.evolve([self.lexicon.resolve(form) for form in forms])
+
     def evolve_string(self, string: str) -> List[Evolved]:
-        return self.evolver.evolve(
-            [self.lexicon.resolve(form) for form in parse_sentence(string)]
-        )
+        return self.resolve_and_evolve(parse_sentence(string))
+
+    def gloss_string(self, string: str) -> Sequence[Tuple[Evolved, Form]]:
+        forms = parse_sentence(string)
+        return list(zip(self.resolve_and_evolve(forms), forms))
 
     def evolve_entry(self, entry: Entry) -> List[Evolved]:
         return [

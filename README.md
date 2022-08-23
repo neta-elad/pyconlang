@@ -226,7 +226,7 @@ will turn out as
   - [ ] Better cache
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
-  - [ ] Match-up forms and glosses
+  - [x] Match-up forms and glosses
   - [ ] Better cache
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
