@@ -9,6 +9,7 @@ from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
 from . import PYCONLANG_PATH
+from .errors import show_exception
 from .evolve.types import Evolved
 from .translate import Translator
 
@@ -68,7 +69,7 @@ class ReplSession(Cmd):
         try:
             self.onecmd(line)
         except Exception as e:
-            print(f"Error while running command: {repr(e)}")
+            print(show_exception(e))
 
     def translate(
         self, line: str, getter: Callable[[Evolved], str] = attrgetter("modern")

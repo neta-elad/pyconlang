@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Iterable, List, Optional, Tuple, Union
 
+from pyconlang.errors import AffixDefinitionMissingForm
+
 
 @dataclass(eq=True, frozen=True)
 class Rule:
@@ -110,7 +112,7 @@ class AffixDefinition:
         elif len(self.sources) == 1:
             return self.sources[0]
         else:
-            raise RuntimeError(f"Bad affix definition {self}")
+            raise AffixDefinitionMissingForm(self)
 
 
 @dataclass(eq=True, frozen=True)

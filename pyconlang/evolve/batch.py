@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..types import AffixType, ResolvedForm
+from .errors import BadAffixation
 from .types import Evolved
 
 Cache = Dict["EvolveQuery", Evolved]
@@ -132,7 +133,7 @@ def build_query(form: ResolvedForm) -> EvolveQuery:
         # affix_query.start = affix.era_name()
 
         if affix_era is None and stem_query.start is not None:
-            raise RuntimeError("Affix time must always be later than stem's time")
+            raise BadAffixation("Affix time must always be later than stem's time")
 
         elif affix_era is None and stem_query.start is None:
             stem_query = NodeEvolveQuery(affix.type, stem_query, affix_query)

@@ -10,6 +10,7 @@ from ..checksum import checksum
 from ..data import LEXURGY_VERSION
 from ..types import Proto, ResolvedForm
 from .batch import Cache, build_and_order, segment_by_start_end
+from .errors import LexurgyError
 from .types import Evolved
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
@@ -145,11 +146,12 @@ class Evolver:
             args.append("-b")
             args.append(end)
 
-        run(
-            args,
-            check=True,
-            capture_output=True,
-        )
+        result = run(args, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            raise LexurgyError(
+                result.stdout.strip().splitlines()[-1]
+            )  # todo too heuristic?
 
         moderns = normalize("NFD", output_words.read_text().strip()).split("\n")
 

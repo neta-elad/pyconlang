@@ -17,6 +17,7 @@ from ..types import (
     TemplateName,
     Var,
 )
+from .errors import MissingAffix, MissingCanonical, MissingTemplate, UnexpectedRecord
 from .parser import lexicon
 
 LEXICON_PATH = Path("lexicon.txt")
@@ -56,7 +57,7 @@ class Lexicon:
                 case Template():
                     templates.add(record)
                 case _:
-                    raise RuntimeError(f"Unexpected record {record}")
+                    raise UnexpectedRecord(record)
 
         return cls(entries, affixes, templates)
 
@@ -65,14 +66,14 @@ class Lexicon:
             if entry.canonical == canonical:
                 return entry
 
-        raise KeyError(canonical)
+        raise MissingCanonical(canonical.name)
 
     def get_affix(self, affix_name: str) -> AffixDefinition:
         for affix in self.affixes:
             if affix.affix.name == affix_name:
                 return affix
 
-        raise KeyError(affix_name)
+        raise MissingAffix(affix_name)
 
     def resolve_affix(self, affix_name: str) -> ResolvedAffix:
         definition = self.get_affix(affix_name)
@@ -112,7 +113,7 @@ class Lexicon:
                 if template.name == name:
                     return template.vars
 
-            raise KeyError(name)
+            raise MissingTemplate(name.name)
 
     def resolve_entry(self, entry: Entry) -> List[ResolvedForm]:
         return [

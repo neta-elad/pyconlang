@@ -7,6 +7,7 @@ from pyconlang.evolve.batch import (
     build_query,
     order_in_layers,
 )
+from pyconlang.evolve.errors import BadAffixation
 from pyconlang.types import AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
 
 
@@ -52,7 +53,7 @@ def test_two_nodes_different():
         start="1",
     )
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(BadAffixation):
         a = ResolvedForm(Proto("a", Rule("1")))
         b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Proto("b")))
 
