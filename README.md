@@ -209,7 +209,7 @@ will turn out as
   - [x] Get phonetic modern form
   - [x] Get simplified (no accents) romanized modern form
   - [ ] Traces
-  - [ ] History
+  - [x] History
   - [ ] Auto-complete
   - [x] Error handling
 - [ ] `evolve`: Evolving forms and auto-glomination

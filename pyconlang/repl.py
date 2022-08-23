@@ -2,11 +2,19 @@ from cmd import Cmd
 from dataclasses import dataclass, field
 
 from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
 from unidecode import unidecode
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
+from . import PYCONLANG_PATH
 from .translate import Translator
+
+HISTORY_PATH = PYCONLANG_PATH / "repl.history"
+
+
+def _default_prompt_session() -> PromptSession[str]:
+    return PromptSession(history=FileHistory(str(HISTORY_PATH)))
 
 
 class Handler(PatternMatchingEventHandler):
@@ -23,7 +31,7 @@ class Handler(PatternMatchingEventHandler):
 @dataclass
 class ReplSession(Cmd):
     translator: Translator = field(default_factory=Translator)
-    session: PromptSession[str] = field(default_factory=PromptSession)
+    session: PromptSession[str] = field(default_factory=_default_prompt_session)
     watcher: Handler = field(default_factory=Handler)
 
     def run(self) -> None:
