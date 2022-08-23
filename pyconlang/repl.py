@@ -42,10 +42,7 @@ class ReplSession(Cmd):
                 if not line:
                     continue
 
-                try:
-                    self.onecmd(line)
-                except Exception as e:
-                    print(f"Bad command: {e}")
+                self.run_command(line)
         except (EOFError, KeyboardInterrupt):
             print("Goodbye.")
             return
@@ -53,6 +50,12 @@ class ReplSession(Cmd):
             self.translator.save()
             observer.stop()
             observer.join()
+
+    def run_command(self, line: str) -> None:
+        try:
+            self.onecmd(line)
+        except Exception as e:
+            print(f"Bad command: {repr(e)}")
 
     def default(self, line: str) -> None:
         print(" ".join(form.modern for form in self.translator.evolve_string(line)))
@@ -78,6 +81,6 @@ def run(command: str = "") -> None:
     session = ReplSession()
 
     if command:
-        session.onecmd(command)
+        session.run_command(command)
     else:
         session.run()

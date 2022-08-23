@@ -194,6 +194,8 @@ will turn out as
 
 
 ## TODO
+- [ ] Complete example project
+- [ ] Custom error types?
 - [ ] ? Combined, general repl
   - [ ] Working with proto-forms
   - [ ] Working with lexicon
@@ -209,7 +211,7 @@ will turn out as
   - [ ] Traces
   - [ ] History
   - [ ] Auto-complete
-  - [ ] Error handling
+  - [x] Error handling
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [ ] Handle stress
@@ -234,4 +236,3 @@ will turn out as
   - [ ] Conjugation tables
   - [x] Inline translation
   - [ ] Robust against errors
-- [ ] Complete example project
