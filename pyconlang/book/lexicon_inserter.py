@@ -1,5 +1,4 @@
 import string
-from itertools import chain
 from typing import Any, Dict, List, Match, Tuple, Union
 from xml.etree.ElementTree import Element
 
@@ -7,17 +6,20 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
+from ..errors import show_exception
 from ..evolve.types import Evolved
 from ..translate import Translator
-from ..types import AffixType, Entry, Form, ResolvedForm
+from ..types import Entry, Form, Proto
 
 
 class LexiconPreprocessor(Preprocessor):
     extension: "LexiconInserter"
+    cache: List[str]
 
     def __init__(self, md: Markdown, extension: "LexiconInserter") -> None:
         super().__init__(md)
         self.extension = extension
+        self.build_cache()
 
     @property
     def translator(self) -> Translator:
@@ -26,54 +28,50 @@ class LexiconPreprocessor(Preprocessor):
     def run(self, lines: List[str]) -> List[str]:
         new_lines = []
         for line in lines:
-            if line.strip() == "!lexicon":
-                lexicon: Dict[str, List[Tuple[List[Evolved], Entry]]] = {}
-                for entry, evolved in self.translator.batch_evolve().items():
-
-                    letter = evolved[0].modern[0]
-                    lexicon.setdefault(letter, [])
-                    lexicon[letter].append((evolved, entry))
-                for letter in string.ascii_lowercase:
-                    new_lines.append(f"## {letter.upper()}")
-
-                    if letter not in lexicon:
-                        continue
-
-                    lexicon[letter].sort(
-                        key=lambda lexicon_entry: lexicon_entry[0][0].modern
-                    )
-                    for evolved, entry in lexicon[letter]:
-                        protos = " + ".join(
-                            f"_\\*{proto}_" for proto in self.form_to_protos(entry.form)
-                        )
-                        all_evolved = ", ".join(
-                            f"**{each.modern}**" for each in evolved
-                        )
-                        new_lines.append(
-                            f"""
-                        {all_evolved} [{evolved[0].phonetic}] {protos} ({entry.part_of_speech.name}.) {entry.definition}
-                        """.strip()
-                        )
-                        new_lines.append("")
-            else:
+            if line.strip() != "!lexicon":
                 new_lines.append(line)
+                continue
+
+            if not self.extension.valid_cache:
+                try:
+                    self.build_cache()
+                except Exception as e:
+                    print("Could not build lexicon.")
+                    print(show_exception(e))
+
+            new_lines.extend(self.cache)
+
         return new_lines
 
-    def form_to_protos(self, form: Form) -> List[str]:
-        return self.resolved_form_to_protos(
-            self.translator.lexicon.resolve(form)
-        )  # todo differently
+    def build_cache(self) -> None:
+        self.cache = []
+        lexicon: Dict[str, List[Tuple[List[Evolved], Entry]]] = {}
+        for entry, evolved in self.translator.batch_evolve().items():
+            letter = evolved[0].modern[0]
+            lexicon.setdefault(letter, [])
+            lexicon[letter].append((evolved, entry))
 
-    def resolved_form_to_protos(self, form: ResolvedForm) -> List[str]:
-        protos = [[form.stem.form]]
-        for affix in form.affixes:
-            affix_protos = self.resolved_form_to_protos(affix.form)
-            if affix.type is AffixType.PREFIX:
-                protos.insert(0, affix_protos)
-            else:
-                protos.append(affix_protos)
+        for letter in string.ascii_lowercase:
+            self.cache.append(f"## {letter.upper()}")
 
-        return list(chain(*protos))
+            if letter not in lexicon:
+                continue
+
+            lexicon[letter].sort(key=lambda lexicon_entry: lexicon_entry[0][0].modern)
+            for evolved, entry in lexicon[letter]:
+                protos = " + ".join(
+                    f"_\\*{proto.form}_" for proto in self.form_to_protos(entry.form)
+                )
+                all_evolved = ", ".join(f"**{each.modern}**" for each in evolved)
+                self.cache.append(
+                    f"""
+                {all_evolved} [{evolved[0].phonetic}] {protos} ({entry.part_of_speech.name}.) {entry.definition}
+                """.strip()
+                )
+                self.cache.append("")
+
+    def form_to_protos(self, form: Form) -> List[Proto]:
+        return self.translator.lexicon.resolve(form).to_protos()
 
 
 class LexiconInlineProcessor(InlineProcessor):
@@ -94,7 +92,13 @@ class LexiconInlineProcessor(InlineProcessor):
         self, m: Match[str], data: Any
     ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
         element = Element("span")
-        element.text = self.evolve(m.group(1))
+        sentence = m.group(1)
+        try:
+            element.text = self.evolve(sentence)
+        except Exception as e:
+            print(f"Could not inline from lexicon `{sentence}`")
+            print(show_exception(e))
+            element.text = "???"
         return element, m.start(), m.end()
 
     def evolve(self, raw: str) -> str:
@@ -105,11 +109,13 @@ class LexiconInlineProcessor(InlineProcessor):
 
 class LexiconInserter(Extension):
     translator: Translator
+    valid_cache: bool
 
     def __init__(self) -> None:
         super().__init__()
 
         self.translator = Translator()
+        self.valid_cache = False
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.registerExtension(self)
@@ -117,4 +123,4 @@ class LexiconInserter(Extension):
         md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
 
     def reset(self) -> None:
-        self.translator.validate_cache()
+        self.valid_cache = self.translator.validate_cache()

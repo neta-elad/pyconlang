@@ -234,7 +234,7 @@ will turn out as
   - [ ] Better cache
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
-  - [ ] Only rebuild lexicon when changed
+  - [x] Only rebuild lexicon when changed
   - [ ] Affixes list
   - [ ] Phonology tables
   - [ ] Conjugation tables

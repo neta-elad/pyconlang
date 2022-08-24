@@ -11,6 +11,8 @@ def test_book(simple_pyconlang):
 
     html = (PYCONLANG_PATH / "output.html").read_text()
 
+    print(html)
+
     assert "By Mr. Tester" in html
     assert "TestLang" in html
 

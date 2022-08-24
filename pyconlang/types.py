@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from itertools import chain
 from typing import Iterable, List, Optional, Tuple, Union
 
 from pyconlang.errors import AffixDefinitionMissingForm
@@ -155,6 +156,16 @@ class ResolvedForm:
 
     def extend(self, *affixes: "ResolvedAffix") -> "ResolvedForm":
         return ResolvedForm(self.stem, self.affixes + affixes)
+
+    def to_protos(self) -> List[Proto]:
+        protos = [[self.stem]]
+        for affix in self.affixes:
+            if affix.type is AffixType.PREFIX:
+                protos.insert(0, affix.form.to_protos())
+            else:
+                protos.append(affix.form.to_protos())
+
+        return list(chain(*protos))
 
 
 @dataclass(eq=True, frozen=True)
