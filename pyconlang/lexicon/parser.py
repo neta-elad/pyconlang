@@ -58,9 +58,7 @@ def make_diagrams() -> None:
     lexicon.create_diagram("diagrams.html", show_results_names=True)
 
 
-ParserElement.set_default_whitespace_chars(
-    " \t"
-)  # todo consider explicit record terminator
+ParserElement.set_default_whitespace_chars(" \t")
 
 ident = Word(alphanums + "-").set_name("ident")
 

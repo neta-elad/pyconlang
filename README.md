@@ -61,6 +61,10 @@ and applied using Lexurgy.
 
 ### Lexicon
 Pyconlang's lexicon is defined in `lexicon.txt`.
+Each line defines one of three types of records: 
+`entry`, `affix`, and `template`.
+No line breaks are allowed inside the definition of a single record.
+
 You define basic entries using the `entry` declaration:
 ```
 entry <stone> *apak (n.) stone, pebble 
