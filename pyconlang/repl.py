@@ -125,8 +125,12 @@ class ReplSession(Cmd):
             for evolved, form in self.translator.gloss_string(line)
         ]
 
-        print(" ".join(center(pair[0], max(map(length, pair)), " ") for pair in gloss))
-        print(" ".join(center(pair[1], max(map(length, pair)), " ") for pair in gloss))
+        print(
+            " ".join(center(pair[0], 2 + max(map(length, pair)), " ") for pair in gloss)
+        )
+        print(
+            " ".join(center(pair[1], 2 + max(map(length, pair)), " ") for pair in gloss)
+        )
 
     def do_g(self, line: str) -> None:
         """
