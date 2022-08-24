@@ -1,7 +1,7 @@
 from cmd import Cmd
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Callable, Tuple
+from typing import Callable
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -12,7 +12,6 @@ from . import PYCONLANG_PATH
 from .errors import show_exception
 from .evolve.types import Evolved
 from .translate import Translator
-from .types import Form
 from .unicode import center, length
 
 HISTORY_PATH = PYCONLANG_PATH / "repl.history"
@@ -121,13 +120,13 @@ class ReplSession(Cmd):
         """
         Translates and glosses the translation.
         """
+        gloss = [
+            (evolved.modern, str(form))
+            for evolved, form in self.translator.gloss_string(line)
+        ]
 
-        def pair_width(pair: Tuple[Evolved, Form]) -> int:
-            return 2 + max(length(pair[0].modern), length(str(pair[1])))
-
-        gloss = self.translator.gloss_string(line)
-        print(" ".join(center(pair[0].modern, pair_width(pair), " ") for pair in gloss))
-        print(" ".join(center(str(pair[1]), pair_width(pair), " ") for pair in gloss))
+        print(" ".join(center(pair[0], max(map(length, pair)), " ") for pair in gloss))
+        print(" ".join(center(pair[1], max(map(length, pair)), " ") for pair in gloss))
 
     def do_g(self, line: str) -> None:
         """
