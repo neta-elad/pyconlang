@@ -105,14 +105,14 @@ def test_lookup(parsed_lexicon):
 
     assert parsed_lexicon.lookup(Compound(Canonical("stone"))) == [
         (
-            "<stone>",
+            Canonical("stone"),
             "(n.) stone, pebble",
         )
     ]
 
     assert parsed_lexicon.lookup(Compound(Proto("baka"))) == [
         (
-            "*baka",
+            Proto("baka"),
             "*baka",
         )
     ]
@@ -121,18 +121,18 @@ def test_lookup(parsed_lexicon):
         Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == [
         (
-            "<stone>",
+            Canonical("stone"),
             "(n.) stone, pebble",
         ),
-        (".PL", "plural for inanimate"),
+        (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),
     ]
 
     assert parsed_lexicon.lookup(
         Compound(Proto("baka"), (Affix("PL", AffixType.SUFFIX),))
     ) == [
         (
-            "*baka",
+            Proto("baka"),
             "*baka",
         ),
-        (".PL", "plural for inanimate"),
+        (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),
     ]

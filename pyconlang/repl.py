@@ -1,7 +1,7 @@
 from cmd import Cmd
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Callable
+from typing import Callable, List, Tuple
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -12,6 +12,7 @@ from . import PYCONLANG_PATH
 from .errors import show_exception
 from .evolve.types import Evolved
 from .translate import Translator
+from .types import Describable
 from .unicode import center, length
 
 HISTORY_PATH = PYCONLANG_PATH / "repl.history"
@@ -19,6 +20,16 @@ HISTORY_PATH = PYCONLANG_PATH / "repl.history"
 
 def _default_prompt_session() -> PromptSession[str]:
     return PromptSession(history=FileHistory(str(HISTORY_PATH)))
+
+
+def _show_lookup_records(records: List[Tuple[Describable, str]]) -> str:
+    return "\n".join(
+        _show_lookup_record(record, description) for record, description in records
+    )
+
+
+def _show_lookup_record(record: Describable, description: str) -> str:
+    return f"{record}: {description}"
 
 
 class Handler(PatternMatchingEventHandler):
@@ -144,17 +155,13 @@ class ReplSession(Cmd):
         """
         result = self.translator.lookup_string(line)
 
-        from typing import List, Tuple
-
-        def show_single(foo: List[Tuple[str, str]]) -> str:
-            return "\n".join(map(": ".join, foo))
-
         if len(result) == 1:
-            print(show_single(result[0][1]))
+            print(_show_lookup_records(result[0][1]))
         else:
             print(
                 "\n\n".join(
-                    f"Records for {form}\n{show_single(foo)}" for form, foo in result
+                    f"Records for {form}\n{_show_lookup_records(foo)}"
+                    for form, foo in result
                 )
             )
 

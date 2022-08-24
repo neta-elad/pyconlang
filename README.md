@@ -223,7 +223,7 @@ will turn out as
   - [ ] Traces
   - [ ] Better cache
 - [ ] `lexicon`: Interactive lexicon
-  - [ ] Define word by canonical
+  - [x] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
   - [x] Protos to take affixes as well
   - [x] Batch evolve, using dependency graph?

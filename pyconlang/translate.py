@@ -5,7 +5,7 @@ from .evolve import Evolver
 from .evolve.types import Evolved
 from .lexicon import Lexicon
 from .lexicon.parser import parse_sentence
-from .types import Entry, Form
+from .types import Describable, Entry, Form
 
 
 @dataclass
@@ -48,10 +48,10 @@ class Translator:
             for entry, entry_forms in entries.items()
         }
 
-    def lookup_string(self, string: str) -> List[Tuple[str, List[Tuple[str, str]]]]:
-        return [
-            (str(form), self.lexicon.lookup(form)) for form in parse_sentence(string)
-        ]
+    def lookup_string(
+        self, string: str
+    ) -> List[Tuple[Form, List[Tuple[Describable, str]]]]:
+        return [(form, self.lexicon.lookup(form)) for form in parse_sentence(string)]
 
     def validate_cache(self) -> bool:
         evolver_cache = self.evolver.validate_cache()

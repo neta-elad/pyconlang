@@ -121,11 +121,11 @@ class Lexicon:
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
 
-    def lookup(self, compound: Compound) -> List[Tuple[str, str]]:
+    def lookup(self, compound: Compound) -> List[Tuple[Describable, str]]:
         return self.lookup_records(compound.stem, *compound.affixes)
 
-    def lookup_records(self, *records: Describable) -> List[Tuple[str, str]]:
-        return list(zip(map(str, records), map(self.lookup_record, records)))
+    def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:
+        return list(zip(records, map(self.lookup_record, records)))
 
     def lookup_record(self, record: Describable) -> str:
         match record:
