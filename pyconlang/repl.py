@@ -138,6 +138,38 @@ class ReplSession(Cmd):
         """
         return self.do_gloss(line)
 
+    def do_lookup(self, line: str) -> None:
+        """
+        Breaks down compound forms and looks them up in the lexicon.
+        """
+        result = self.translator.lookup_string(line)
+
+        from typing import List, Tuple
+
+        def show_single(foo: List[Tuple[str, str]]) -> str:
+            return "\n".join(map(": ".join, foo))
+
+        if len(result) == 1:
+            print(show_single(result[0][1]))
+        else:
+            print(
+                "\n\n".join(
+                    f"Records for {form}\n{show_single(foo)}" for form, foo in result
+                )
+            )
+
+    def do_lexicon(self, line: str) -> None:
+        """
+        See lookup.
+        """
+        return self.do_lookup(line)
+
+    def do_l(self, line: str) -> None:
+        """
+        See lookup.
+        """
+        return self.do_lookup(line)
+
 
 def run(command: str = "") -> None:
     session = ReplSession()

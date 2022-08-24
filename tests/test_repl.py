@@ -1,3 +1,5 @@
+from inspect import cleandoc
+
 import pytest
 
 from pyconlang.cli import run_repl
@@ -40,6 +42,28 @@ def test_gloss(simple_repl):
     assert (
         simple_repl("gloss <stone> <big>.PL")
         == "abak     ishiigi  \n <stone>   <big>.PL"
+    )
+
+
+def test_lookup(simple_repl):
+    assert (
+        simple_repl("l <big>.PL")
+        == "<big>: (adj.) big, great\n.PL: plural for inanimate"
+    )
+    assert (
+        simple_repl("lookup <big>.PL")
+        == "<big>: (adj.) big, great\n.PL: plural for inanimate"
+    )
+    assert simple_repl("lookup <big>.PL <stone>.PL") == cleandoc(
+        """
+        Records for <big>.PL
+        <big>: (adj.) big, great
+        .PL: plural for inanimate
+        
+        Records for <stone>.PL
+        <stone>: (n.) stone, pebble
+        .PL: plural for inanimate
+        """
     )
 
 

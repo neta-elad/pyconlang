@@ -41,12 +41,17 @@ class Translator:
             entries[entry] = entry_forms
             forms.extend(entry_forms)
 
-        self.evolver.evolve(forms)  # cache
+        self.evolver.evolve(forms)  # todo cache
 
         return {
             entry: self.evolver.evolve(entry_forms)
             for entry, entry_forms in entries.items()
         }
+
+    def lookup_string(self, string: str) -> List[Tuple[str, List[Tuple[str, str]]]]:
+        return [
+            (str(form), self.lexicon.lookup(form)) for form in parse_sentence(string)
+        ]
 
     def validate_cache(self) -> bool:
         evolver_cache = self.evolver.validate_cache()
