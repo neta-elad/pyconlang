@@ -35,6 +35,9 @@ class Proto:
         return f"*{self.form}{self.era or ''}"
 
 
+SimpleForm = Union[Canonical, Proto]
+
+
 @dataclass(eq=True, frozen=True)
 class TemplateName:
     name: str
@@ -43,6 +46,9 @@ class TemplateName:
 @dataclass(eq=True, frozen=True)
 class PartOfSpeech:
     name: str
+
+    def __str__(self) -> str:
+        return f"({self.name}.)"
 
 
 class AffixType(Enum):
@@ -62,8 +68,11 @@ class Affix:
     name: str
     type: AffixType
 
+    def __str__(self) -> str:
+        return self.type.fuse(".", self.name)
 
-SimpleForm = Union[Proto, Canonical]
+
+Describable = Union[SimpleForm, Affix]
 
 
 @dataclass(eq=True, frozen=True)

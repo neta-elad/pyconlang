@@ -91,3 +91,48 @@ def test_templates(parsed_lexicon):
         Var(()),
         Var((Affix("PL", AffixType.SUFFIX),)),
     )
+
+
+def test_lookup(parsed_lexicon):
+    assert (
+        parsed_lexicon.lookup_record(Affix("PL", AffixType.SUFFIX))
+        == "plural for inanimate"
+    )
+
+    assert parsed_lexicon.lookup_record(Canonical("stone")) == "(n.) stone, pebble"
+
+    assert parsed_lexicon.lookup_record(Proto("baka")) == "*baka"
+
+    assert parsed_lexicon.lookup(Compound(Canonical("stone"))) == [
+        (
+            "<stone>",
+            "(n.) stone, pebble",
+        )
+    ]
+
+    assert parsed_lexicon.lookup(Compound(Proto("baka"))) == [
+        (
+            "*baka",
+            "*baka",
+        )
+    ]
+
+    assert parsed_lexicon.lookup(
+        Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),))
+    ) == [
+        (
+            "<stone>",
+            "(n.) stone, pebble",
+        ),
+        (".PL", "plural for inanimate"),
+    ]
+
+    assert parsed_lexicon.lookup(
+        Compound(Proto("baka"), (Affix("PL", AffixType.SUFFIX),))
+    ) == [
+        (
+            "*baka",
+            "*baka",
+        ),
+        (".PL", "plural for inanimate"),
+    ]

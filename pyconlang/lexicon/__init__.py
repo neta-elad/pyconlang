@@ -8,6 +8,7 @@ from ..types import (
     AffixDefinition,
     Canonical,
     Compound,
+    Describable,
     Entry,
     Form,
     Proto,
@@ -68,15 +69,15 @@ class Lexicon:
 
         raise MissingCanonical(canonical.name)
 
-    def get_affix(self, affix_name: str) -> AffixDefinition:
-        for affix in self.affixes:
-            if affix.affix.name == affix_name:
-                return affix
+    def get_affix(self, affix: Affix) -> AffixDefinition:
+        for possible_affix in self.affixes:
+            if possible_affix.affix.name == affix.name:
+                return possible_affix
 
-        raise MissingAffix(affix_name)
+        raise MissingAffix(affix.name)
 
-    def resolve_affix(self, affix_name: str) -> ResolvedAffix:
-        definition = self.get_affix(affix_name)
+    def resolve_affix(self, affix: Affix) -> ResolvedAffix:
+        definition = self.get_affix(affix)
         return ResolvedAffix(
             definition.stressed,
             definition.affix.type,
@@ -87,7 +88,7 @@ class Lexicon:
     def resolve(self, form: Form) -> ResolvedForm:
         compound = Compound.from_form(form)
 
-        affixes = tuple(self.resolve_affix(affix.name) for affix in compound.affixes)
+        affixes = tuple(self.resolve_affix(affix) for affix in compound.affixes)
 
         match stem := compound.stem:
             case Proto():
@@ -98,7 +99,7 @@ class Lexicon:
     def resolve_with_affixes(
         self, form: Form, affixes: Tuple[Affix, ...]
     ) -> ResolvedForm:
-        resolved_affixes = tuple(self.resolve_affix(affix.name) for affix in affixes)
+        resolved_affixes = tuple(self.resolve_affix(affix) for affix in affixes)
         resolved = self.resolve(form)
         return ResolvedForm(resolved.stem, resolved.affixes + resolved_affixes)
 
@@ -119,3 +120,19 @@ class Lexicon:
         return [
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
+
+    def lookup(self, compound: Compound) -> List[Tuple[str, str]]:
+        return self.lookup_records(compound.stem, *compound.affixes)
+
+    def lookup_records(self, *records: Describable) -> List[Tuple[str, str]]:
+        return list(zip(map(str, records), map(self.lookup_record, records)))
+
+    def lookup_record(self, record: Describable) -> str:
+        match record:
+            case Affix():
+                return self.get_affix(record).description
+            case Canonical():
+                entry = self.get_entry(record)
+                return f"{entry.part_of_speech} {entry.definition}"
+            case Proto():
+                return str(record)
