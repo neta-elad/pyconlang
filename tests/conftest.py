@@ -27,7 +27,7 @@ def tmp_pyconlang(tmpdir):
 @pytest.fixture
 def sample_lexicon():
     return """
-    template &plural $ $.PL
+    template &plural $ $.PL # this is a template
     
     affix .PL *iki@era1 (<big> <pile>) plural for inanimate
     
@@ -35,6 +35,7 @@ def sample_lexicon():
 
     entry <strong> *kipu@era1 (adj.) strong, stable
     
+    # here is how to use a template
     entry &plural <stone> *apak (n.) stone, pebble
     
     entry <gravel> <stone>.PL (n.) gravel

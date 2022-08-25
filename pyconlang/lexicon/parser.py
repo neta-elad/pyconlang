@@ -5,10 +5,11 @@ from pyparsing import (
     Opt,
     ParserElement,
     ParseResults,
+    Regex,
     Suppress,
     Word,
     alphas,
-    rest_of_line,
+    delimited_list,
     token_map,
 )
 
@@ -58,6 +59,8 @@ template = (
     .set_name("template")
 )
 
+rest_of_line = Regex(r"(?:\\\n|[^#\n])*").leave_whitespace().set_name("rest of line")
+
 rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 
 lexical_sources = (
@@ -100,11 +103,13 @@ entry = (
     .set_name("entry")
 )
 
-record = ((entry | affix_definition | template) - Suppress("\n")[...]).set_name(
-    "record"
-)
+record = (entry ^ affix_definition ^ template).set_name("record")
 
-lexicon = (Suppress("\n")[...] - record[...]).set_name("lexicon")
+comment = Suppress(Regex(r"#(?:\\\n|[^\n])*"))
+
+record_line = Opt(record) - Opt(comment)
+
+lexicon = (delimited_list(record_line, "\n") - Suppress(Opt("\n"))).set_name("lexicon")
 
 if __name__ == "__main__":
     make_diagrams()

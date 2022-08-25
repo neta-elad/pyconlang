@@ -2,6 +2,7 @@ from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.parser import (
     affix,
     affix_definition,
+    comment,
     entry,
     lexical_sources,
     part_of_speech,
@@ -104,6 +105,11 @@ def test_affix_definition():
         (Canonical("big"), Canonical("pile")),
         "plural for inanimate",
     )
+
+
+def test_comment():
+    assert not comment.parse_string("# <nothing at all *..", parse_all=True)
+    assert not comment.parse_string("   ### <nothing at all *..", parse_all=True)
 
 
 def test_lexicon(parsed_lexicon):
