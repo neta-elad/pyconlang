@@ -239,4 +239,4 @@ will turn out as
   - [ ] Phonology tables
   - [ ] Conjugation tables
   - [x] Inline translation
-  - [ ] Robust against errors
+  - [x] Robust against errors

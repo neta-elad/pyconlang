@@ -123,4 +123,8 @@ class LexiconInserter(Extension):
         md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
 
     def reset(self) -> None:
-        self.valid_cache = self.translator.validate_cache()
+        try:
+            self.valid_cache = self.translator.validate_cache()
+        except Exception as e:
+            print("Could not reload translator.")
+            print(show_exception(e))
