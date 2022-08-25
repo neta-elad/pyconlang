@@ -2,15 +2,24 @@ import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import run
-from typing import List, Optional, Sequence, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from unicodedata import normalize
 
 from .. import PYCONLANG_PATH
 from ..checksum import checksum
 from ..data import LEXURGY_VERSION
 from ..types import Proto, ResolvedForm
-from .batch import Cache, build_and_order, segment_by_start_end
+from .batch import (
+    Cache,
+    EvolveQuery,
+    LeafEvolveQuery,
+    NodeEvolveQuery,
+    build_and_order,
+    build_query,
+    segment_by_start_end,
+)
 from .errors import LexurgyError
+from .tracer import TraceLine, parse_trace_lines
 from .types import Evolved
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
@@ -19,7 +28,10 @@ CHANGES_PATH = Path("changes.lsc")
 CACHE_PATH = EVOLVE_PATH / "cache.pickle"
 
 Evolvable = Union[str, Proto, ResolvedForm]
-Evolvables = Union[Evolvable, Sequence[Evolvable]]
+
+QueryTrace = Tuple[str, List[TraceLine]]
+Trace = List[QueryTrace]
+EvolvedWithTrace = Tuple[Evolved, Trace]
 
 
 def get_checksum() -> bytes:
@@ -35,10 +47,7 @@ def normalize_form(form: Evolvable) -> ResolvedForm:
     return form
 
 
-def normalize_forms(forms: Evolvables) -> Sequence[ResolvedForm]:
-    if not isinstance(forms, Sequence):
-        forms = [forms]
-
+def normalize_forms(forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
     return [normalize_form(form) for form in forms]
 
 
@@ -46,6 +55,7 @@ def normalize_forms(forms: Evolvables) -> Sequence[ResolvedForm]:
 class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
+    trace_cache: Dict[EvolveQuery, List[TraceLine]] = field(default_factory=dict)
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -76,10 +86,34 @@ class Evolver:
     def save(self) -> int:
         return CACHE_PATH.write_bytes(pickle.dumps(self))
 
-    def evolve_single(self, form: Evolvable) -> Evolved:
-        return self.evolve(form)[0]
+    def trace(self, forms: Sequence[Evolvable]) -> List[EvolvedWithTrace]:
+        self.evolve(forms, trace=True)
 
-    def evolve(self, forms: Evolvables) -> List[Evolved]:
+        result = []
+
+        for form in normalize_forms(forms):
+            query = build_query(form)
+            result.append((self.cache[query], self.get_trace(query)))
+
+        return result
+
+    def get_trace(self, query: EvolveQuery) -> Trace:
+        if query not in self.trace_cache:
+            return []
+        query_trace = (query.get_query(self.cache), self.trace_cache[query])
+        match query:
+            case LeafEvolveQuery():
+                return [query_trace]
+            case NodeEvolveQuery():
+                return (
+                    self.get_trace(query.stem)
+                    + self.get_trace(query.affix)
+                    + [query_trace]
+                )
+
+    def evolve(
+        self, forms: Sequence[Evolvable], *, trace: bool = False
+    ) -> List[Evolved]:
         resolved_forms = normalize_forms(forms)
 
         mapping, layers = build_and_order(resolved_forms)
@@ -88,7 +122,12 @@ class Evolver:
             segments = segment_by_start_end(layer)
 
             for (start, end), queries in segments.items():
-                new_queries = [query for query in queries if query not in self.cache]
+                new_queries = [
+                    query
+                    for query in queries
+                    if query not in self.cache
+                    or (trace and query not in self.trace_cache)
+                ]
 
                 words = []
                 for query in new_queries:
@@ -96,10 +135,15 @@ class Evolver:
                     assert word is not None
                     words.append(word)
 
-                evolved_forms = self.evolve_words(words, start=start, end=end)
+                evolved_forms, trace_lines = self.evolve_words(
+                    words, start=start, end=end, trace=trace
+                )
 
                 for query, evolved in zip(new_queries, evolved_forms):
                     self.cache[query] = evolved
+                    if trace:
+                        if evolved.proto in trace_lines:
+                            self.trace_cache[query] = trace_lines[evolved.proto]
 
         result: List[Evolved] = []
 
@@ -116,9 +160,10 @@ class Evolver:
         *,
         start: Optional[str] = None,
         end: Optional[str] = None,
-    ) -> List[Evolved]:
+        trace: bool = False,
+    ) -> Tuple[List[Evolved], Mapping[str, List[TraceLine]]]:
         if not words:
-            return []
+            return [], {}
 
         input_words = EVOLVE_PATH / "words.wli"
         input_words.write_text("\n".join(words))
@@ -128,6 +173,9 @@ class Evolver:
 
         phonetic_words = EVOLVE_PATH / "words_phonetic.wli"
         phonetic_words.unlink(missing_ok=True)
+
+        trace_file = EVOLVE_PATH / "words_trace.wli"
+        trace_file.unlink(missing_ok=True)
 
         args = [
             "sh",
@@ -146,6 +194,11 @@ class Evolver:
             args.append("-b")
             args.append(end)
 
+        from itertools import chain
+
+        if trace:
+            args.extend(chain(*zip(["-t"] * len(words), words)))
+
         result = run(args, capture_output=True, text=True)
 
         if result.returncode != 0:
@@ -160,7 +213,11 @@ class Evolver:
         else:
             phonetics = moderns
 
+        trace_lines: Mapping[str, List[TraceLine]] = {}
+        if trace:
+            trace_lines = parse_trace_lines(trace_file.read_text())
+
         return [
             Evolved(proto, modern, phonetic)
             for proto, modern, phonetic in zip(words, moderns, phonetics)
-        ]
+        ], trace_lines

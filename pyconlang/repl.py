@@ -177,6 +177,21 @@ class ReplSession(Cmd):
         """
         return self.do_lookup(line)
 
+    def do_trace(self, line: str) -> None:
+        for evolved, trace in self.translator.trace_string(line):
+            for query, lines in trace:
+                print(query)
+                for trace_line in lines:
+                    print(
+                        f"{trace_line.before} => {trace_line.after} ({trace_line.rule})"
+                    )
+
+    def do_t(self, line: str) -> None:
+        """
+        See trace.
+        """
+        return self.do_trace(line)
+
 
 def run(command: str = "") -> None:
     session = ReplSession()

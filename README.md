@@ -212,7 +212,7 @@ will turn out as
   - [x] Enter proto form, get romanized modern form
   - [x] Get phonetic modern form
   - [x] Get simplified (no accents) romanized modern form
-  - [ ] Traces
+  - [x] Traces
   - [x] History
   - [ ] Auto-complete
   - [x] Error handling
@@ -220,7 +220,7 @@ will turn out as
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [ ] Handle stress
   - [x] Lexurgy error handling
-  - [ ] Traces
+  - [x] Traces
   - [ ] Better cache
 - [ ] `lexicon`: Interactive lexicon
   - [x] Define word by canonical

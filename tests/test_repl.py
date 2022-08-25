@@ -67,6 +67,33 @@ def test_lookup(simple_repl):
     )
 
 
+def test_trace(simple_repl):
+    assert simple_repl("t <big>") == cleandoc(
+        """
+        iki
+        iki => iʃi (palatalization)
+        iʃi => ishi (Romanizer)
+        """
+    )
+    assert simple_repl("trace <big>") == cleandoc(
+        """
+        iki
+        iki => iʃi (palatalization)
+        iʃi => ishi (Romanizer)
+        """
+    )
+
+    assert simple_repl("trace <big>.PL") == cleandoc(
+        """
+        iki
+        iki => iʃi (palatalization)
+        iʃiiki
+        iʃiiki => iʃiigi (intervocalic-voicing)
+        iʃiigi => ishiigi (Romanizer)
+        """
+    )
+
+
 def test_repl(capsys, mock_input, simple_pyconlang):
     mock_input.send_text("*apaki\n")
     mock_input.close()
