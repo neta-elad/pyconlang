@@ -4,7 +4,7 @@ from typing import List, Mapping, Sequence, Tuple
 from .evolve import Evolver
 from .evolve.types import Evolved
 from .lexicon import Lexicon
-from .lexicon.parser import parse_sentence
+from .parser import parse_sentence
 from .types import Describable, Entry, Form
 
 

@@ -1,37 +1,29 @@
-from string import digits, punctuation, whitespace
-from typing import Any, Callable, List, TypeVar, Union, cast
+from typing import Any, Union
 
 from pyparsing import (
     FollowedBy,
-    Group,
     Opt,
     ParserElement,
     ParseResults,
     Suppress,
     Word,
-    alphanums,
     alphas,
-    pyparsing_unicode,
     rest_of_line,
     token_map,
 )
 
-from ..types import (
-    Affix,
-    AffixDefinition,
-    AffixType,
-    Canonical,
-    Compound,
-    Entry,
-    PartOfSpeech,
-    Proto,
-    Rule,
-    Template,
-    TemplateName,
-    Var,
+from pyconlang.parser import (
+    canonical,
+    compound,
+    ident,
+    prefix,
+    rule,
+    simple_form,
+    suffix,
+    tokens_map,
 )
 
-T = TypeVar("T")
+from ..types import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
 
 
 def explicit_opt(expr: Union[ParserElement, str], value: Any = None) -> ParserElement:
@@ -43,74 +35,18 @@ def explicit_opt(expr: Union[ParserElement, str], value: Any = None) -> ParserEl
     return optional
 
 
-def tokens_map(fun: Callable[..., T]) -> Callable[[ParseResults], T]:
-    def action(tokens: ParseResults) -> T:
-        return fun(*tokens)
-
-    return action
-
-
-def parse_sentence(string: str) -> List[Compound]:
-    return cast(List[Compound], list(sentence.parse_string(string, parse_all=True)))
-
-
 def make_diagrams() -> None:
     lexicon.create_diagram("diagrams.html", show_results_names=True)
 
 
 ParserElement.set_default_whitespace_chars(" \t")
 
-ident = Word(alphanums + "-").set_name("ident")
-
-rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule")
-
-canonical = (
-    (Suppress("<") - Word(alphanums + "-" + " ") - Suppress(">"))
-    .set_parse_action(token_map(Canonical))
-    .set_name("canonical")
-)
-
-unicode_word = Word(
-    pyparsing_unicode.BasicMultilingualPlane.printables,
-    exclude_chars=whitespace + digits + punctuation,
-).set_name("unicode_word")
-
-proto = (
-    (Suppress("*") - unicode_word - Opt(rule))
-    .set_parse_action(tokens_map(Proto))
-    .set_name("proto")
-)
-
-simple_form = (canonical ^ proto).set_name("simple_form")
-
-prefix = (
-    (ident - Suppress("."))
-    .set_parse_action(token_map(Affix, AffixType.PREFIX))
-    .set_name("prefix")
-)
-suffix = (
-    (Suppress(".") - ident)
-    .set_parse_action(token_map(Affix, AffixType.SUFFIX))
-    .set_name("suffix")
-)
-affix = (prefix ^ suffix).set_name("affix")
-
-compound = (
-    (
-        (Group(prefix[...], True) + FollowedBy(simple_form))
-        - simple_form
-        - Group(suffix[...], True)
-    )
-    .set_parse_action(tokens_map(Compound.from_prefixes_and_suffixes))
-    .set_name("compound")
-)
 
 var = (
     ((prefix[...] + FollowedBy("$")) - Suppress("$") - suffix[...])
     .set_parse_action(Var.from_iterable)
     .set_name("var")
 )
-
 template_name = (
     (Suppress("&") - ident)
     .set_parse_action(token_map(TemplateName))
@@ -122,12 +58,13 @@ template = (
     .set_name("template")
 )
 
+rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
+
 lexical_sources = (
     Suppress("(") - canonical[1, ...].set_parse_action(tuple) - Suppress(")")
 )
 
-rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
-
+affix = (prefix ^ suffix).set_name("affix")
 affix_definition = (
     (
         Suppress("affix")
@@ -168,8 +105,6 @@ record = ((entry | affix_definition | template) - Suppress("\n")[...]).set_name(
 )
 
 lexicon = (Suppress("\n")[...] - record[...]).set_name("lexicon")
-
-sentence = compound[...]
 
 if __name__ == "__main__":
     make_diagrams()
