@@ -228,6 +228,7 @@ will turn out as
   - [x] Protos to take affixes as well
   - [x] Batch evolve, using dependency graph?
   - [ ] Better cache
+  - [ ] On-the-fly affixes? Syntax for compounding two words without an explicit affix
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
   - [x] Match-up forms and glosses
