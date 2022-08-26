@@ -32,13 +32,16 @@ def parse_sentence(string: str) -> List[Compound]:
 
 ParserElement.set_default_whitespace_chars(" \t")
 
-ident = Word(alphanums + "-").set_name("ident")
-rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule")
 canonical = (
     (Suppress("<") - Word(alphanums + "-" + " ") - Suppress(">"))
     .set_parse_action(token_map(Canonical))
     .set_name("canonical")
 )
+
+ident = Word(alphanums + "-").set_name("ident")
+
+rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule")
+
 unicode_word = Word(
     pyparsing_unicode.BasicMultilingualPlane.printables,
     exclude_chars=whitespace + digits + punctuation,
@@ -48,7 +51,9 @@ proto = (
     .set_parse_action(tokens_map(Proto))
     .set_name("proto")
 )
+
 simple_form = (canonical ^ proto).set_name("simple_form")
+
 prefix = (
     (ident - Suppress("."))
     .set_parse_action(token_map(Affix, AffixType.PREFIX))
@@ -59,6 +64,7 @@ suffix = (
     .set_parse_action(token_map(Affix, AffixType.SUFFIX))
     .set_name("suffix")
 )
+
 compound = (
     (
         (Group(prefix[...], True) + FollowedBy(simple_form))
@@ -68,4 +74,5 @@ compound = (
     .set_parse_action(tokens_map(Compound.from_prefixes_and_suffixes))
     .set_name("compound")
 )
+
 sentence = compound[...]
