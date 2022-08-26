@@ -9,15 +9,7 @@ from .. import PYCONLANG_PATH
 from ..checksum import checksum
 from ..data import LEXURGY_VERSION
 from ..types import Proto, ResolvedForm
-from .batch import (
-    Cache,
-    EvolveQuery,
-    LeafEvolveQuery,
-    NodeEvolveQuery,
-    build_and_order,
-    build_query,
-    segment_by_start_end,
-)
+from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
 from .types import Evolved
@@ -56,6 +48,7 @@ class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
     trace_cache: Dict[EvolveQuery, List[TraceLine]] = field(default_factory=dict)
+    batcher: Batcher = field(default_factory=Batcher)
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -92,7 +85,7 @@ class Evolver:
         result = []
 
         for form in normalize_forms(forms):
-            query = build_query(form)
+            query = self.batcher.build_query(form)
             result.append((self.cache[query], self.get_trace(query)))
 
         return result
@@ -116,10 +109,10 @@ class Evolver:
     ) -> List[Evolved]:
         resolved_forms = normalize_forms(forms)
 
-        mapping, layers = build_and_order(resolved_forms)
+        mapping, layers = self.batcher.build_and_order(resolved_forms)
 
         for layer in layers:
-            segments = segment_by_start_end(layer)
+            segments = Batcher.segment_by_start_end(layer)
 
             for (start, end), queries in segments.items():
                 new_queries = [

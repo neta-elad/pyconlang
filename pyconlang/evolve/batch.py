@@ -128,82 +128,85 @@ class QueryWalker:
         return result
 
 
-def order_in_layers(queries: List[EvolveQuery]) -> List[List[EvolveQuery]]:
-    return QueryWalker().walk_queries(queries)
+@dataclass
+class Batcher:
+    cache: Dict[ResolvedForm, EvolveQuery] = field(default_factory=dict)
 
+    @staticmethod
+    def order_in_layers(queries: List[EvolveQuery]) -> List[List[EvolveQuery]]:
+        return QueryWalker().walk_queries(queries)
 
-# query with end=None only run when it is a root
-# end is never set in init, only after
+    @staticmethod
+    def segment_by_start_end(
+        queries: List[EvolveQuery],
+    ) -> Mapping[Tuple[Optional[str], Optional[str]], List[EvolveQuery]]:
+        segments: Dict[Tuple[Optional[str], Optional[str]], List[EvolveQuery]] = {}
 
+        for query in queries:
+            start_end = query.start, query.end
+            segments.setdefault(start_end, [])
+            segments[start_end].append(query)
 
-def build_query(form: ResolvedForm) -> EvolveQuery:
-    stem = form.stem
-    stem_query: EvolveQuery = LeafEvolveQuery(stem.form, start=stem.era_name())
-    for affix in form.affixes:
-        affix_query = build_query(affix.form)
-        affix_era = affix.era_name()
+        return segments
 
-        if affix_era is None and stem_query.start is not None:
-            raise BadAffixation("Affix time must always be later than stem's time")
+    def build_query(self, form: ResolvedForm) -> EvolveQuery:
+        if form in self.cache:
+            return self.cache[form]
 
-        elif affix_era is None and stem_query.start is None:
-            stem_query = NodeEvolveQuery(
-                affix.type,
-                stem_query,
-                affix_query,
-                stressed=affix.stressed,
-            )
+        stem = form.stem
+        stem_query: EvolveQuery = LeafEvolveQuery(stem.form, start=stem.era_name())
+        for affix in form.affixes:
+            affix_query = self.build_query(affix.form)
+            affix_era = affix.era_name()
 
-        elif affix_era is not None and stem_query.start != affix_era:
-            # assume affix.era > stem_query.start
-            affix_query = affix_query.set_end(affix_era)
-            stem_query = stem_query.set_end(affix_era)
+            if affix_era is None and stem_query.start is not None:
+                raise BadAffixation("Affix time must always be later than stem's time")
 
-            stem_query = NodeEvolveQuery(
-                affix.type,
-                stem_query,
-                affix_query,
-                stressed=affix.stressed,
-                start=affix_era,
-            )
+            elif affix_era is None and stem_query.start is None:
+                stem_query = NodeEvolveQuery(
+                    affix.type,
+                    stem_query,
+                    affix_query,
+                    stressed=affix.stressed,
+                )
 
-        else:  # affix start == query_start != None
-            affix_query = affix_query.set_end(affix_era)
-            stem_query = stem_query.set_end(affix_era)
-            stem_query = NodeEvolveQuery(
-                affix.type,
-                stem_query,
-                affix_query,
-                stressed=affix.stressed,
-                start=stem_query.start,
-            )
+            elif affix_era is not None and stem_query.start != affix_era:
+                # assume affix.era > stem_query.start
+                affix_query = affix_query.set_end(affix_era)
+                stem_query = stem_query.set_end(affix_era)
 
-    return stem_query
+                stem_query = NodeEvolveQuery(
+                    affix.type,
+                    stem_query,
+                    affix_query,
+                    stressed=affix.stressed,
+                    start=affix_era,
+                )
 
+            else:  # affix start == query_start != None
+                affix_query = affix_query.set_end(affix_era)
+                stem_query = stem_query.set_end(affix_era)
+                stem_query = NodeEvolveQuery(
+                    affix.type,
+                    stem_query,
+                    affix_query,
+                    stressed=affix.stressed,
+                    start=stem_query.start,
+                )
 
-def build_and_order(
-    forms: Sequence[ResolvedForm],
-) -> Tuple[Mapping[ResolvedForm, EvolveQuery], List[List[EvolveQuery]]]:
-    mapping: Dict[ResolvedForm, EvolveQuery] = {}
-    queries: List[EvolveQuery] = []
-    # todo cache resolved form to query
+        self.cache[form] = stem_query
+        return stem_query
 
-    for form in forms:
-        query = build_query(form)
-        mapping[form] = query
-        queries.append(query)
+    def build_and_order(
+        self,
+        forms: Sequence[ResolvedForm],
+    ) -> Tuple[Mapping[ResolvedForm, EvolveQuery], List[List[EvolveQuery]]]:
+        mapping: Dict[ResolvedForm, EvolveQuery] = {}
+        queries: List[EvolveQuery] = []
 
-    return mapping, order_in_layers(queries)
+        for form in forms:
+            query = self.build_query(form)
+            mapping[form] = query
+            queries.append(query)
 
-
-def segment_by_start_end(
-    queries: List[EvolveQuery],
-) -> Mapping[Tuple[Optional[str], Optional[str]], List[EvolveQuery]]:
-    segments: Dict[Tuple[Optional[str], Optional[str]], List[EvolveQuery]] = {}
-
-    for query in queries:
-        start_end = query.start, query.end
-        segments.setdefault(start_end, [])
-        segments[start_end].append(query)
-
-    return segments
+        return mapping, self.order_in_layers(queries)

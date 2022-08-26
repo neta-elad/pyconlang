@@ -1,29 +1,28 @@
 import pytest
 
-from pyconlang.evolve.batch import (
-    LeafEvolveQuery,
-    NodeEvolveQuery,
-    build_and_order,
-    build_query,
-    order_in_layers,
-)
+from pyconlang.evolve.batch import Batcher, LeafEvolveQuery, NodeEvolveQuery
 from pyconlang.evolve.errors import BadAffixation
 from pyconlang.types import AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
 
 
-def test_one_node():
+@pytest.fixture(scope="session")
+def batcher():
+    return Batcher()
+
+
+def test_one_node(batcher):
     a = ResolvedForm(Proto("a"))
-    assert build_query(a) == LeafEvolveQuery("a")
+    assert batcher.build_query(a) == LeafEvolveQuery("a")
 
     a = ResolvedForm(Proto("a", Rule("1")))
-    assert build_query(a) == LeafEvolveQuery("a", start="1")
+    assert batcher.build_query(a) == LeafEvolveQuery("a", start="1")
 
 
-def test_two_nodes_same():
+def test_two_nodes_same(batcher):
     a = ResolvedForm(Proto("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Proto("b")))
 
-    assert build_query(a.extend(b)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b)) == NodeEvolveQuery(
         AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")
     )
 
@@ -32,7 +31,7 @@ def test_two_nodes_same():
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("b", Rule("1")))
     )
 
-    assert build_query(a.extend(b)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         LeafEvolveQuery("a", start="1", end="1"),
         LeafEvolveQuery("b", start="1", end="1"),
@@ -40,13 +39,13 @@ def test_two_nodes_same():
     )
 
 
-def test_two_nodes_different():
+def test_two_nodes_different(batcher):
     a = ResolvedForm(Proto("a"))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("b", Rule("1")))
     )
 
-    assert build_query(a.extend(b)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         LeafEvolveQuery("a", end="1"),
         LeafEvolveQuery("b", start="1", end="1"),
@@ -57,13 +56,13 @@ def test_two_nodes_different():
         a = ResolvedForm(Proto("a", Rule("1")))
         b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Proto("b")))
 
-        build_query(a.extend(b))
+        batcher.build_query(a.extend(b))
 
     a = ResolvedForm(Proto("a", Rule("1")))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Proto("b", Rule("2")))
     )
-    assert build_query(a.extend(b)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         LeafEvolveQuery("a", start="1", end="2"),
         LeafEvolveQuery("b", start="2", end="2"),
@@ -71,11 +70,11 @@ def test_two_nodes_different():
     )
 
 
-def test_two_nodes_different_era_inside_affix():
+def test_two_nodes_different_era_inside_affix(batcher):
     a = ResolvedForm(Proto("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("b")))
 
-    assert build_query(a.extend(b)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         LeafEvolveQuery("a", end="1"),
         LeafEvolveQuery("b", end="1"),
@@ -83,12 +82,12 @@ def test_two_nodes_different_era_inside_affix():
     )
 
 
-def test_three_nodes_at_most_one_era():
+def test_three_nodes_at_most_one_era(batcher):
     a = ResolvedForm(Proto("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Proto("b")))
     c = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Proto("c")))
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")),
         LeafEvolveQuery("c"),
@@ -100,7 +99,7 @@ def test_three_nodes_at_most_one_era():
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("c", Rule("1")))
     )
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
             AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"), end="1"
@@ -117,7 +116,7 @@ def test_three_nodes_at_most_one_era():
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("c", Rule("1")))
     )
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
             AffixType.SUFFIX,
@@ -138,7 +137,7 @@ def test_three_nodes_at_most_one_era():
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("c", Rule("1")))
     )
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
             AffixType.SUFFIX,
@@ -152,7 +151,7 @@ def test_three_nodes_at_most_one_era():
     )
 
 
-def test_three_nodes_two_eras():
+def test_three_nodes_two_eras(batcher):
     a = ResolvedForm(Proto("a"))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("b", Rule("1")))
@@ -161,7 +160,7 @@ def test_three_nodes_two_eras():
         False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Proto("c", Rule("2")))
     )
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
             AffixType.SUFFIX,
@@ -182,7 +181,7 @@ def test_three_nodes_two_eras():
         False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Proto("c", Rule("2")))
     )
 
-    assert build_query(a.extend(b, c)) == NodeEvolveQuery(
+    assert batcher.build_query(a.extend(b, c)) == NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
             AffixType.SUFFIX,
@@ -196,7 +195,7 @@ def test_three_nodes_two_eras():
     )
 
 
-def test_node_query():
+def test_node_query(batcher):
     a_b = NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"))
 
     assert a_b.get_query({}) == "ab"
@@ -221,7 +220,7 @@ def test_node_query():
         assert a_b.get_query({})
 
 
-def test_single_layer():
+def test_single_layer(batcher):
     query = NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")),
@@ -230,10 +229,10 @@ def test_single_layer():
 
     assert query.get_query({}) == "abc"
 
-    assert order_in_layers([query]) == [[query]]
+    assert batcher.order_in_layers([query]) == [[query]]
 
 
-def test_two_layers():
+def test_two_layers(batcher):
     query = NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
@@ -243,7 +242,7 @@ def test_two_layers():
         start="1",
     )
 
-    assert order_in_layers([query]) == [
+    assert batcher.order_in_layers([query]) == [
         [
             NodeEvolveQuery(
                 AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"), end="1"
@@ -253,7 +252,7 @@ def test_two_layers():
     ]
 
 
-def test_build_and_order():
+def test_build_and_order(batcher):
     a = ResolvedForm(Proto("a", Rule("1")))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Proto("b", Rule("1")))
@@ -263,7 +262,7 @@ def test_build_and_order():
     )
     form = a.extend(b, c)
 
-    assert build_and_order([form]) == (
+    assert batcher.build_and_order([form]) == (
         {
             form: NodeEvolveQuery(
                 AffixType.SUFFIX,
