@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..types import AffixType, ResolvedForm
+from ..unicode import remove_primary_stress
 from .errors import BadAffixation
 from .types import Evolved
 
@@ -26,6 +27,7 @@ class NodeEvolveQuery:
     affix_type: AffixType
     stem: "EvolveQuery"
     affix: "EvolveQuery"
+    stressed: bool = field(default=False, kw_only=True)
     start: Optional[str] = field(default=None, kw_only=True)
     end: Optional[str] = field(default=None, kw_only=True)
 
@@ -45,11 +47,21 @@ class NodeEvolveQuery:
         else:
             affix = self.affix.get_query(cache)
 
+        if self.stressed:
+            stem = remove_primary_stress(stem)
+        else:
+            affix = remove_primary_stress(affix)
+
         return self.affix_type.fuse(stem, affix)
 
     def set_end(self, end: Optional[str]) -> "NodeEvolveQuery":
         return NodeEvolveQuery(
-            self.affix_type, self.stem, self.affix, start=self.start, end=end
+            self.affix_type,
+            self.stem,
+            self.affix,
+            stressed=self.stressed,
+            start=self.start,
+            end=end,
         )
 
     def is_dependent(self) -> bool:
@@ -130,13 +142,17 @@ def build_query(form: ResolvedForm) -> EvolveQuery:
     for affix in form.affixes:
         affix_query = build_query(affix.form)
         affix_era = affix.era_name()
-        # affix_query.start = affix.era_name()
 
         if affix_era is None and stem_query.start is not None:
             raise BadAffixation("Affix time must always be later than stem's time")
 
         elif affix_era is None and stem_query.start is None:
-            stem_query = NodeEvolveQuery(affix.type, stem_query, affix_query)
+            stem_query = NodeEvolveQuery(
+                affix.type,
+                stem_query,
+                affix_query,
+                stressed=affix.stressed,
+            )
 
         elif affix_era is not None and stem_query.start != affix_era:
             # assume affix.era > stem_query.start
@@ -144,14 +160,22 @@ def build_query(form: ResolvedForm) -> EvolveQuery:
             stem_query = stem_query.set_end(affix_era)
 
             stem_query = NodeEvolveQuery(
-                affix.type, stem_query, affix_query, start=affix_era
+                affix.type,
+                stem_query,
+                affix_query,
+                stressed=affix.stressed,
+                start=affix_era,
             )
 
         else:  # affix start == query_start != None
             affix_query = affix_query.set_end(affix_era)
             stem_query = stem_query.set_end(affix_era)
             stem_query = NodeEvolveQuery(
-                affix.type, stem_query, affix_query, start=stem_query.start
+                affix.type,
+                stem_query,
+                affix_query,
+                stressed=affix.stressed,
+                start=stem_query.start,
             )
 
     return stem_query

@@ -218,7 +218,7 @@ will turn out as
   - [x] Error handling
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
-  - [ ] Handle stress
+  - [x] Handle stress
   - [x] Lexurgy error handling
   - [x] Traces
   - [ ] Better cache

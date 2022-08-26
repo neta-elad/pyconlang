@@ -46,7 +46,17 @@ def sample_lexicon():
 def simple_pyconlang(tmp_pyconlang, sample_lexicon):
     (tmp_pyconlang / "changes.lsc").write_text(
         """
-    Class vowel {a, e, i, o, u}
+        Feature type (*consonant, vowel)
+        Feature height (*low, mid, high)
+        
+        Feature +stressed
+        
+        Diacritic ˈ (before) [+stressed] (floating)
+        
+        Symbol a [low vowel]
+        Symbol u [mid vowel]
+        Symbol i [high vowel]
+    
 
     palatalization:
         k => ʃ / _ i
@@ -55,14 +65,21 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
         unchanged
     
     intervocalic-voicing:
-        {p, t, k, s} => {b, d, g, z} / @vowel _ @vowel
+        {p, t, k, s} => {b, d, g, z} / [vowel] _ [vowel]
+        
+    vowel-raising:
+        [+stressed vowel] => [high]
+        
+    era2:
+        unchanged
         
     romanizer-phonetic:
         unchanged
     
     romanizer:
+        [+stressed vowel] => [*stressed]
         ʃ => sh
-    """
+        """
     )
 
     (tmp_pyconlang / "lexicon.txt").write_text(sample_lexicon)
