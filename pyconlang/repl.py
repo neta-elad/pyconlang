@@ -178,6 +178,9 @@ class ReplSession(Cmd):
         return self.do_lookup(line)
 
     def do_trace(self, line: str) -> None:
+        """
+        Traces the sound changes for each individual query sent to Lexurgy.
+        """
         for evolved, trace in self.translator.trace_string(line):
             for query, lines in trace:
                 print(query)
