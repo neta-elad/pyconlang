@@ -223,6 +223,7 @@ will turn out as
   - [x] Traces
   - [x] Better cache
   - [ ] Working with deromanizer and custom romanizers
+  - [ ] Evolve affixes with empty stem
 - [ ] `lexicon`: Interactive lexicon
   - [x] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
@@ -231,11 +232,13 @@ will turn out as
   - [ ] Better cache
   - [ ] On-the-fly affixes? Syntax for compounding two words without an explicit affix
   - [ ] ? Change the order of canonical and template name, and make record declarations optional
+  - [ ] Affixes with empty stem
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
   - [x] Match-up forms and glosses
   - [ ] Better cache
-  - [ ] Full-text search over everything 
+  - [ ] Full-text search over everything
+  - [ ] Affixes with empty stem
   (proto, modern, phonetic, definitions, etc.) 
   [whoosh](https://whoosh.readthedocs.io/en/latest/parsing.html)
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
