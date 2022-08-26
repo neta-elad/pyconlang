@@ -216,12 +216,13 @@ will turn out as
   - [x] History
   - [ ] Auto-complete
   - [x] Error handling
-- [x] `evolve`: Evolving forms and auto-glomination
+- [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [x] Handle stress
   - [x] Lexurgy error handling
   - [x] Traces
   - [x] Better cache
+  - [ ] Working with deromanizer and custom romanizers
 - [ ] `lexicon`: Interactive lexicon
   - [x] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
