@@ -107,7 +107,7 @@ def test_stress(simple_evolver):
                     ResolvedAffix(
                         True,
                         AffixType.PREFIX,
-                        Rule('era2'),
+                        Rule("era2"),
                         ResolvedForm(Proto("mˈa"), ()),
                     ),
                 ),

@@ -40,7 +40,7 @@ class Lexicon:
 
     @classmethod
     def from_string(cls, string: str) -> "Lexicon":
-        return cls.from_iterable(lexicon.parse_string(string, parse_all=True))
+        return cls.from_iterable(lexicon.parse_string(string + "\n", parse_all=True))
 
     @classmethod
     def from_iterable(

@@ -9,7 +9,6 @@ from pyparsing import (
     Suppress,
     Word,
     alphas,
-    delimited_list,
     token_map,
 )
 
@@ -105,11 +104,11 @@ entry = (
 
 record = (entry ^ affix_definition ^ template).set_name("record")
 
-comment = Suppress(Regex(r"#(?:\\\n|[^\n])*"))
+comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 
-record_line = Opt(record) - Opt(comment)
-
-lexicon = (delimited_list(record_line, "\n") - Suppress(Opt("\n"))).set_name("lexicon")
+lexicon = (
+    (Opt(record) + Opt(comment) + Suppress("\n"))[...]  # - Opt(Suppress("\n"))
+).set_name("lexicon")
 
 if __name__ == "__main__":
     make_diagrams()
