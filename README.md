@@ -234,6 +234,9 @@ will turn out as
   - [x] Evolve each form (with affixes)
   - [x] Match-up forms and glosses
   - [ ] Better cache
+  - [ ] Full-text search over everything 
+  (proto, modern, phonetic, definitions, etc.) 
+  [whoosh](https://whoosh.readthedocs.io/en/latest/parsing.html)
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
   - [x] Only rebuild lexicon when changed
