@@ -208,6 +208,11 @@ will turn out as
     - [ ] Search for a word
   - [ ] Working with book
     - [ ] Compile
+- [ ] More powerful affixes:
+  - [ ] Branched affixes (depending on stem phonology / metadata)
+  - [ ] Frozen affixes (i.e. affixes defined in the modern language)
+  - [ ] Affixes with sound changes (e.g. voice initial consonant)
+  - [ ] Standalone affixes
 - [ ] `repl`: Interactive session with Lexurgy
   - [x] Enter proto form, get romanized modern form
   - [x] Get phonetic modern form
