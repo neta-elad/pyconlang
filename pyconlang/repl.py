@@ -108,11 +108,15 @@ class ReplSession(Cmd):
         return self.do_default(line)
 
     def do_phonetic(self, line: str) -> None:
-        """Returns the phonetic forms of the translated sentence."""
+        """
+        Returns the phonetic forms of the translated sentence.
+        """
         self.translate(line, attrgetter("phonetic"))
 
     def do_p(self, line: str) -> None:
-        """See phonetic."""
+        """
+        See phonetic.
+        """
         self.do_phonetic(line)
 
     def do_simple(self, line: str) -> None:
