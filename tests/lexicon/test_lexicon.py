@@ -1,6 +1,8 @@
 from pyconlang.types import (
     Affix,
     AffixType,
+    Compound,
+    CompoundStress,
     Fusion,
     Lexeme,
     Morpheme,
@@ -23,6 +25,17 @@ def test_parsed_lexicon(parsed_lexicon):
                 AffixType.SUFFIX,
                 Rule("era1"),
                 ResolvedForm(Morpheme("iki", Rule("era1")), ()),
+            ),
+        ),
+    )
+
+    assert parsed_lexicon.resolve(
+        Compound(Lexeme("stone"), CompoundStress.TAIL, None, Morpheme("baka"))
+    ) == ResolvedForm(
+        Morpheme("apak"),
+        (
+            ResolvedAffix(
+                True, AffixType.SUFFIX, None, ResolvedForm(Morpheme("baka"), ())
             ),
         ),
     )
@@ -136,4 +149,22 @@ def test_lookup(parsed_lexicon):
             "*baka",
         ),
         (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),
+    ]
+
+    compound = Compound(
+        Fusion(Morpheme("baka"), (Affix("PL", AffixType.SUFFIX),)),
+        CompoundStress.HEAD,
+        None,
+        Lexeme("stone"),
+    )
+    assert parsed_lexicon.lookup(compound) == [
+        (
+            Morpheme("baka"),
+            "*baka",
+        ),
+        (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),
+        (
+            Lexeme("stone"),
+            "(n.) stone, pebble",
+        ),
     ]
