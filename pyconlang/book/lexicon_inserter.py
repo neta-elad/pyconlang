@@ -122,8 +122,12 @@ class LexiconBlockProcessor(DelimitedProcessor):
 
         from itertools import chain
 
-        lines = chain(*map(str.splitlines, blocks))
+        lines = list(chain(*map(str.splitlines, blocks)))
 
+        # cache all lines
+        self.extension.translator.evolve_string(" ".join(lines))
+
+        # use cache
         code.text = "\n".join(self.evolve(line) for line in lines)
 
     def evolve(self, raw: str) -> str:

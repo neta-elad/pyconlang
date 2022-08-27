@@ -57,5 +57,3 @@ def test_book(simple_pyconlang):
     entry_index = html.index("kibu")
 
     assert k_index < entry_index < l_index
-
-    print(html)
