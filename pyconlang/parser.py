@@ -1,4 +1,4 @@
-from string import digits, punctuation, whitespace
+from string import whitespace
 from typing import Callable, List, TypeVar, cast
 
 from pyparsing import (
@@ -44,7 +44,7 @@ rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule"
 
 unicode_word = Word(
     pyparsing_unicode.BasicMultilingualPlane.printables,
-    exclude_chars=whitespace + digits + punctuation,
+    exclude_chars=whitespace + ".@",
 ).set_name("unicode_word")
 proto = (
     (Suppress("*") - unicode_word - Opt(rule))
