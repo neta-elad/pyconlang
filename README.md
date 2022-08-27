@@ -200,16 +200,16 @@ using the `!translate ... !translate` syntax:
 ```markdown
 !translate
 
-*aki@after-palatalization 
-
+*aki@after-palatalization
 <stone>.PL
 
 !translate
 ```
 will turn out as
-> > agi
-> >
-> > abagigim
+> ```  
+> agi
+> abagigim
+> ```
 
 
 

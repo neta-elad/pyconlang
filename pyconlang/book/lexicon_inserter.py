@@ -7,11 +7,11 @@ from markdown.blockparser import BlockParser
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
-from .block import DelimitedProcessor
 from ..errors import show_exception
 from ..evolve.types import Evolved
 from ..translate import Translator
 from ..types import Entry, Form, Proto
+from .block import DelimitedProcessor
 
 
 class LexiconPreprocessor(Preprocessor):
@@ -117,11 +117,14 @@ class LexiconBlockProcessor(DelimitedProcessor):
         self.extension = extension
 
     def run_inner_blocks(self, parent: Element, blocks: List[str]) -> None:
-        blockquote = SubElement(parent, "blockquote")
+        pre = SubElement(parent, "pre")
+        code = SubElement(pre, "code")
 
-        for line in blocks:
-            e = SubElement(blockquote, "p")
-            e.text = self.evolve(line)
+        from itertools import chain
+
+        lines = chain(*map(str.splitlines, blocks))
+
+        code.text = "\n".join(self.evolve(line) for line in lines)
 
     def evolve(self, raw: str) -> str:
         return " ".join(

@@ -12,11 +12,13 @@ def test_book(simple_pyconlang):
         
         !translate
         
-        *kika@era1 <stone>.PL
+        *kika@era1 
+        <stone>.PL
         
         !translate
         """
-        ) + '\n'
+        )
+        + "\n"
     )
 
     compile_book()
@@ -30,7 +32,7 @@ def test_book(simple_pyconlang):
         "<p><strong>This is an example: <span>kiga abagigi</span></strong></p>" in html
     )
 
-    assert "<blockquote>\n<p>kiga abagigi</p>\n</blockquote>" in html
+    assert "<pre><code>kiga\nabagigi\n</code></pre>" in html
 
     assert (
         "<p><strong>abagigi</strong> [abagigi] <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
