@@ -10,7 +10,7 @@ from markdown.preprocessors import Preprocessor
 from ..errors import show_exception
 from ..evolve.types import Evolved
 from ..translate import Translator
-from ..types import Entry, Form, Morpheme
+from ..types import Entry, Morpheme, Unit
 from .block import DelimitedProcessor
 
 
@@ -62,7 +62,8 @@ class LexiconPreprocessor(Preprocessor):
             lexicon[letter].sort(key=lambda lexicon_entry: lexicon_entry[0][0].modern)
             for evolved, entry in lexicon[letter]:
                 morphemes = " + ".join(
-                    f"_\\*{morpheme.form}_" for morpheme in self.form_to_morphemes(entry.form)
+                    f"_\\*{morpheme.form}_"
+                    for morpheme in self.form_to_morphemes(entry.form)
                 )
                 all_evolved = ", ".join(f"**{each.modern}**" for each in evolved)
                 self.cache.append(
@@ -72,7 +73,7 @@ class LexiconPreprocessor(Preprocessor):
                 )
                 self.cache.append("")
 
-    def form_to_morphemes(self, form: Form) -> List[Morpheme]:
+    def form_to_morphemes(self, form: Unit) -> List[Morpheme]:
         return self.translator.lexicon.resolve(form).to_morphemes()
 
 
@@ -128,7 +129,9 @@ class LexiconBlockProcessor(DelimitedProcessor):
         self.extension.translator.evolve_string(" ".join(lines))
 
         # use cache
-        code.text = "\n".join(f"{line} => {self.evolve(line)}" for line in lines).replace('*', '&ast;')
+        code.text = "\n".join(
+            f"{line} => {self.evolve(line)}" for line in lines
+        ).replace("*", "&ast;")
 
     def evolve(self, raw: str) -> str:
         return " ".join(

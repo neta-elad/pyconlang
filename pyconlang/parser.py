@@ -14,7 +14,7 @@ from pyparsing import (
     token_map,
 )
 
-from pyconlang.types import Affix, AffixType, Lexeme, Compound, Morpheme, Rule
+from pyconlang.types import Affix, AffixType, Compound, Lexeme, Morpheme, Rule
 
 T = TypeVar("T")
 

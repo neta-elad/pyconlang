@@ -73,12 +73,12 @@ class Affix:
         return self.type.fuse(".", self.name)
 
 
-Describable = Union[SimpleForm, Affix]
+Describable = Union["Unit", Affix]
 
 
 @dataclass(eq=True, frozen=True)
 class Compound:
-    stem: SimpleForm
+    stem: "Unit"
     affixes: Tuple[Affix, ...] = field(default=())
 
     @classmethod
@@ -88,7 +88,7 @@ class Compound:
         return cls(stem, tuple(prefixes + suffixes))
 
     @classmethod
-    def from_form(cls, form: "Form") -> "Compound":
+    def from_form(cls, form: "Unit") -> "Compound":
         match form:
             case Compound():
                 return form
@@ -111,7 +111,7 @@ class Compound:
         )
 
 
-Form = Union[SimpleForm, Compound]
+Unit = Union[Morpheme, Lexeme, Compound]
 
 
 @dataclass(eq=True, frozen=True)

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 from typing import Iterable, List, Optional, Set, Tuple, Union
 
@@ -6,16 +7,16 @@ from ..checksum import checksum
 from ..types import (
     Affix,
     AffixDefinition,
-    Lexeme,
     Compound,
     Describable,
     Entry,
-    Form,
+    Lexeme,
     Morpheme,
     ResolvedAffix,
     ResolvedForm,
     Template,
     TemplateName,
+    Unit,
     Var,
 )
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
@@ -85,7 +86,7 @@ class Lexicon:
             self.resolve(definition.get_form()),
         )
 
-    def resolve(self, form: Form) -> ResolvedForm:
+    def resolve(self, form: Unit) -> ResolvedForm:
         compound = Compound.from_form(form)
 
         affixes = tuple(self.resolve_affix(affix) for affix in compound.affixes)
@@ -95,15 +96,17 @@ class Lexicon:
                 return ResolvedForm(stem, affixes)
             case Lexeme():
                 return self.resolve(self.get_entry(stem).form).extend(*affixes)
+            case Compound():
+                return self.resolve(stem).extend(*affixes)
 
     def resolve_with_affixes(
-        self, form: Form, affixes: Tuple[Affix, ...]
+        self, form: Unit, affixes: Tuple[Affix, ...]
     ) -> ResolvedForm:
         resolved_affixes = tuple(self.resolve_affix(affix) for affix in affixes)
         resolved = self.resolve(form)
         return ResolvedForm(resolved.stem, resolved.affixes + resolved_affixes)
 
-    def substitute(self, var: Var, form: Form) -> ResolvedForm:
+    def substitute(self, var: Var, form: Unit) -> ResolvedForm:
         return self.resolve_with_affixes(form, var.affixes)
 
     def get_vars(self, name: Optional[TemplateName]) -> Tuple[Var, ...]:
@@ -121,18 +124,25 @@ class Lexicon:
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
 
-    def lookup(self, compound: Compound) -> List[Tuple[Describable, str]]:
-        return self.lookup_records(compound.stem, *compound.affixes)
-
-    def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:
-        return list(zip(records, map(self.lookup_record, records)))
-
-    def lookup_record(self, record: Describable) -> str:
+    def lookup(self, record: Describable) -> List[Tuple[Describable, str]]:
         match record:
             case Affix():
-                return self.get_affix(record).description
+                return self.singleton_lookup(record, self.get_affix(record).description)
             case Lexeme():
                 entry = self.get_entry(record)
-                return f"{entry.part_of_speech} {entry.definition}"
+                return self.singleton_lookup(
+                    record, f"{entry.part_of_speech} {entry.definition}"
+                )
             case Morpheme():
-                return str(record)
+                return self.singleton_lookup(record, str(record))
+            case Compound():
+                return self.lookup_records(record.stem, *record.affixes)
+
+    def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:
+        return list(chain(*map(self.lookup, records)))
+
+    @staticmethod
+    def singleton_lookup(
+        record: Describable, description: str
+    ) -> List[Tuple[Describable, str]]:
+        return [(record, description)]

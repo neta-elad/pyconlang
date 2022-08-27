@@ -1,12 +1,12 @@
 from pyconlang.parser import (
-    lexeme,
     compound,
-    parse_sentence,
+    lexeme,
     morpheme,
+    parse_sentence,
     rule,
     simple_form,
 )
-from pyconlang.types import Affix, AffixType, Lexeme, Compound, Morpheme, Rule
+from pyconlang.types import Affix, AffixType, Compound, Lexeme, Morpheme, Rule
 
 
 def test_simple_form():
