@@ -7,9 +7,9 @@ from ..checksum import checksum
 from ..types import (
     Affix,
     AffixDefinition,
-    Compound,
     Describable,
     Entry,
+    Fusion,
     Lexeme,
     Morpheme,
     ResolvedAffix,
@@ -87,16 +87,16 @@ class Lexicon:
         )
 
     def resolve(self, form: Unit) -> ResolvedForm:
-        compound = Compound.from_form(form)
+        fusion = Fusion.from_form(form)
 
-        affixes = tuple(self.resolve_affix(affix) for affix in compound.affixes)
+        affixes = tuple(self.resolve_affix(affix) for affix in fusion.affixes)
 
-        match stem := compound.stem:
+        match stem := fusion.stem:
             case Morpheme():
                 return ResolvedForm(stem, affixes)
             case Lexeme():
                 return self.resolve(self.get_entry(stem).form).extend(*affixes)
-            case Compound():
+            case Fusion():
                 return self.resolve(stem).extend(*affixes)
 
     def resolve_with_affixes(
@@ -135,7 +135,7 @@ class Lexicon:
                 )
             case Morpheme():
                 return self.singleton_lookup(record, str(record))
-            case Compound():
+            case Fusion():
                 return self.lookup_records(record.stem, *record.affixes)
 
     def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:

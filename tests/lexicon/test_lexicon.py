@@ -1,7 +1,7 @@
 from pyconlang.types import (
     Affix,
     AffixType,
-    Compound,
+    Fusion,
     Lexeme,
     Morpheme,
     ResolvedAffix,
@@ -14,7 +14,7 @@ from pyconlang.types import (
 
 def test_parsed_lexicon(parsed_lexicon):
     assert parsed_lexicon.resolve(
-        Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -49,7 +49,7 @@ def test_substitute_var(parsed_lexicon):
     )
 
     assert parsed_lexicon.substitute(
-        Var(()), Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Var(()), Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -64,7 +64,7 @@ def test_substitute_var(parsed_lexicon):
 
     assert parsed_lexicon.substitute(
         Var((Affix("PL", AffixType.SUFFIX),)),
-        Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -104,24 +104,24 @@ def test_lookup(parsed_lexicon):
 
     assert parsed_lexicon.lookup(Morpheme("baka")) == [(Morpheme("baka"), "*baka")]
 
-    compound = Compound(Lexeme("stone"))
-    assert parsed_lexicon.lookup(compound) == [
+    fusion = Fusion(Lexeme("stone"))
+    assert parsed_lexicon.lookup(fusion) == [
         (
             Lexeme("stone"),
             "(n.) stone, pebble",
         )
     ]
 
-    compound1 = Compound(Morpheme("baka"))
-    assert parsed_lexicon.lookup(compound1) == [
+    fusion = Fusion(Morpheme("baka"))
+    assert parsed_lexicon.lookup(fusion) == [
         (
             Morpheme("baka"),
             "*baka",
         )
     ]
 
-    compound2 = Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
-    assert parsed_lexicon.lookup(compound2) == [
+    fusion = Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
+    assert parsed_lexicon.lookup(fusion) == [
         (
             Lexeme("stone"),
             "(n.) stone, pebble",
@@ -129,8 +129,8 @@ def test_lookup(parsed_lexicon):
         (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),
     ]
 
-    compound3 = Compound(Morpheme("baka"), (Affix("PL", AffixType.SUFFIX),))
-    assert parsed_lexicon.lookup(compound3) == [
+    fusion = Fusion(Morpheme("baka"), (Affix("PL", AffixType.SUFFIX),))
+    assert parsed_lexicon.lookup(fusion) == [
         (
             Morpheme("baka"),
             "*baka",

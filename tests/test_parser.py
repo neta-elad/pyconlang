@@ -1,12 +1,5 @@
-from pyconlang.parser import (
-    compound,
-    lexeme,
-    morpheme,
-    parse_sentence,
-    rule,
-    simple_form,
-)
-from pyconlang.types import Affix, AffixType, Compound, Lexeme, Morpheme, Rule
+from pyconlang.parser import fusion, lexeme, morpheme, parse_sentence, rule, simple_form
+from pyconlang.types import Affix, AffixType, Fusion, Lexeme, Morpheme, Rule
 
 
 def test_simple_form():
@@ -21,8 +14,8 @@ def test_simple_form():
     assert parse(simple_form, "*proto@era1") == Morpheme("proto", Rule("era1"))
 
 
-def test_compound():
-    assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
+def test_fusion():
+    assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone"),
         (
             Affix("DEF", AffixType.PREFIX),
@@ -31,7 +24,7 @@ def test_compound():
         ),
     )
 
-    assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
+    assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone"),
         (
             Affix("DEF", AffixType.PREFIX),
@@ -40,9 +33,9 @@ def test_compound():
         ),
     )
 
-    assert parse(compound, "*proto@era1") == Compound(Morpheme("proto", Rule("era1")))
+    assert parse(fusion, "*proto@era1") == Fusion(Morpheme("proto", Rule("era1")))
 
-    assert parse(compound, "DEF.*proto@era1.PL") == Compound(
+    assert parse(fusion, "DEF.*proto@era1.PL") == Fusion(
         Morpheme("proto", Rule("era1")),
         (
             Affix("DEF", AffixType.PREFIX),
@@ -53,10 +46,10 @@ def test_compound():
 
 def test_sentence():
     assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
-        Compound(Morpheme("aka")),
-        Compound(Lexeme("strong"), ()),
-        Compound(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),)),
-        Compound(Morpheme("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Morpheme("aka")),
+        Fusion(Lexeme("strong"), ()),
+        Fusion(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),)),
+        Fusion(Morpheme("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
     )
 
 

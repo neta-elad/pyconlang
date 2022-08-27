@@ -13,7 +13,7 @@ from pyparsing import (
 )
 
 from pyconlang.parser import (
-    compound,
+    fusion,
     ident,
     lexeme,
     prefix,
@@ -92,7 +92,7 @@ entry = (
         Suppress("entry")
         - explicit_opt(template_name)
         - lexeme
-        - compound
+        - fusion
         - part_of_speech
         - rest
     )

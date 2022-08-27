@@ -77,23 +77,23 @@ Describable = Union["Unit", Affix]
 
 
 @dataclass(eq=True, frozen=True)
-class Compound:
+class Fusion:
     stem: "Unit"
     affixes: Tuple[Affix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
         cls, prefixes: List[Affix], stem: SimpleForm, suffixes: List[Affix]
-    ) -> "Compound":
+    ) -> "Fusion":
         return cls(stem, tuple(prefixes + suffixes))
 
     @classmethod
-    def from_form(cls, form: "Unit") -> "Compound":
+    def from_form(cls, form: "Unit") -> "Fusion":
         match form:
-            case Compound():
+            case Fusion():
                 return form
             case _:
-                return Compound(form)
+                return Fusion(form)
 
     def __str__(self) -> str:
         return (
@@ -111,14 +111,14 @@ class Compound:
         )
 
 
-Unit = Union[Morpheme, Lexeme, Compound]
+Unit = Union[Morpheme, Lexeme, Fusion]
 
 
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: Optional[TemplateName]
     lexeme: Lexeme
-    form: Compound
+    form: Fusion
     part_of_speech: PartOfSpeech
     definition: str
 

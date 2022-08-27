@@ -13,8 +13,8 @@ from pyconlang.types import (
     Affix,
     AffixDefinition,
     AffixType,
-    Compound,
     Entry,
+    Fusion,
     Lexeme,
     Morpheme,
     PartOfSpeech,
@@ -36,7 +36,7 @@ def test_entry():
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Lexeme("strong"),
-        Compound(Morpheme("kipu", Rule("era1"))),
+        Fusion(Morpheme("kipu", Rule("era1"))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -46,7 +46,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Compound(Morpheme("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Morpheme("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -56,7 +56,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Compound(Lexeme("heavy"), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("heavy"), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -120,28 +120,28 @@ def test_lexicon(parsed_lexicon):
             Entry(
                 None,
                 Lexeme("strong"),
-                Compound(Morpheme("kipu", Rule("era1"))),
+                Fusion(Morpheme("kipu", Rule("era1"))),
                 PartOfSpeech("adj"),
                 "strong, stable",
             ),
             Entry(
                 None,
                 Lexeme("big"),
-                Compound(Morpheme("iki")),
+                Fusion(Morpheme("iki")),
                 PartOfSpeech("adj"),
                 "big, great",
             ),
             Entry(
                 TemplateName("plural"),
                 Lexeme("stone"),
-                Compound(Morpheme("apak")),
+                Fusion(Morpheme("apak")),
                 PartOfSpeech("n"),
                 "stone, pebble",
             ),
             Entry(
                 None,
                 Lexeme("gravel"),
-                Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
+                Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
                 PartOfSpeech("n"),
                 "gravel",
             ),
