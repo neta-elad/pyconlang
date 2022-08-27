@@ -143,7 +143,7 @@ Unit = Union[Morpheme, Lexeme, Fusion, Compound]
 class Entry:
     template: Optional[TemplateName]
     lexeme: Lexeme
-    form: Fusion
+    form: Compound
     part_of_speech: PartOfSpeech
     definition: str
 

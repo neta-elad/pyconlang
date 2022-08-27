@@ -21,6 +21,8 @@ def test_basic(simple_repl):
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("<big>") == "ishi"
     assert simple_repl("<big>.PL") == "ishiigi"
+    assert simple_repl("*apak +! *i") == "abashi"
+    assert simple_repl("*apak +!@era1 *i") == "abagi"
 
 
 def test_phonetic(simple_repl):

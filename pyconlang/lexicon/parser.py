@@ -11,8 +11,8 @@ from pyparsing import (
 
 from ..parser import (
     base_unit,
+    compound,
     explicit_opt,
-    fusion,
     ident,
     lexeme,
     prefix,
@@ -80,7 +80,7 @@ entry = (
         Suppress("entry")
         - explicit_opt(template_name)
         - lexeme
-        - fusion
+        - compound
         - part_of_speech
         - rest
     )
