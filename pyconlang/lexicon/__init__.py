@@ -6,7 +6,7 @@ from ..checksum import checksum
 from ..types import (
     Affix,
     AffixDefinition,
-    Canonical,
+    Lexeme,
     Compound,
     Describable,
     Entry,
@@ -18,7 +18,7 @@ from ..types import (
     TemplateName,
     Var,
 )
-from .errors import MissingAffix, MissingCanonical, MissingTemplate, UnexpectedRecord
+from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import lexicon
 
 LEXICON_PATH = Path("lexicon.txt")
@@ -62,12 +62,12 @@ class Lexicon:
 
         return cls(entries, affixes, templates)
 
-    def get_entry(self, canonical: Canonical) -> Entry:
+    def get_entry(self, lexeme: Lexeme) -> Entry:
         for entry in self.entries:
-            if entry.canonical == canonical:
+            if entry.lexeme == lexeme:
                 return entry
 
-        raise MissingCanonical(canonical.name)
+        raise MissingLexeme(lexeme.name)
 
     def get_affix(self, affix: Affix) -> AffixDefinition:
         for possible_affix in self.affixes:
@@ -93,7 +93,7 @@ class Lexicon:
         match stem := compound.stem:
             case Morpheme():
                 return ResolvedForm(stem, affixes)
-            case Canonical():
+            case Lexeme():
                 return self.resolve(self.get_entry(stem).form).extend(*affixes)
 
     def resolve_with_affixes(
@@ -131,7 +131,7 @@ class Lexicon:
         match record:
             case Affix():
                 return self.get_affix(record).description
-            case Canonical():
+            case Lexeme():
                 entry = self.get_entry(record)
                 return f"{entry.part_of_speech} {entry.definition}"
             case Morpheme():

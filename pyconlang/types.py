@@ -15,7 +15,7 @@ class Rule:
 
 
 @dataclass(eq=True, frozen=True)
-class Canonical:
+class Lexeme:
     name: str
 
     def __str__(self) -> str:
@@ -36,7 +36,7 @@ class Morpheme:
         return f"*{self.form}{self.era or ''}"
 
 
-SimpleForm = Union[Canonical, Morpheme]
+SimpleForm = Union[Lexeme, Morpheme]
 
 
 @dataclass(eq=True, frozen=True)
@@ -117,7 +117,7 @@ Form = Union[SimpleForm, Compound]
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: Optional[TemplateName]
-    canonical: Canonical
+    lexeme: Lexeme
     form: Compound
     part_of_speech: PartOfSpeech
     definition: str
@@ -129,7 +129,7 @@ class AffixDefinition:
     affix: Affix
     era: Optional[Rule]
     form: Optional[SimpleForm]
-    sources: Tuple[Canonical, ...]  # or Form - can bare Proto appear?
+    sources: Tuple[Lexeme, ...]  # or Form - can bare Proto appear?
     description: str
 
     def get_era(self) -> Optional[Rule]:

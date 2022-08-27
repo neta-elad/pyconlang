@@ -14,7 +14,7 @@ from pyparsing import (
     token_map,
 )
 
-from pyconlang.types import Affix, AffixType, Canonical, Compound, Morpheme, Rule
+from pyconlang.types import Affix, AffixType, Lexeme, Compound, Morpheme, Rule
 
 T = TypeVar("T")
 
@@ -32,10 +32,10 @@ def parse_sentence(string: str) -> List[Compound]:
 
 ParserElement.set_default_whitespace_chars(" \t")
 
-canonical = (
+lexeme = (
     (Suppress("<") - Word(alphanums + "-" + " ") - Suppress(">"))
-    .set_parse_action(token_map(Canonical))
-    .set_name("canonical")
+    .set_parse_action(token_map(Lexeme))
+    .set_name("lexeme")
 )
 
 ident = Word(alphanums + "-").set_name("ident")
@@ -52,7 +52,7 @@ morpheme = (
     .set_name("morpheme")
 )
 
-simple_form = (canonical ^ morpheme).set_name("simple_form")
+simple_form = (lexeme ^ morpheme).set_name("simple_form")
 
 prefix = (
     (ident - Suppress("."))

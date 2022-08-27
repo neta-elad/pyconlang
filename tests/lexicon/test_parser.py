@@ -13,7 +13,7 @@ from pyconlang.types import (
     Affix,
     AffixDefinition,
     AffixType,
-    Canonical,
+    Lexeme,
     Compound,
     Entry,
     PartOfSpeech,
@@ -35,7 +35,7 @@ def test_entry_parts():
 def test_entry():
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
-        Canonical("strong"),
+        Lexeme("strong"),
         Compound(Morpheme("kipu", Rule("era1"))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -45,7 +45,7 @@ def test_entry():
         entry, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Canonical("strong"),
+        Lexeme("strong"),
         Compound(Morpheme("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -55,8 +55,8 @@ def test_entry():
         entry, "entry &plural <strong> <heavy>.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Canonical("strong"),
-        Compound(Canonical("heavy"), (Affix("PL", AffixType.SUFFIX),)),
+        Lexeme("strong"),
+        Compound(Lexeme("heavy"), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -69,8 +69,8 @@ def test_affix():
 
 def test_affix_definition():
     assert parse(lexical_sources, "(<big> <pile>)") == (
-        Canonical("big"),
-        Canonical("pile"),
+        Lexeme("big"),
+        Lexeme("pile"),
     )
 
     assert parse(
@@ -80,7 +80,7 @@ def test_affix_definition():
         Affix("PL", AffixType.SUFFIX),
         Rule("era"),
         Morpheme("proto"),
-        (Canonical("big"), Canonical("pile")),
+        (Lexeme("big"), Lexeme("pile")),
         "plural for inanimate",
     )
 
@@ -102,7 +102,7 @@ def test_affix_definition():
         Affix("PL", AffixType.SUFFIX),
         None,
         None,
-        (Canonical("big"), Canonical("pile")),
+        (Lexeme("big"), Lexeme("pile")),
         "plural for inanimate",
     )
 
@@ -119,29 +119,29 @@ def test_lexicon(parsed_lexicon):
         {
             Entry(
                 None,
-                Canonical("strong"),
+                Lexeme("strong"),
                 Compound(Morpheme("kipu", Rule("era1"))),
                 PartOfSpeech("adj"),
                 "strong, stable",
             ),
             Entry(
                 None,
-                Canonical("big"),
+                Lexeme("big"),
                 Compound(Morpheme("iki")),
                 PartOfSpeech("adj"),
                 "big, great",
             ),
             Entry(
                 TemplateName("plural"),
-                Canonical("stone"),
+                Lexeme("stone"),
                 Compound(Morpheme("apak")),
                 PartOfSpeech("n"),
                 "stone, pebble",
             ),
             Entry(
                 None,
-                Canonical("gravel"),
-                Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),)),
+                Lexeme("gravel"),
+                Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
                 PartOfSpeech("n"),
                 "gravel",
             ),
@@ -155,7 +155,7 @@ def test_lexicon(parsed_lexicon):
                 Affix("PL", AffixType.SUFFIX),
                 None,
                 Morpheme("iki", Rule("era1")),
-                (Canonical("big"), Canonical("pile")),
+                (Lexeme("big"), Lexeme("pile")),
                 "plural for inanimate",
             )
         }

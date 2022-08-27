@@ -1,18 +1,18 @@
 from pyconlang.parser import (
-    canonical,
+    lexeme,
     compound,
     parse_sentence,
     morpheme,
     rule,
     simple_form,
 )
-from pyconlang.types import Affix, AffixType, Canonical, Compound, Morpheme, Rule
+from pyconlang.types import Affix, AffixType, Lexeme, Compound, Morpheme, Rule
 
 
 def test_simple_form():
     assert parse(rule, "@era1") == Rule("era1")
-    assert parse(canonical, "<name of the-form>") == Canonical("name of the-form")
-    assert parse(simple_form, "<name of the-form>") == Canonical("name of the-form")
+    assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
+    assert parse(simple_form, "<name of the-form>") == Lexeme("name of the-form")
     assert parse(morpheme, "*proto") == Morpheme("proto")
     assert parse(simple_form, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
@@ -23,7 +23,7 @@ def test_simple_form():
 
 def test_compound():
     assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
-        Canonical("stone"),
+        Lexeme("stone"),
         (
             Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
@@ -32,7 +32,7 @@ def test_compound():
     )
 
     assert parse(compound, "DEF.<stone>.PL.ACC") == Compound(
-        Canonical("stone"),
+        Lexeme("stone"),
         (
             Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
@@ -54,8 +54,8 @@ def test_compound():
 def test_sentence():
     assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
         Compound(Morpheme("aka")),
-        Compound(Canonical("strong"), ()),
-        Compound(Canonical("with space"), (Affix("COL", AffixType.PREFIX),)),
+        Compound(Lexeme("strong"), ()),
+        Compound(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),)),
         Compound(Morpheme("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
     )
 

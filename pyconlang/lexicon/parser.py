@@ -13,7 +13,7 @@ from pyparsing import (
 )
 
 from pyconlang.parser import (
-    canonical,
+    lexeme,
     compound,
     ident,
     prefix,
@@ -63,7 +63,7 @@ rest_of_line = Regex(r"(?:\\\n|[^#\n])*").leave_whitespace().set_name("rest of l
 rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 
 lexical_sources = (
-    Suppress("(") - canonical[1, ...].set_parse_action(tuple) - Suppress(")")
+        Suppress("(") - lexeme[1, ...].set_parse_action(tuple) - Suppress(")")
 )
 
 affix = (prefix ^ suffix).set_name("affix")
@@ -91,12 +91,12 @@ part_of_speech = (
 
 entry = (
     (
-        Suppress("entry")
-        - explicit_opt(template_name)
-        - canonical
-        - compound
-        - part_of_speech
-        - rest
+            Suppress("entry")
+            - explicit_opt(template_name)
+            - lexeme
+            - compound
+            - part_of_speech
+            - rest
     )
     .set_parse_action(tokens_map(Entry))
     .set_name("entry")

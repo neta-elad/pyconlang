@@ -1,7 +1,7 @@
 from pyconlang.types import (
     Affix,
     AffixType,
-    Canonical,
+    Lexeme,
     Compound,
     Morpheme,
     ResolvedAffix,
@@ -14,7 +14,7 @@ from pyconlang.types import (
 
 def test_parsed_lexicon(parsed_lexicon):
     assert parsed_lexicon.resolve(
-        Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -49,7 +49,7 @@ def test_substitute_var(parsed_lexicon):
     )
 
     assert parsed_lexicon.substitute(
-        Var(()), Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Var(()), Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -64,7 +64,7 @@ def test_substitute_var(parsed_lexicon):
 
     assert parsed_lexicon.substitute(
         Var((Affix("PL", AffixType.SUFFIX),)),
-        Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),)),
+        Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
     ) == ResolvedForm(
         Morpheme("apak"),
         (
@@ -99,13 +99,13 @@ def test_lookup(parsed_lexicon):
         == "plural for inanimate"
     )
 
-    assert parsed_lexicon.lookup_record(Canonical("stone")) == "(n.) stone, pebble"
+    assert parsed_lexicon.lookup_record(Lexeme("stone")) == "(n.) stone, pebble"
 
     assert parsed_lexicon.lookup_record(Morpheme("baka")) == "*baka"
 
-    assert parsed_lexicon.lookup(Compound(Canonical("stone"))) == [
+    assert parsed_lexicon.lookup(Compound(Lexeme("stone"))) == [
         (
-            Canonical("stone"),
+            Lexeme("stone"),
             "(n.) stone, pebble",
         )
     ]
@@ -118,10 +118,10 @@ def test_lookup(parsed_lexicon):
     ]
 
     assert parsed_lexicon.lookup(
-        Compound(Canonical("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Compound(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
     ) == [
         (
-            Canonical("stone"),
+            Lexeme("stone"),
             "(n.) stone, pebble",
         ),
         (Affix("PL", AffixType.SUFFIX), "plural for inanimate"),

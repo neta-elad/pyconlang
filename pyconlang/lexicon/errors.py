@@ -5,7 +5,7 @@ class LexiconError(PyconlangError):
     ...
 
 
-class MissingCanonical(LexiconError):
+class MissingLexeme(LexiconError):
     ...
 
 
