@@ -32,7 +32,16 @@ def test_book(simple_pyconlang):
         "<p><strong>This is an example: <span>kiga abagigi</span></strong></p>" in html
     )
 
-    assert "<pre><code>kiga\nabagigi\n</code></pre>" in html
+    assert (
+        cleandoc(
+            """
+            <pre><code>&ast;kika@era1  =&gt; kiga
+            <stone>.PL =&gt; abagigi
+            </code></pre>
+            """
+        )
+        in html
+    )
 
     assert (
         "<p><strong>abagigi</strong> [abagigi] <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"

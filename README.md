@@ -274,3 +274,6 @@ will turn out as
   - [x] Inline translation
   - [x] Robust against errors
   - [x] Block translation
+  - [ ] Options for block/inline translation
+    - [ ] Show before/after
+    - [ ] Phonetic/modern/gloss

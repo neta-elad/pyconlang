@@ -128,7 +128,7 @@ class LexiconBlockProcessor(DelimitedProcessor):
         self.extension.translator.evolve_string(" ".join(lines))
 
         # use cache
-        code.text = "\n".join(self.evolve(line) for line in lines)
+        code.text = "\n".join(f"{line} => {self.evolve(line)}" for line in lines).replace('*', '&ast;')
 
     def evolve(self, raw: str) -> str:
         return " ".join(
