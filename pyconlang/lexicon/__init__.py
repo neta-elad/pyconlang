@@ -11,7 +11,7 @@ from ..types import (
     Describable,
     Entry,
     Form,
-    Proto,
+    Morpheme,
     ResolvedAffix,
     ResolvedForm,
     Template,
@@ -91,7 +91,7 @@ class Lexicon:
         affixes = tuple(self.resolve_affix(affix) for affix in compound.affixes)
 
         match stem := compound.stem:
-            case Proto():
+            case Morpheme():
                 return ResolvedForm(stem, affixes)
             case Canonical():
                 return self.resolve(self.get_entry(stem).form).extend(*affixes)
@@ -134,5 +134,5 @@ class Lexicon:
             case Canonical():
                 entry = self.get_entry(record)
                 return f"{entry.part_of_speech} {entry.definition}"
-            case Proto():
+            case Morpheme():
                 return str(record)

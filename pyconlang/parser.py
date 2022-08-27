@@ -14,7 +14,7 @@ from pyparsing import (
     token_map,
 )
 
-from pyconlang.types import Affix, AffixType, Canonical, Compound, Proto, Rule
+from pyconlang.types import Affix, AffixType, Canonical, Compound, Morpheme, Rule
 
 T = TypeVar("T")
 
@@ -46,13 +46,13 @@ unicode_word = Word(
     pyparsing_unicode.BasicMultilingualPlane.printables,
     exclude_chars=whitespace + ".@",
 ).set_name("unicode_word")
-proto = (
+morpheme = (
     (Suppress("*") - unicode_word - Opt(rule))
-    .set_parse_action(tokens_map(Proto))
-    .set_name("proto")
+    .set_parse_action(tokens_map(Morpheme))
+    .set_name("morpheme")
 )
 
-simple_form = (canonical ^ proto).set_name("simple_form")
+simple_form = (canonical ^ morpheme).set_name("simple_form")
 
 prefix = (
     (ident - Suppress("."))

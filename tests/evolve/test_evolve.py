@@ -1,5 +1,5 @@
 from pyconlang.evolve import Evolved, TraceLine
-from pyconlang.types import AffixType, Proto, ResolvedAffix, ResolvedForm, Rule
+from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 
 
 def test_evolve_words(simple_evolver):
@@ -23,24 +23,24 @@ def test_evolve_words(simple_evolver):
 
 
 def test_evolve_forms(simple_evolver):
-    assert simple_evolver.evolve([Proto("apaki")]) == [
+    assert simple_evolver.evolve([Morpheme("apaki")]) == [
         Evolved("apaki", "abashi", "abaʃi")
     ]
 
-    assert simple_evolver.evolve([Proto("apaki", Rule("era1"))]) == [
+    assert simple_evolver.evolve([Morpheme("apaki", Rule("era1"))]) == [
         Evolved("apaki", "abagi", "abagi")
     ]
 
     assert simple_evolver.evolve(
         [
             ResolvedForm(
-                Proto("apak"),
+                Morpheme("apak"),
                 (
                     ResolvedAffix(
                         False,
                         AffixType.SUFFIX,
                         Rule("era1"),
-                        ResolvedForm(Proto("iki"), ()),
+                        ResolvedForm(Morpheme("iki"), ()),
                     ),
                 ),
             )
@@ -48,17 +48,17 @@ def test_evolve_forms(simple_evolver):
     ) == [Evolved("apakiʃi", "abagishi", "abagiʃi")]
 
 
-def test_proto_glom(simple_evolver):
+def test_morpheme_fuse(simple_evolver):
     assert simple_evolver.evolve(
         [
             ResolvedForm(
-                Proto("apak"),
+                Morpheme("apak"),
                 (
                     ResolvedAffix(
                         False,
                         AffixType.PREFIX,
                         None,
-                        ResolvedForm(Proto("ma"), ()),
+                        ResolvedForm(Morpheme("ma"), ()),
                     ),
                 ),
             )
@@ -70,13 +70,13 @@ def test_stress(simple_evolver):
     assert simple_evolver.evolve(
         [
             ResolvedForm(
-                Proto("apˈak"),
+                Morpheme("apˈak"),
                 (
                     ResolvedAffix(
                         False,
                         AffixType.PREFIX,
                         None,
-                        ResolvedForm(Proto("mˈa"), ()),
+                        ResolvedForm(Morpheme("mˈa"), ()),
                     ),
                 ),
             )
@@ -86,13 +86,13 @@ def test_stress(simple_evolver):
     assert simple_evolver.evolve(
         [
             ResolvedForm(
-                Proto("apˈak"),
+                Morpheme("apˈak"),
                 (
                     ResolvedAffix(
                         True,
                         AffixType.PREFIX,
                         None,
-                        ResolvedForm(Proto("mˈa"), ()),
+                        ResolvedForm(Morpheme("mˈa"), ()),
                     ),
                 ),
             )
@@ -102,13 +102,13 @@ def test_stress(simple_evolver):
     assert simple_evolver.evolve(
         [
             ResolvedForm(
-                Proto("apˈak"),
+                Morpheme("apˈak"),
                 (
                     ResolvedAffix(
                         True,
                         AffixType.PREFIX,
                         Rule("era2"),
-                        ResolvedForm(Proto("mˈa"), ()),
+                        ResolvedForm(Morpheme("mˈa"), ()),
                     ),
                 ),
             )
@@ -117,7 +117,7 @@ def test_stress(simple_evolver):
 
 
 def test_trace(simple_evolver):
-    assert simple_evolver.trace([Proto("apaki")]) == [
+    assert simple_evolver.trace([Morpheme("apaki")]) == [
         (
             Evolved("apaki", "abashi", "abaʃi"),
             [
@@ -136,13 +136,13 @@ def test_trace(simple_evolver):
     assert simple_evolver.trace(
         [
             ResolvedForm(
-                Proto("apaki"),
+                Morpheme("apaki"),
                 (
                     ResolvedAffix(
                         False,
                         AffixType.PREFIX,
                         Rule("era1"),
-                        ResolvedForm(Proto("ma"), ()),
+                        ResolvedForm(Morpheme("ma"), ()),
                     ),
                 ),
             )

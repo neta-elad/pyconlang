@@ -17,7 +17,7 @@ from pyconlang.types import (
     Compound,
     Entry,
     PartOfSpeech,
-    Proto,
+    Morpheme,
     Rule,
     Template,
     TemplateName,
@@ -36,7 +36,7 @@ def test_entry():
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Canonical("strong"),
-        Compound(Proto("kipu", Rule("era1"))),
+        Compound(Morpheme("kipu", Rule("era1"))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -46,7 +46,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Canonical("strong"),
-        Compound(Proto("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
+        Compound(Morpheme("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -79,7 +79,7 @@ def test_affix_definition():
         True,
         Affix("PL", AffixType.SUFFIX),
         Rule("era"),
-        Proto("proto"),
+        Morpheme("proto"),
         (Canonical("big"), Canonical("pile")),
         "plural for inanimate",
     )
@@ -90,7 +90,7 @@ def test_affix_definition():
         False,
         Affix("PL", AffixType.SUFFIX),
         None,
-        Proto("proto", Rule("era")),
+        Morpheme("proto", Rule("era")),
         (),
         "plural for inanimate",
     )
@@ -120,21 +120,21 @@ def test_lexicon(parsed_lexicon):
             Entry(
                 None,
                 Canonical("strong"),
-                Compound(Proto("kipu", Rule("era1"))),
+                Compound(Morpheme("kipu", Rule("era1"))),
                 PartOfSpeech("adj"),
                 "strong, stable",
             ),
             Entry(
                 None,
                 Canonical("big"),
-                Compound(Proto("iki")),
+                Compound(Morpheme("iki")),
                 PartOfSpeech("adj"),
                 "big, great",
             ),
             Entry(
                 TemplateName("plural"),
                 Canonical("stone"),
-                Compound(Proto("apak")),
+                Compound(Morpheme("apak")),
                 PartOfSpeech("n"),
                 "stone, pebble",
             ),
@@ -154,7 +154,7 @@ def test_lexicon(parsed_lexicon):
                 False,
                 Affix("PL", AffixType.SUFFIX),
                 None,
-                Proto("iki", Rule("era1")),
+                Morpheme("iki", Rule("era1")),
                 (Canonical("big"), Canonical("pile")),
                 "plural for inanimate",
             )

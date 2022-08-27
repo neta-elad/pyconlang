@@ -8,7 +8,7 @@ from unicodedata import normalize
 from .. import PYCONLANG_PATH
 from ..checksum import checksum
 from ..data import LEXURGY_VERSION
-from ..types import Proto, ResolvedForm
+from ..types import Morpheme, ResolvedForm
 from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
@@ -19,7 +19,7 @@ EVOLVE_PATH = PYCONLANG_PATH / "evolve"
 CHANGES_PATH = Path("changes.lsc")
 CACHE_PATH = EVOLVE_PATH / "cache.pickle"
 
-Evolvable = Union[str, Proto, ResolvedForm]
+Evolvable = Union[str, Morpheme, ResolvedForm]
 
 QueryTrace = Tuple[str, List[TraceLine]]
 Trace = List[QueryTrace]
@@ -32,8 +32,8 @@ def get_checksum() -> bytes:
 
 def normalize_form(form: Evolvable) -> ResolvedForm:
     if isinstance(form, str):
-        form = Proto(form)
-    if isinstance(form, Proto):
+        form = Morpheme(form)
+    if isinstance(form, Morpheme):
         form = ResolvedForm(form)
 
     return form

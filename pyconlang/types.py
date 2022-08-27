@@ -23,7 +23,7 @@ class Canonical:
 
 
 @dataclass(eq=True, frozen=True)
-class Proto:
+class Morpheme:
     form: str
     era: Optional[Rule] = field(default=None)
 
@@ -36,7 +36,7 @@ class Proto:
         return f"*{self.form}{self.era or ''}"
 
 
-SimpleForm = Union[Canonical, Proto]
+SimpleForm = Union[Canonical, Morpheme]
 
 
 @dataclass(eq=True, frozen=True)
@@ -135,7 +135,7 @@ class AffixDefinition:
     def get_era(self) -> Optional[Rule]:
         if self.era is not None:
             return self.era
-        elif isinstance(self.form, Proto):
+        elif isinstance(self.form, Morpheme):
             return self.form.era
         else:
             return None
@@ -151,21 +151,21 @@ class AffixDefinition:
 
 @dataclass(eq=True, frozen=True)
 class ResolvedForm:
-    stem: Proto
+    stem: Morpheme
     affixes: Tuple["ResolvedAffix", ...] = field(default=())
 
     def extend(self, *affixes: "ResolvedAffix") -> "ResolvedForm":
         return ResolvedForm(self.stem, self.affixes + affixes)
 
-    def to_protos(self) -> List[Proto]:
-        protos = [[self.stem]]
+    def to_morphemes(self) -> List[Morpheme]:
+        morphemes = [[self.stem]]
         for affix in self.affixes:
             if affix.type is AffixType.PREFIX:
-                protos.insert(0, affix.form.to_protos())
+                morphemes.insert(0, affix.form.to_morphemes())
             else:
-                protos.append(affix.form.to_protos())
+                morphemes.append(affix.form.to_morphemes())
 
-        return list(chain(*protos))
+        return list(chain(*morphemes))
 
 
 @dataclass(eq=True, frozen=True)
