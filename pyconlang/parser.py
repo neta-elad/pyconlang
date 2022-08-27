@@ -54,8 +54,8 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> List[Fusion]:
-    return cast(List[Fusion], list(sentence.parse_string(string, parse_all=True)))
+def parse_sentence(string: str) -> List[Compound]:
+    return cast(List[Compound], list(sentence.parse_string(string, parse_all=True)))
 
 
 ParserElement.set_default_whitespace_chars(" \t")
@@ -125,4 +125,4 @@ compound = infix_notation(
     rpar="]",
 )
 
-sentence = fusion[...]
+sentence = compound[...]
