@@ -1,17 +1,17 @@
-from pyconlang.parser import fusion, lexeme, morpheme, parse_sentence, rule, simple_form
+from pyconlang.parser import base_unit, fusion, lexeme, morpheme, parse_sentence, rule
 from pyconlang.types import Affix, AffixType, Fusion, Lexeme, Morpheme, Rule
 
 
-def test_simple_form():
+def test_base_unit():
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
-    assert parse(simple_form, "<name of the-form>") == Lexeme("name of the-form")
+    assert parse(base_unit, "<name of the-form>") == Lexeme("name of the-form")
     assert parse(morpheme, "*proto") == Morpheme("proto")
-    assert parse(simple_form, "*proto") == Morpheme("proto")
+    assert parse(base_unit, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
-    assert parse(simple_form, "*protó") == Morpheme("protó")
+    assert parse(base_unit, "*protó") == Morpheme("protó")
     assert parse(morpheme, "*proto@era1") == Morpheme("proto", Rule("era1"))
-    assert parse(simple_form, "*proto@era1") == Morpheme("proto", Rule("era1"))
+    assert parse(base_unit, "*proto@era1") == Morpheme("proto", Rule("era1"))
 
 
 def test_fusion():

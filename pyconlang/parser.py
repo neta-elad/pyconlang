@@ -52,7 +52,7 @@ morpheme = (
     .set_name("morpheme")
 )
 
-simple_form = (lexeme ^ morpheme).set_name("simple_form")
+base_unit = (lexeme ^ morpheme).set_name("simple_form")
 
 prefix = (
     (ident - Suppress("."))
@@ -67,8 +67,8 @@ suffix = (
 
 fusion = (
     (
-        (Group(prefix[...], True) + FollowedBy(simple_form))
-        - simple_form
+        (Group(prefix[...], True) + FollowedBy(base_unit))
+        - base_unit
         - Group(suffix[...], True)
     )
     .set_parse_action(tokens_map(Fusion.from_prefixes_and_suffixes))

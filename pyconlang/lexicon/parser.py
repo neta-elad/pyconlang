@@ -12,17 +12,7 @@ from pyparsing import (
     token_map,
 )
 
-from pyconlang.parser import (
-    fusion,
-    ident,
-    lexeme,
-    prefix,
-    rule,
-    simple_form,
-    suffix,
-    tokens_map,
-)
-
+from ..parser import base_unit, fusion, ident, lexeme, prefix, rule, suffix, tokens_map
 from ..types import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
 
 
@@ -73,7 +63,7 @@ affix_definition = (
         .set_results_name("stressed")
         - affix
         - explicit_opt(rule)
-        - explicit_opt(simple_form)
+        - explicit_opt(base_unit)
         - explicit_opt(lexical_sources, ())
         - rest
     )

@@ -36,9 +36,6 @@ class Morpheme:
         return f"*{self.form}{self.era or ''}"
 
 
-SimpleForm = Union[Lexeme, Morpheme]
-
-
 @dataclass(eq=True, frozen=True)
 class TemplateName:
     name: str
@@ -83,7 +80,7 @@ class Fusion:
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Affix], stem: SimpleForm, suffixes: List[Affix]
+        cls, prefixes: List[Affix], stem: "Unit", suffixes: List[Affix]
     ) -> "Fusion":
         return cls(stem, tuple(prefixes + suffixes))
 
@@ -128,7 +125,7 @@ class AffixDefinition:
     stressed: bool
     affix: Affix
     era: Optional[Rule]
-    form: Optional[SimpleForm]
+    form: Optional[Unit]
     sources: Tuple[Lexeme, ...]  # or Form - can bare Proto appear?
     description: str
 
@@ -140,7 +137,7 @@ class AffixDefinition:
         else:
             return None
 
-    def get_form(self) -> SimpleForm:
+    def get_form(self) -> Unit:
         if self.form is not None:
             return self.form
         elif len(self.sources) == 1:
