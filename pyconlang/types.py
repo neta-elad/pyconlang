@@ -3,7 +3,7 @@ from enum import Enum, auto
 from itertools import chain
 from typing import Iterable, List, Optional, Tuple, Union
 
-from pyconlang.errors import AffixDefinitionMissingForm
+from .errors import AffixDefinitionMissingForm
 
 
 @dataclass(eq=True, frozen=True)
@@ -108,7 +108,35 @@ class Fusion:
         )
 
 
-Unit = Union[Morpheme, Lexeme, Fusion]
+class CompoundStress(Enum):
+    HEAD = auto()
+    TAIL = auto()
+
+    def __str__(self) -> str:
+        match self:
+            case CompoundStress.HEAD:
+                return "!+"
+            case CompoundStress.TAIL:
+                return "+!"
+
+
+@dataclass(eq=True, frozen=True)
+class Compound:
+    head: "Unit"
+    stress: CompoundStress
+    era: Optional[Rule]
+    tail: "Unit"
+
+    def era_name(self) -> Optional[str]:
+        if self.era is None:
+            return None
+        return self.era.name
+
+    def __str__(self) -> str:
+        return f"[{self.head} {self.stress}{self.era_name() or ''} {self.tail}]"
+
+
+Unit = Union[Morpheme, Lexeme, Fusion, Compound]
 
 
 @dataclass(eq=True, frozen=True)
@@ -171,6 +199,12 @@ class ResolvedAffix:
     type: AffixType
     era: Optional[Rule]
     form: ResolvedForm
+
+    @classmethod
+    def from_compound(cls, compound: Compound, tail: ResolvedForm) -> "ResolvedAffix":
+        return cls(
+            compound.stress == CompoundStress.TAIL, AffixType.SUFFIX, compound.era, tail
+        )
 
     def era_name(self) -> Optional[str]:
         if self.era is None:

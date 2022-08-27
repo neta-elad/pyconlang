@@ -1,5 +1,23 @@
-from pyconlang.parser import base_unit, fusion, lexeme, morpheme, parse_sentence, rule
-from pyconlang.types import Affix, AffixType, Fusion, Lexeme, Morpheme, Rule
+from pyconlang.parser import (
+    base_unit,
+    compound,
+    fusion,
+    joiner,
+    lexeme,
+    morpheme,
+    parse_sentence,
+    rule,
+)
+from pyconlang.types import (
+    Affix,
+    AffixType,
+    Compound,
+    CompoundStress,
+    Fusion,
+    Lexeme,
+    Morpheme,
+    Rule,
+)
 
 
 def test_base_unit():
@@ -41,6 +59,39 @@ def test_fusion():
             Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
         ),
+    )
+
+
+def test_compound():
+    assert parse(joiner, "!+") == CompoundStress.HEAD
+    assert parse(joiner, "+!") == CompoundStress.TAIL
+
+    assert parse(compound, "*foo") == Fusion(Morpheme("foo"), ())
+    assert parse(compound, "*foo +! *bar") == Compound(
+        Fusion(Morpheme("foo"), ()), CompoundStress.TAIL, None, Fusion(Morpheme("bar"))
+    )
+    assert parse(compound, "*foo !+@era *bar") == Compound(
+        Fusion(Morpheme("foo"), ()),
+        CompoundStress.HEAD,
+        Rule("era"),
+        Fusion(Morpheme("bar")),
+    )
+    assert parse(compound, "[*foo !+@era *bar]") == Compound(
+        Fusion(Morpheme("foo"), ()),
+        CompoundStress.HEAD,
+        Rule("era"),
+        Fusion(Morpheme("bar")),
+    )
+    assert parse(compound, "[*foo +!@era *bar] !+ *baz") == Compound(
+        Compound(
+            Fusion(Morpheme("foo"), ()),
+            CompoundStress.TAIL,
+            Rule("era"),
+            Fusion(Morpheme("bar")),
+        ),
+        CompoundStress.HEAD,
+        None,
+        Fusion(Morpheme("baz")),
     )
 
 

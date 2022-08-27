@@ -7,6 +7,7 @@ from ..checksum import checksum
 from ..types import (
     Affix,
     AffixDefinition,
+    Compound,
     Describable,
     Entry,
     Fusion,
@@ -86,18 +87,26 @@ class Lexicon:
             self.resolve(definition.get_form()),
         )
 
-    def resolve(self, form: Unit) -> ResolvedForm:
-        fusion = Fusion.from_form(form)
-
-        affixes = tuple(self.resolve_affix(affix) for affix in fusion.affixes)
-
-        match stem := fusion.stem:
+    def resolve(self, unit: Unit) -> ResolvedForm:
+        match unit:
             case Morpheme():
-                return ResolvedForm(stem, affixes)
+                return ResolvedForm(unit)
             case Lexeme():
-                return self.resolve(self.get_entry(stem).form).extend(*affixes)
+                return self.resolve(self.get_entry(unit).form)
             case Fusion():
-                return self.resolve(stem).extend(*affixes)
+                return self.resolve_fusion(unit)
+            case Compound():
+                return self.resolve_compound(unit)
+
+    def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
+        affixes = tuple(self.resolve_affix(affix) for affix in fusion.affixes)
+        return self.resolve(fusion.stem).extend(*affixes)
+
+    def resolve_compound(self, compound: Compound) -> ResolvedForm:
+        head = self.resolve(compound.head)
+        tail = self.resolve(compound.tail)
+        tail_as_affix = ResolvedAffix.from_compound(compound, tail)
+        return head.extend(tail_as_affix)
 
     def resolve_with_affixes(
         self, form: Unit, affixes: Tuple[Affix, ...]
@@ -137,6 +146,8 @@ class Lexicon:
                 return self.singleton_lookup(record, str(record))
             case Fusion():
                 return self.lookup_records(record.stem, *record.affixes)
+            case Compound():
+                return self.lookup(record.head) + self.lookup(record.tail)
 
     def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:
         return list(chain(*map(self.lookup, records)))

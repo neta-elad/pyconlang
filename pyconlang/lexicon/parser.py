@@ -1,10 +1,7 @@
-from typing import Any, Union
-
 from pyparsing import (
     FollowedBy,
     Opt,
     ParserElement,
-    ParseResults,
     Regex,
     Suppress,
     Word,
@@ -12,17 +9,18 @@ from pyparsing import (
     token_map,
 )
 
-from ..parser import base_unit, fusion, ident, lexeme, prefix, rule, suffix, tokens_map
+from ..parser import (
+    base_unit,
+    explicit_opt,
+    fusion,
+    ident,
+    lexeme,
+    prefix,
+    rule,
+    suffix,
+    tokens_map,
+)
 from ..types import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
-
-
-def explicit_opt(expr: Union[ParserElement, str], value: Any = None) -> ParserElement:
-    def first_or(tokens: ParseResults) -> Any:
-        return tokens or [value]
-
-    optional = Opt(expr).set_parse_action(first_or)
-    optional.mayReturnEmpty = False
-    return optional
 
 
 def make_diagrams() -> None:
