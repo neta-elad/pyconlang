@@ -1,11 +1,13 @@
 import string
 from typing import Any, Dict, List, Match, Tuple, Union
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element, SubElement
 
 from markdown import Extension, Markdown
+from markdown.blockparser import BlockParser
 from markdown.inlinepatterns import InlineProcessor
 from markdown.preprocessors import Preprocessor
 
+from .block import DelimitedProcessor
 from ..errors import show_exception
 from ..evolve.types import Evolved
 from ..translate import Translator
@@ -107,6 +109,26 @@ class LexiconInlineProcessor(InlineProcessor):
         )
 
 
+class LexiconBlockProcessor(DelimitedProcessor):
+    extension: "LexiconInserter"
+
+    def __init__(self, parser: BlockParser, extension: "LexiconInserter") -> None:
+        super().__init__(parser, "translate")
+        self.extension = extension
+
+    def run_inner_blocks(self, parent: Element, blocks: List[str]) -> None:
+        blockquote = SubElement(parent, "blockquote")
+
+        for line in blocks:
+            e = SubElement(blockquote, "p")
+            e.text = self.evolve(line)
+
+    def evolve(self, raw: str) -> str:
+        return " ".join(
+            evolved.modern for evolved in self.extension.translator.evolve_string(raw)
+        )
+
+
 class LexiconInserter(Extension):
     translator: Translator
     valid_cache: bool
@@ -121,6 +143,9 @@ class LexiconInserter(Extension):
         md.registerExtension(self)
         md.preprocessors.register(LexiconPreprocessor(md, self), "lexicon", 0)
         md.inlinePatterns.register(LexiconInlineProcessor(self), "inline-lexicon", 200)
+        md.parser.blockprocessors.register(
+            LexiconBlockProcessor(md.parser, self), "block-lexicon", 200
+        )
 
     def reset(self) -> None:
         try:

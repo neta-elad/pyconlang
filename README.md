@@ -189,11 +189,28 @@ The following entries will appear in the book:
 ### Markdown Extensions
 Inline translations (using the lexicon)
 can be inserted between two hash signs:
-```
+```markdown
 **An example: #*aki@after-palatalization <stone>.PL#.**
 ```
 will turn out as
 > **An example: agi abagigim.**
+
+Block translations are available
+using the `!translate ... !translate` syntax:
+```markdown
+!translate
+
+*aki@after-palatalization 
+
+<stone>.PL
+
+!translate
+```
+will turn out as
+> > agi
+> >
+> > abagigim
+
 
 
 
@@ -221,6 +238,8 @@ will turn out as
   - [x] History
   - [ ] Auto-complete
   - [x] Error handling
+  - [ ] Partial trace, even when there's an error
+  - [ ] Take file as input
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [x] Handle stress
@@ -254,3 +273,4 @@ will turn out as
   - [ ] Conjugation tables
   - [x] Inline translation
   - [x] Robust against errors
+  - [x] Block translation

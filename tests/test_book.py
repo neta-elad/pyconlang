@@ -1,17 +1,27 @@
+from inspect import cleandoc
+
 from pyconlang import PYCONLANG_PATH
 from pyconlang.cli import compile_book
 
 
 def test_book(simple_pyconlang):
     (simple_pyconlang / "grammar.md").write_text(
-        "**This is an example: #*kika@era1 <stone>.PL#**"
+        cleandoc(
+            """
+        **This is an example: #*kika@era1 <stone>.PL#**
+        
+        !translate
+        
+        *kika@era1 <stone>.PL
+        
+        !translate
+        """
+        ) + '\n'
     )
 
     compile_book()
 
     html = (PYCONLANG_PATH / "output.html").read_text()
-
-    print(html)
 
     assert "By Mr. Tester" in html
     assert "TestLang" in html
@@ -19,6 +29,8 @@ def test_book(simple_pyconlang):
     assert (
         "<p><strong>This is an example: <span>kiga abagigi</span></strong></p>" in html
     )
+
+    assert "<blockquote>\n<p>kiga abagigi</p>\n</blockquote>" in html
 
     assert (
         "<p><strong>abagigi</strong> [abagigi] <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
