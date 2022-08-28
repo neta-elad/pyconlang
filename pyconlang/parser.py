@@ -3,6 +3,7 @@ from typing import Any, Callable, List, TypeVar, Union, cast
 
 from pyparsing import (
     FollowedBy,
+    Forward,
     Group,
     Literal,
     Opt,
@@ -11,8 +12,6 @@ from pyparsing import (
     Suppress,
     Word,
     alphanums,
-    infix_notation,
-    opAssoc,
     pyparsing_unicode,
     token_map,
 )
@@ -80,7 +79,7 @@ morpheme = (
     .set_name("morpheme")
 )
 
-base_unit = (lexeme ^ morpheme).set_name("simple_form")
+base_unit = (lexeme ^ morpheme).set_name("base unit")
 
 prefix = (
     (ident - Suppress("."))
@@ -103,26 +102,30 @@ fusion = (
     .set_name("fusion")
 )
 
-head_stresser = (
-    Literal("!+")
-    .set_parse_action(const_action(CompoundStress.HEAD))
-    .set_name("head stresser")
-)
-tail_stresser = (
-    Literal("+!")
-    .set_parse_action(const_action(CompoundStress.TAIL))
-    .set_name("tail stresser")
+head_stresser = Literal("!+").set_parse_action(const_action(CompoundStress.HEAD))
+tail_stresser = Literal("+!").set_parse_action(const_action(CompoundStress.TAIL))
+
+joiner = (
+    (head_stresser ^ tail_stresser) - explicit_opt(rule).set_name("maybe rule")
+).set_name("joiner")
+
+compound = Forward()
+compound.set_name("compound")
+
+bracketed_compound = (Suppress("[") - compound - Suppress("]")).set_name(
+    "bracketed compound"
 )
 
-joiner = (head_stresser ^ tail_stresser) - explicit_opt(rule)
+fusion_or_bracketed = (fusion ^ bracketed_compound).set_name("fusion or bracketed")
 
-compound = infix_notation(
-    fusion,
-    [
-        (joiner, 2, opAssoc.LEFT, token_map(tokens_map(Compound))),
-    ],
-    lpar="[",
-    rpar="]",
+joined_compound = (
+    Group((fusion_or_bracketed + FollowedBy(joiner)) - joiner - fusion_or_bracketed)
+    .set_parse_action(token_map(tokens_map(Compound)))
+    .set_name("joined compound")
 )
+
+
+compound <<= fusion_or_bracketed ^ joined_compound
+
 
 sentence = compound[...]
