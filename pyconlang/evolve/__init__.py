@@ -72,6 +72,7 @@ class Evolver:
         current_checksum = get_checksum()
         if self.checksum != current_checksum:
             self.cache = {}
+            self.trace_cache = {}
             self.checksum = current_checksum
             return False
         return True
