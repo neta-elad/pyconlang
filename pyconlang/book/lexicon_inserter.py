@@ -1,4 +1,5 @@
 import string
+from itertools import chain
 from typing import Any, Dict, List, Match, Tuple, Union
 from xml.etree.ElementTree import Element, SubElement
 
@@ -12,6 +13,14 @@ from ..evolve.types import Evolved
 from ..translate import Translator
 from ..types import Entry, Morpheme, Unit
 from .block import DelimitedProcessor
+
+
+def escape_markdown(text: str) -> str:
+    text = text.replace("+", "&plus;")
+    text = text.replace("*", "&ast;")
+    text = text.replace("~", "&tilde;")
+
+    return text
 
 
 class LexiconPreprocessor(Preprocessor):
@@ -121,17 +130,20 @@ class LexiconBlockProcessor(DelimitedProcessor):
         pre = SubElement(parent, "pre")
         code = SubElement(pre, "code")
 
-        from itertools import chain
-
         lines = list(chain(*map(str.splitlines, blocks)))
 
-        # cache all lines
-        self.extension.translator.evolve_string(" ".join(lines))
+        try:
+            # cache all lines
+            self.extension.translator.evolve_string(" ".join(lines))
 
-        # use cache
-        code.text = "\n".join(
-            f"{line} => {self.evolve(line)}" for line in lines
-        ).replace("*", "&ast;")
+            # use cache
+            code.text = escape_markdown(
+                "\n".join(f"{line} => {self.evolve(line)}" for line in lines)
+            )
+        except Exception as e:
+            print(f"Could not block from lexicon")
+            print(show_exception(e))
+            code.text = "???"
 
     def evolve(self, raw: str) -> str:
         return " ".join(

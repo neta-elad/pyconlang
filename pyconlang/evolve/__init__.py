@@ -1,5 +1,6 @@
 import pickle
 from dataclasses import dataclass, field
+from itertools import chain
 from pathlib import Path
 from subprocess import run
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
@@ -187,8 +188,6 @@ class Evolver:
         if end is not None:
             args.append("-b")
             args.append(end)
-
-        from itertools import chain
 
         if trace:
             args.extend(chain(*zip(["-t"] * len(words), words)))

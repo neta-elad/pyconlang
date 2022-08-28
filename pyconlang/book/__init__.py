@@ -42,8 +42,6 @@ class Compiler:
         )
 
     def compile(self) -> None:
-        print("Compiling book... ", end="")
-        sys.stdout.flush()
         template = Template(Path("template.html").read_text())
         input_markdown = Path("book.md").read_text()
         self.converter.reset()
@@ -56,7 +54,6 @@ class Compiler:
         (PYCONLANG_PATH / "output.html").write_text(
             template.safe_substitute(**metadata)
         )
-        print("Done")
 
 
 class Handler(PatternMatchingEventHandler):
@@ -68,8 +65,10 @@ class Handler(PatternMatchingEventHandler):
         self.compiler.compile()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
-        print(f"Recompiling due to {event}")
+        print("Compiling book... ", end="")
+        sys.stdout.flush()
         self.compiler.compile()
+        print("Done")
 
 
 def watch() -> None:
