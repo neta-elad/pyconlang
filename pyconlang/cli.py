@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import List
 
 import click
-import toml
 
 from . import PYCONLANG_PATH
 from .book import compile_book
 from .book import watch as watch_book
 from .data import LEXURGY_VERSION
+from .metadata import Metadata
 from .repl import run as run_repl
 
 
@@ -58,9 +58,7 @@ def init(directory: Path, name: str, author: str, overwrite: bool) -> None:
         if not target.exists() or overwrite:
             shutil.copyfile(str(file), target)
 
-    metadata = directory / "metadata.toml"
-    if not metadata.exists() or overwrite:
-        metadata.write_text(toml.dumps({"name": name, "author": author}))
+    Metadata(name=name, author=author).save(overwrite=overwrite)
 
 
 @run.command

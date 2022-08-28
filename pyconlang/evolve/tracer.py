@@ -49,6 +49,9 @@ def group_trace_lines(
 ) -> Mapping[str, List[TraceLine]]:
     result: Dict[str, List[TraceLine]] = {}
     for line in lines:
+        if line.before == line.after:
+            continue
+
         if not line.word and default:
             line = line.set_word(default)
         result.setdefault(line.word, [])

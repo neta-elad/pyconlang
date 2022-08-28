@@ -4,6 +4,7 @@ from itertools import chain
 from typing import Iterable, List, Optional, Tuple, Union
 
 from .errors import AffixDefinitionMissingForm
+from .metadata import Metadata
 
 
 @dataclass(eq=True, frozen=True)
@@ -53,12 +54,22 @@ class AffixType(Enum):
     PREFIX = auto()
     SUFFIX = auto()
 
-    def fuse(self, stem: str, affix: str) -> str:
+    def fuse(self, stem: str, affix: str, syllable_break: Optional[str] = None) -> str:
+        if syllable_break is None:
+            syllable_break = self.syllable_break()
+
         match self:
             case AffixType.PREFIX:
-                return affix + stem
+                return affix + syllable_break + stem
             case AffixType.SUFFIX:
-                return stem + affix
+                return stem + syllable_break + affix
+
+    @staticmethod
+    def syllable_break() -> str:
+        if Metadata.default().syllables:
+            return "."
+        else:
+            return ""
 
 
 @dataclass(eq=True, frozen=True)
@@ -67,7 +78,7 @@ class Affix:
     type: AffixType
 
     def __str__(self) -> str:
-        return self.type.fuse(".", self.name)
+        return self.type.fuse("", self.name, ".")
 
 
 Describable = Union["Unit", Affix]

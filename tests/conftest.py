@@ -57,6 +57,8 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
         Symbol u [mid vowel]
         Symbol i [high vowel]
     
+    syllables:
+        explicit
 
     palatalization:
         k => ʃ / _ i
@@ -75,6 +77,9 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
         
     romanizer-phonetic:
         unchanged
+        
+    syllables:
+        clear
     
     romanizer:
         [+stressed vowel] => [*stressed]

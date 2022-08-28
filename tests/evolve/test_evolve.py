@@ -1,4 +1,5 @@
 from pyconlang.evolve import Evolved, TraceLine
+from pyconlang.metadata import Metadata
 from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 
 
@@ -114,6 +115,26 @@ def test_stress(simple_evolver):
             )
         ]
     ) == [Evolved("mˈiabik", "miabik", "mˈiabik")]
+
+
+def test_explicit_syllables(simple_evolver):
+    Metadata.default().syllables = True
+    assert simple_evolver.evolve(
+        [
+            ResolvedForm(
+                Morpheme("apˈak"),
+                (
+                    ResolvedAffix(
+                        True,
+                        AffixType.PREFIX,
+                        Rule("era2"),
+                        ResolvedForm(Morpheme("mˈa"), ()),
+                    ),
+                ),
+            )
+        ]
+    ) == [Evolved("mˈi.abik", "miabik", "mˈi.abik")]
+    Metadata.default().syllables = False
 
 
 def test_trace(simple_evolver):

@@ -1,14 +1,14 @@
-import time
 import sys
+import time
 from pathlib import Path
 from string import Template
 
-import toml
 from markdown import Markdown
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
 from .. import PYCONLANG_PATH
+from ..metadata import Metadata
 from .block import Boxed
 from .inline import InlineDelete, InlineInsert
 from .lexicon_inserter import LexiconInserter
@@ -42,21 +42,21 @@ class Compiler:
         )
 
     def compile(self) -> None:
-        print("Compiling book... ", end='')
+        print("Compiling book... ", end="")
         sys.stdout.flush()
         template = Template(Path("template.html").read_text())
         input_markdown = Path("book.md").read_text()
         self.converter.reset()
         content = Template(self.converter.convert(input_markdown))
 
-        metadata = toml.loads(Path("metadata.toml").read_text())
+        metadata = Metadata.default().to_dict()
 
         metadata["content"] = content.safe_substitute(**metadata)
 
         (PYCONLANG_PATH / "output.html").write_text(
             template.safe_substitute(**metadata)
         )
-        print('Done')
+        print("Done")
 
 
 class Handler(PatternMatchingEventHandler):
