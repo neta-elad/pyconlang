@@ -240,6 +240,7 @@ will turn out as
   - [x] Error handling
   - [ ] Partial trace, even when there's an error
   - [ ] Take file as input
+  - [ ] Evolve up to a point
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [x] Handle stress
@@ -248,6 +249,7 @@ will turn out as
   - [x] Better cache
   - [ ] Working with deromanizer and custom romanizers
   - [ ] Evolve affixes with empty stem
+  - [ ] Evolve up to a point
 - [ ] `lexicon`: Interactive lexicon
   - [x] Define word by canonical
   - [ ] Find by canonical, proto, affix, or definition
