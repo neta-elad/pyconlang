@@ -229,7 +229,7 @@ will turn out as
   - [ ] Branched affixes (depending on stem phonology / metadata)
   - [ ] Frozen affixes (i.e. affixes defined in the modern language)
   - [ ] Affixes with sound changes (e.g. voice initial consonant)
-  - [ ] Standalone affixes
+  - [x] Standalone affixes
 - [ ] `repl`: Interactive session with Lexurgy
   - [x] Enter proto form, get romanized modern form
   - [x] Get phonetic modern form
@@ -254,7 +254,7 @@ will turn out as
   - [x] Protos to take affixes as well
   - [x] Batch evolve, using dependency graph?
   - [ ] Better cache
-  - [ ] On-the-fly affixes? Syntax for compounding two words without an explicit affix
+  - [x] On-the-fly affixes? Syntax for compounding two words without an explicit affix
   - [ ] ? Change the order of canonical and template name, and make record declarations optional
   - [ ] Affixes with empty stem
 - [ ] `translator`: Automatic translation according to gloss

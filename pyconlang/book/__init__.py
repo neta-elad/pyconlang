@@ -1,4 +1,5 @@
 import time
+import sys
 from pathlib import Path
 from string import Template
 
@@ -41,6 +42,8 @@ class Compiler:
         )
 
     def compile(self) -> None:
+        print("Compiling book... ", end='')
+        sys.stdout.flush()
         template = Template(Path("template.html").read_text())
         input_markdown = Path("book.md").read_text()
         self.converter.reset()
@@ -53,6 +56,7 @@ class Compiler:
         (PYCONLANG_PATH / "output.html").write_text(
             template.safe_substitute(**metadata)
         )
+        print('Done')
 
 
 class Handler(PatternMatchingEventHandler):
