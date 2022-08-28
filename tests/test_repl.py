@@ -95,6 +95,16 @@ def test_trace(simple_repl):
         """
     )
 
+    assert simple_repl("trace <big> <stone>") == cleandoc(
+        """
+        iki
+        iki => iʃi (palatalization)
+        iʃi => ishi (Romanizer)
+        apak
+        apak => abak (intervocalic-voicing)
+        """
+    )
+
 
 def test_repl(capsys, mock_input, simple_pyconlang):
     mock_input.send_text("*apaki\n")

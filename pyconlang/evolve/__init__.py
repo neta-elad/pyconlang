@@ -208,7 +208,7 @@ class Evolver:
 
         trace_lines: Mapping[str, List[TraceLine]] = {}
         if trace:
-            trace_lines = parse_trace_lines(trace_file.read_text())
+            trace_lines = parse_trace_lines(trace_file.read_text(), words[0])
 
         return [
             Evolved(proto, modern, phonetic)
