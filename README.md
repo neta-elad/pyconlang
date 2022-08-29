@@ -264,9 +264,9 @@ will turn out as
   - [x] Match-up forms and glosses
   - [ ] Better cache
   - [ ] Full-text search over everything
-  - [ ] Affixes with empty stem
   (proto, modern, phonetic, definitions, etc.) 
   [whoosh](https://whoosh.readthedocs.io/en/latest/parsing.html)
+  - [ ] Affixes with empty stem
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
   - [x] Only rebuild lexicon when changed
