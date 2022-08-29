@@ -137,6 +137,24 @@ def test_explicit_syllables(simple_evolver):
     Metadata.default().syllables = False
 
 
+def test_evolve_empty_stem(simple_evolver):
+    assert simple_evolver.evolve(
+        [
+            ResolvedForm(
+                Morpheme("", Rule("era2")),
+                (
+                    ResolvedAffix(
+                        True,
+                        AffixType.PREFIX,
+                        Rule("era2"),
+                        ResolvedForm(Morpheme("apak"), ()),
+                    ),
+                ),
+            )
+        ]
+    ) == [Evolved("abak", "abak", "abak")]
+
+
 def test_trace(simple_evolver):
     assert simple_evolver.trace([Morpheme("apaki")]) == [
         (

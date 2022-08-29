@@ -259,6 +259,7 @@ will turn out as
   - [x] On-the-fly affixes? Syntax for compounding two words without an explicit affix
   - [ ] ? Change the order of canonical and template name, and make record declarations optional
   - [ ] Affixes with empty stem
+  - [ ] Vars/forms with rules `$.PL@proto`
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
   - [x] Match-up forms and glosses
