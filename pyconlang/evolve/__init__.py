@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
 from subprocess import run
+from time import time
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from unicodedata import normalize
 
@@ -79,6 +80,7 @@ class Evolver:
         return True
 
     def save(self) -> int:
+        self.cleanup()
         return CACHE_PATH.write_bytes(pickle.dumps(self))
 
     def trace(self, forms: Sequence[Evolvable]) -> List[EvolvedWithTrace]:
@@ -160,16 +162,18 @@ class Evolver:
         if not words:
             return [], {}
 
-        input_words = EVOLVE_PATH / "words.wli"
+        base_name = f"words-{time():.0f}"
+
+        input_words = EVOLVE_PATH / f"{base_name}.wli"
         input_words.write_text("\n".join(words))
 
-        output_words = EVOLVE_PATH / "words_ev.wli"
+        output_words = EVOLVE_PATH / f"{base_name}_ev.wli"
         output_words.unlink(missing_ok=True)
 
-        phonetic_words = EVOLVE_PATH / "words_phonetic.wli"
+        phonetic_words = EVOLVE_PATH / f"{base_name}_phonetic.wli"
         phonetic_words.unlink(missing_ok=True)
 
-        trace_file = EVOLVE_PATH / "words_trace.wli"
+        trace_file = EVOLVE_PATH / f"{base_name}_trace.wli"
         trace_file.unlink(missing_ok=True)
 
         args = [
@@ -214,3 +218,8 @@ class Evolver:
             Evolved(proto, modern, phonetic)
             for proto, modern, phonetic in zip(words, moderns, phonetics)
         ], trace_lines
+
+    @staticmethod
+    def cleanup() -> None:
+        for path in EVOLVE_PATH.iterdir():
+            path.unlink()

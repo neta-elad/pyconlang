@@ -175,3 +175,7 @@ class LexiconInserter(Extension):
         except Exception as e:
             print("Could not reload translator.")
             print(show_exception(e))
+
+
+    def save(self) -> None:
+        self.translator.save()

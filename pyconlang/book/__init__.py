@@ -17,8 +17,10 @@ from .preprocess import SkipLine
 
 class Compiler:
     converter: Markdown
+    lexicon: LexiconInserter
 
     def __init__(self) -> None:
+        self.lexicon = LexiconInserter()
         self.converter = Markdown(
             extensions=[
                 "extra",
@@ -27,7 +29,7 @@ class Compiler:
                 "sane_lists",
                 "mdx_include",
                 SkipLine(),
-                LexiconInserter(),
+                self.lexicon,
                 InlineDelete(),
                 InlineInsert(),
                 Boxed(),
@@ -54,6 +56,8 @@ class Compiler:
         (PYCONLANG_PATH / "output.html").write_text(
             template.safe_substitute(**metadata)
         )
+
+        self.lexicon.save()
 
 
 class Handler(PatternMatchingEventHandler):
