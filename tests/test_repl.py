@@ -20,6 +20,8 @@ def simple_repl(capsys, simple_pyconlang):
 def test_basic(simple_repl):
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("<big>") == "ishi"
+    assert simple_repl("d <big>") == "ishi"
+    assert simple_repl("d") == "ishi"
     assert simple_repl("<big>.PL") == "ishiigi"
     assert simple_repl("*apak +! *i") == "abashi"
     assert simple_repl("*apak +!@era1 *i") == "abagi"
@@ -27,17 +29,22 @@ def test_basic(simple_repl):
 
 def test_phonetic(simple_repl):
     assert simple_repl("p *apaki") == "abaʃi"
+    assert simple_repl("*apaki") == "abashi"
+    assert simple_repl("p") == "abaʃi"
     assert simple_repl("phonetic *apaki") == "abaʃi"
     assert simple_repl("phonetic <big>.PL") == "iʃiigi"
 
 
 def test_simple(simple_repl):
     assert simple_repl("*apakí") == "abashí"
+    assert simple_repl("s") == "abashi"
     assert simple_repl("s *apakí") == "abashi"
     assert simple_repl("simple *apakí") == "abashi"
 
 
 def test_gloss(simple_repl):
+    assert simple_repl("<big>.PL") == "ishiigi"
+    assert simple_repl("g") == "ishiigi  \n <big>.PL"
     assert simple_repl("g <big>.PL") == "ishiigi  \n <big>.PL"
     assert simple_repl("gloss <big>.PL") == "ishiigi  \n <big>.PL"
 
@@ -48,6 +55,8 @@ def test_gloss(simple_repl):
 
 
 def test_lookup(simple_repl):
+    assert simple_repl("<big>.PL") == "ishiigi"
+    assert simple_repl("l") == "<big>: (adj.) big, great\n.PL: plural for inanimate"
     assert (
         simple_repl("l <big>.PL")
         == "<big>: (adj.) big, great\n.PL: plural for inanimate"
@@ -70,6 +79,14 @@ def test_lookup(simple_repl):
 
 
 def test_trace(simple_repl):
+    assert simple_repl("<big>") == "ishi"
+    assert simple_repl("t") == cleandoc(
+        """
+        iki
+        iki => iʃi (palatalization)
+        iʃi => ishi (Romanizer)
+        """
+    )
     assert simple_repl("t <big>") == cleandoc(
         """
         iki

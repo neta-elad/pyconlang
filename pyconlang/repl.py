@@ -48,6 +48,7 @@ class ReplSession(Cmd):
     translator: Translator = field(default_factory=Translator)
     session: PromptSession[str] = field(default_factory=_default_prompt_session)
     watcher: Handler = field(default_factory=Handler)
+    last_line: str = field(default="")
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -77,6 +78,10 @@ class ReplSession(Cmd):
             observer.stop()
             observer.join()
 
+    def line(self, line: str) -> str:
+        self.last_line = line or self.last_line
+        return self.last_line
+
     def run_command(self, line: str) -> None:
         try:
             self.onecmd(line)
@@ -86,7 +91,11 @@ class ReplSession(Cmd):
     def translate(
         self, line: str, getter: Callable[[Evolved], str] = attrgetter("modern")
     ) -> None:
-        print(" ".join(getter(form) for form in self.translator.evolve_string(line)))
+        print(
+            " ".join(
+                getter(form) for form in self.translator.evolve_string(self.line(line))
+            )
+        )
 
     def default(
         self,
@@ -137,7 +146,7 @@ class ReplSession(Cmd):
         """
         gloss = [
             (evolved.modern, str(form))
-            for evolved, form in self.translator.gloss_string(line)
+            for evolved, form in self.translator.gloss_string(self.line(line))
         ]
 
         print(
@@ -157,7 +166,7 @@ class ReplSession(Cmd):
         """
         Breaks down compound forms and looks them up in the lexicon.
         """
-        result = self.translator.lookup_string(line)
+        result = self.translator.lookup_string(self.line(line))
 
         if len(result) == 1:
             print(_show_lookup_records(result[0][1]))
@@ -185,7 +194,7 @@ class ReplSession(Cmd):
         """
         Traces the sound changes for each individual query sent to Lexurgy.
         """
-        for evolved, trace in self.translator.trace_string(line):
+        for evolved, trace in self.translator.trace_string(self.line(line)):
             for query, lines in trace:
                 print(query)
                 for trace_line in lines:
