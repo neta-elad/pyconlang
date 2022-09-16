@@ -93,7 +93,7 @@ class Fusion:
     def from_prefixes_and_suffixes(
         cls, prefixes: List[Affix], stem: "Unit", suffixes: List[Affix]
     ) -> "Fusion":
-        return cls(stem, tuple(prefixes + suffixes))
+        return cls(stem, tuple(list(reversed(prefixes)) + suffixes))
 
     @classmethod
     def from_form(cls, form: "Unit") -> "Fusion":
