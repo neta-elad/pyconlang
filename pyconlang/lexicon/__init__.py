@@ -113,7 +113,7 @@ class Lexicon:
     ) -> ResolvedForm:
         resolved_affixes = tuple(self.resolve_affix(affix) for affix in affixes)
         resolved = self.resolve(form)
-        return ResolvedForm(resolved.stem, resolved.affixes + resolved_affixes)
+        return resolved.extend(*resolved_affixes)
 
     def substitute(self, var: Var, form: Unit) -> ResolvedForm:
         return self.resolve_with_affixes(form, var.affixes)

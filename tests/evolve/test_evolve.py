@@ -67,6 +67,30 @@ def test_morpheme_fuse(simple_evolver):
     ) == [Evolved("maapak", "maabak", "maabak")]
 
 
+def test_morpheme_fuse_order(simple_evolver):
+    assert simple_evolver.evolve(
+        [
+            ResolvedForm(
+                Morpheme("apak"),
+                (
+                    ResolvedAffix(
+                        False,
+                        AffixType.SUFFIX,
+                        Rule("era2"),
+                        ResolvedForm(Morpheme("ka"), ()),
+                    ),
+                    ResolvedAffix(
+                        False,
+                        AffixType.SUFFIX,
+                        None,
+                        ResolvedForm(Morpheme("ma"), ()),
+                    ),
+                ),
+            )
+        ]
+    ) == [Evolved("abakmaka", "abakmaka", "abakmaka")]
+
+
 def test_stress(simple_evolver):
     assert simple_evolver.evolve(
         [

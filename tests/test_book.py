@@ -36,7 +36,7 @@ def test_book(simple_pyconlang):
         cleandoc(
             """
             <pre><code>&ast;kika@era1  =&gt; kiga
-            <stone>.PL =&gt; abagigi
+            &lt;stone&gt;.PL =&gt; abagigi
             </code></pre>
             """
         )

@@ -1,3 +1,4 @@
+import html
 import string
 from itertools import chain
 from typing import Any, Dict, List, Match, Tuple, Union
@@ -138,7 +139,9 @@ class LexiconBlockProcessor(DelimitedProcessor):
 
             # use cache
             code.text = escape_markdown(
-                "\n".join(f"{line} => {self.evolve(line)}" for line in lines)
+                "\n".join(
+                    f"{html.escape(line)} => {self.evolve(line)}" for line in lines
+                )
             )
         except Exception as e:
             print(f"Could not block from lexicon")
