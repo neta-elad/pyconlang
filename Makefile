@@ -34,7 +34,7 @@ install:
 	yes | pip uninstall pyconlang
 	pip install -e .[test]
 
-diagrams.html: pyconlang//parser.py pyconlang/lexicon/parser.py
+diagrams.html: pyconlang/parser.py pyconlang/lexicon/parser.py
 	python -m pyconlang.lexicon.parser
 
 .PHONY: clean
