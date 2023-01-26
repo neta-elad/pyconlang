@@ -1,5 +1,6 @@
 import pickle
 from dataclasses import dataclass, field
+from functools import cached_property
 from itertools import chain
 from pathlib import Path
 from subprocess import run
@@ -11,6 +12,7 @@ from .. import PYCONLANG_PATH
 from ..checksum import checksum
 from ..data import LEXURGY_VERSION
 from ..types import Morpheme, ResolvedForm
+from .arrange import AffixArranger
 from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
@@ -32,25 +34,16 @@ def get_checksum() -> bytes:
     return checksum(CHANGES_PATH)
 
 
-def normalize_form(form: Evolvable) -> ResolvedForm:
-    if isinstance(form, str):
-        form = Morpheme(form)
-    if isinstance(form, Morpheme):
-        form = ResolvedForm(form)
-
-    return form
-
-
-def normalize_forms(forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
-    return [normalize_form(form) for form in forms]
-
-
 @dataclass
 class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
     trace_cache: Dict[EvolveQuery, List[TraceLine]] = field(default_factory=dict)
     batcher: Batcher = field(default_factory=Batcher)
+
+    @cached_property
+    def arranger(self) -> AffixArranger:
+        return AffixArranger(CHANGES_PATH)
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -88,7 +81,7 @@ class Evolver:
 
         result = []
 
-        for form in normalize_forms(forms):
+        for form in self.normalize_forms(forms):
             query = self.batcher.build_query(form)
             result.append((self.cache[query], self.get_trace(query)))
 
@@ -111,7 +104,7 @@ class Evolver:
     def evolve(
         self, forms: Sequence[Evolvable], *, trace: bool = False
     ) -> List[Evolved]:
-        resolved_forms = normalize_forms(forms)
+        resolved_forms = self.normalize_forms(forms)
 
         mapping, layers = self.batcher.build_and_order(resolved_forms)
 
@@ -150,6 +143,17 @@ class Evolver:
             result.append(evolved_result)
 
         return result
+
+    def normalize_form(self, form: Evolvable) -> ResolvedForm:
+        if isinstance(form, str):
+            form = Morpheme(form)
+        if isinstance(form, Morpheme):
+            form = ResolvedForm(form)
+
+        return self.arranger.rearrange(form)
+
+    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
+        return [self.normalize_form(form) for form in forms]
 
     @staticmethod
     def evolve_words(
