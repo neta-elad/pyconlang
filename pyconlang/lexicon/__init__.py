@@ -78,14 +78,26 @@ class Lexicon:
 
         raise MissingAffix(affix.name)
 
-    def resolve_affix(self, affix: Affix) -> ResolvedAffix:
+    def resolve_affix(self, affix: Affix) -> List[ResolvedAffix]:
         definition = self.get_affix(affix)
-        return ResolvedAffix(
-            definition.stressed,
-            definition.affix.type,
-            definition.get_era(),
-            self.resolve(definition.get_form()),
-        )
+        if definition.is_var():
+            return list(
+                chain(
+                    *[
+                        self.resolve_affix(sub_affix)
+                        for sub_affix in definition.get_var().affixes
+                    ]
+                )
+            )
+        else:
+            return [
+                ResolvedAffix(
+                    definition.stressed,
+                    definition.affix.type,
+                    definition.get_era(),
+                    self.resolve(definition.get_form()),
+                )
+            ]
 
     def resolve(self, unit: Unit) -> ResolvedForm:
         match unit:
@@ -99,7 +111,7 @@ class Lexicon:
                 return self.resolve_compound(unit)
 
     def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
-        affixes = tuple(self.resolve_affix(affix) for affix in fusion.affixes)
+        affixes = tuple(chain(*[self.resolve_affix(affix) for affix in fusion.affixes]))
         return self.resolve(fusion.stem).extend(*affixes)
 
     def resolve_compound(self, compound: Compound) -> ResolvedForm:
@@ -111,7 +123,9 @@ class Lexicon:
     def resolve_with_affixes(
         self, form: Unit, affixes: Tuple[Affix, ...]
     ) -> ResolvedForm:
-        resolved_affixes = tuple(self.resolve_affix(affix) for affix in affixes)
+        resolved_affixes = tuple(
+            chain(*[self.resolve_affix(affix) for affix in affixes])
+        )
         resolved = self.resolve(form)
         return resolved.extend(*resolved_affixes)
 

@@ -53,6 +53,9 @@ rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 lexical_sources = Suppress("(") - lexeme[1, ...].set_parse_action(tuple) - Suppress(")")
 
 affix = (prefix ^ suffix).set_name("affix")
+
+affix_form = (base_unit ^ var).set_name("affix form")
+
 affix_definition = (
     (
         Suppress("affix")
@@ -61,7 +64,7 @@ affix_definition = (
         .set_results_name("stressed")
         - affix
         - explicit_opt(rule)
-        - explicit_opt(base_unit)
+        - explicit_opt(affix_form)
         - explicit_opt(lexical_sources, ())
         - rest
     )

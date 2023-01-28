@@ -151,13 +151,34 @@ def test_lexicon(parsed_lexicon):
     assert frozenset(parsed_lexicon.affixes) == frozenset(
         {
             AffixDefinition(
-                False,
-                Affix("PL", AffixType.SUFFIX),
-                None,
-                Morpheme("iki", Rule("era1")),
-                (Lexeme("big"), Lexeme("pile")),
-                "plural for inanimate",
-            )
+                stressed=False,
+                affix=Affix("PL", AffixType.SUFFIX),
+                era=None,
+                form=Morpheme("iki", Rule("era1")),
+                sources=(Lexeme("big"), Lexeme("pile")),
+                description="plural for inanimate",
+            ),
+            AffixDefinition(
+                stressed=False,
+                affix=Affix(name="COL", type=AffixType.SUFFIX),
+                era=None,
+                form=Morpheme(form="ma", era=None),
+                sources=(),
+                description="collective",
+            ),
+            AffixDefinition(
+                stressed=False,
+                affix=Affix(name="LARGE", type=AffixType.SUFFIX),
+                era=None,
+                form=Var(
+                    affixes=(
+                        Affix(name="COL", type=AffixType.SUFFIX),
+                        Affix(name="PL", type=AffixType.SUFFIX),
+                    )
+                ),
+                sources=(),
+                description="large plural",
+            ),
         }
     )
 

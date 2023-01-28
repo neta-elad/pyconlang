@@ -9,6 +9,10 @@ class AffixDefinitionMissingForm(PyconlangError):
     ...
 
 
+class AffixDefinitionMissingVar(PyconlangError):
+    ...
+
+
 def show_exception(exception: Exception) -> str:
     match exception:
         case ParseBaseException():

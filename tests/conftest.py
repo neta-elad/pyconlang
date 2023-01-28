@@ -30,6 +30,9 @@ def sample_lexicon():
     template &plural $ $.PL # this is a template
     
     affix .PL *iki@era1 (<big> <pile>) plural for inanimate
+    affix .COL *ma collective
+    
+    affix .LARGE $.COL.PL large plural
     
     entry <big> *iki (adj.) big, great
 

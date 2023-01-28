@@ -3,7 +3,7 @@ from enum import Enum, auto
 from itertools import chain
 from typing import Iterable, List, Optional, Tuple, Union
 
-from .errors import AffixDefinitionMissingForm
+from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .metadata import Metadata
 
 
@@ -79,6 +79,15 @@ class Affix:
 
     def __str__(self) -> str:
         return self.type.fuse("", self.name, ".")
+
+
+@dataclass(eq=True, frozen=True)
+class Var:
+    affixes: Tuple[Affix, ...]
+
+    @classmethod
+    def from_iterable(cls, iterable: Iterable[Affix]) -> "Var":
+        return cls(tuple(iterable))
 
 
 Describable = Union["Unit", Affix]
@@ -164,7 +173,7 @@ class AffixDefinition:
     stressed: bool
     affix: Affix
     era: Optional[Rule]
-    form: Optional[Unit]
+    form: Optional[Union[Unit, Var]]
     sources: Tuple[Lexeme, ...]  # or Form - can bare Proto appear?
     description: str
 
@@ -176,13 +185,22 @@ class AffixDefinition:
         else:
             return None
 
+    def is_var(self) -> bool:
+        return self.form is not None and isinstance(self.form, Var)
+
     def get_form(self) -> Unit:
-        if self.form is not None:
+        if self.form is not None and not isinstance(self.form, Var):
             return self.form
         elif len(self.sources) == 1:
             return self.sources[0]
         else:
             raise AffixDefinitionMissingForm(self)
+
+    def get_var(self) -> Var:
+        if self.form is not None and isinstance(self.form, Var):
+            return self.form
+        else:
+            raise AffixDefinitionMissingVar(self)
 
 
 @dataclass(eq=True, frozen=True)
@@ -221,15 +239,6 @@ class ResolvedAffix:
         if self.era is None:
             return None
         return self.era.name
-
-
-@dataclass(eq=True, frozen=True)
-class Var:
-    affixes: Tuple[Affix, ...]
-
-    @classmethod
-    def from_iterable(cls, iterable: Iterable[Affix]) -> "Var":
-        return cls(tuple(iterable))
 
 
 @dataclass(eq=True, frozen=True)

@@ -30,6 +30,52 @@ def test_parsed_lexicon(parsed_lexicon):
     )
 
     assert parsed_lexicon.resolve(
+        Fusion(
+            Lexeme("stone"),
+            (
+                Affix("COL", AffixType.SUFFIX),
+                Affix("PL", AffixType.SUFFIX),
+            ),
+        )
+    ) == ResolvedForm(
+        Morpheme("apak"),
+        (
+            ResolvedAffix(
+                False,
+                AffixType.SUFFIX,
+                None,
+                ResolvedForm(Morpheme("ma", None), ()),
+            ),
+            ResolvedAffix(
+                False,
+                AffixType.SUFFIX,
+                Rule("era1"),
+                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
+            ),
+        ),
+    )
+
+    assert parsed_lexicon.resolve(
+        Fusion(Lexeme("stone"), (Affix("LARGE", AffixType.SUFFIX),))
+    ) == ResolvedForm(
+        Morpheme("apak"),
+        (
+            ResolvedAffix(
+                False,
+                AffixType.SUFFIX,
+                None,
+                ResolvedForm(Morpheme("ma", None), ()),
+            ),
+            ResolvedAffix(
+                False,
+                AffixType.SUFFIX,
+                Rule("era1"),
+                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
+            ),
+        ),
+    )
+
+    assert parsed_lexicon.resolve(
         Compound(Lexeme("stone"), CompoundStress.TAIL, None, Morpheme("baka"))
     ) == ResolvedForm(
         Morpheme("apak"),
