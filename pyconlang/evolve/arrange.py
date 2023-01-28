@@ -4,7 +4,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Mapping, Optional
 
-from pyconlang.types import ResolvedForm
+from ..types import ResolvedForm
 
 RULE_PATTERN = r"^([A-Za-z0-9-]+):"
 
