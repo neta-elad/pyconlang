@@ -40,6 +40,7 @@ class Compiler:
                     "syntax_left": r"@\{",
                     "syntax_right": r"\}@",
                     "content_cache_clean_local": True,
+                    "recursive_relative_path": True,
                 }
             },
         )
