@@ -9,7 +9,7 @@ from watchdog.observers import Observer
 
 from .. import PYCONLANG_PATH
 from ..metadata import Metadata
-from .block import Boxed
+from .block import Boxed, Details
 from .inline import InlineDelete, InlineInsert
 from .lexicon_inserter import LexiconInserter
 from .preprocess import SkipLine
@@ -33,6 +33,7 @@ class Compiler:
                 InlineDelete(),
                 InlineInsert(),
                 Boxed(),
+                Details(),
             ],
             extension_configs={
                 "mdx_include": {

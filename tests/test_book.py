@@ -4,26 +4,43 @@ from pyconlang import PYCONLANG_PATH
 from pyconlang.cli import compile_book
 
 
-def test_book(simple_pyconlang):
-    (simple_pyconlang / "grammar.md").write_text(
-        cleandoc(
-            """
-        **This is an example: #*kika@era1 <stone>.PL#**
-        
-        !translate
-        
-        *kika@era1 
-        <stone>.PL
-        
-        !translate
+def test_details(simple_pyconlang):
+    write(
+        simple_pyconlang / "grammar.md",
         """
-        )
-        + "\n"
+    !details:The summary
+    
+    The information is here
+    and here
+    
+    !details
+    """,
     )
 
-    compile_book()
+    html = compile()
 
-    html = (PYCONLANG_PATH / "output.html").read_text()
+    assert (
+        "<details>\n<summary>The summary</summary>\n<p>The information is here\nand here</p>\n</details>"
+        in html
+    )
+
+
+def test_book(simple_pyconlang):
+    write(
+        simple_pyconlang / "grammar.md",
+        """
+      **This is an example: #*kika@era1 <stone>.PL#**
+      
+      !translate
+      
+      *kika@era1 
+      <stone>.PL
+      
+      !translate
+      """,
+    )
+
+    html = compile()
 
     assert "By Mr. Tester" in html
     assert "TestLang" in html
@@ -35,10 +52,10 @@ def test_book(simple_pyconlang):
     assert (
         cleandoc(
             """
-            <pre><code>&ast;kika@era1  =&gt; kiga
-            &lt;stone&gt;.PL =&gt; abagigi
-            </code></pre>
-            """
+                <pre><code>&ast;kika@era1  =&gt; kiga
+                &lt;stone&gt;.PL =&gt; abagigi
+                </code></pre>
+                """
         )
         in html
     )
@@ -66,3 +83,13 @@ def test_book(simple_pyconlang):
     entry_index = html.index("kibu")
 
     assert k_index < entry_index < l_index
+
+
+def write(path, text):
+    path.write_text(cleandoc(text) + "\n")
+
+
+def compile():
+    compile_book()
+
+    return (PYCONLANG_PATH / "output.html").read_text()
