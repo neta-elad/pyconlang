@@ -30,19 +30,19 @@ def test_container(simple_pyconlang):
         simple_pyconlang / "grammar.md",
         """
     
-    &[test span1]{: .inline }
+    &{test span1}{: .inline }
     
-    &[
+    &{
     
     test div
     
-    ]{: .block }
+    }{: .block }
     
-    &[
+    &{
     
     test div clean
     
-    ]
+    }
     
     """,
     )
@@ -52,8 +52,6 @@ def test_container(simple_pyconlang):
     assert '<span class="inline">test span1</span>' in html
     assert '<div class="block">\n<p>test div</p>\n</div>' in html
     assert "<div>\n<p>test div clean</p>\n</div>" in html
-
-    print(html)
 
 
 def test_book(simple_pyconlang):

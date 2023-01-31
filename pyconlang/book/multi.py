@@ -35,10 +35,10 @@ class MultiBlockProcessor(BlockProcessor):
         self.attr_list = AttrListTreeprocessor(self.parser.md)
 
     def open_pattern(self) -> str:
-        return rf"^\s*&{self.token}\[\s*$"
+        return rf"^\s*&{self.token}\{{\s*$"
 
     def close_pattern(self) -> str:
-        return r"^\s*\]({:(.*)})?$"
+        return r"^\s*\}({:(.*)})?$"
 
     def test(self, parent: ElementTree.Element, block: str) -> bool:
         return re.match(self.open_pattern(), block) is not None
@@ -63,9 +63,9 @@ class MultiBlockProcessor(BlockProcessor):
     def run_inner_blocks(
         self, parent: ElementTree.Element, blocks: List[str]
     ) -> ElementTree.Element:
-        e = ElementTree.SubElement(parent, "div")
-        self.parser.parseBlocks(e, blocks)
-        return e
+        container = ElementTree.SubElement(parent, "div")
+        self.parser.parseBlocks(container, blocks)
+        return container
 
 
 class MultiExtension(Extension):
@@ -76,7 +76,7 @@ class MultiExtension(Extension):
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.inlinePatterns.register(
-            MultiInlineProcessor(rf"()&{self.token}\[(.*?)\]"),
+            MultiInlineProcessor(rf"()&{self.token}\{{(.*?)\}}"),
             f"multi-inline-{self.token}",
             50,
         )
