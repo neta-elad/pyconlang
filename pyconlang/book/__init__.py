@@ -12,6 +12,7 @@ from ..metadata import Metadata
 from .block import Boxed, Details
 from .inline import InlineDelete, InlineInsert
 from .lexicon_inserter import LexiconInserter
+from .multi import MultiExtension
 from .preprocess import SkipLine
 
 
@@ -34,6 +35,7 @@ class Compiler:
                 InlineInsert(),
                 Boxed(),
                 Details(),
+                MultiExtension(""),
             ],
             extension_configs={
                 "mdx_include": {
