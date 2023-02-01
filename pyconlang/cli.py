@@ -42,12 +42,18 @@ def reset() -> None:
 @click.option(
     "-o", "--overwrite", is_flag=True, default=False, help="Overwrite user files"
 )
-def init(directory: Path, name: str, author: str, overwrite: bool) -> None:
+@click.option(
+    "-l", "--lexurgy", is_flag=True, default=False, help="Only install Lexurgy"
+)
+def init(directory: Path, name: str, author: str, overwrite: bool, lexurgy: bool) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     lexurgy_zip = str(
         files("pyconlang.data").joinpath(f"lexurgy-{LEXURGY_VERSION}.zip")
     )
     shutil.unpack_archive(lexurgy_zip, directory / PYCONLANG_PATH)
+
+    if lexurgy:
+        return
 
     for file in files("pyconlang.data.book").iterdir():
         target = directory / file.name
