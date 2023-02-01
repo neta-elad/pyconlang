@@ -203,9 +203,14 @@ class Evolver:
         result = run(args, capture_output=True, text=True)
 
         if result.returncode != 0:
-            raise LexurgyError(
-                result.stdout.strip().splitlines()[-1]
-            )  # todo too heuristic?
+            # todo too heuristic?
+            stdout = result.stdout.strip().splitlines()
+            if len(stdout) > 0:
+                raise LexurgyError(
+                    result.stdout.strip().splitlines()[-1]
+                )
+            else:
+                raise LexurgyError(result.stderr)
 
         moderns = normalize("NFD", output_words.read_text().strip()).split("\n")
 
