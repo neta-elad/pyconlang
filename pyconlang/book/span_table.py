@@ -14,6 +14,7 @@ class SpanTableProcessor(Treeprocessor):
     def run(self, root: ElementTree.Element) -> Optional[ElementTree.Element]:
         delete_cells: Set[Tuple[ElementTree.Element, ElementTree.Element]] = set()
         column_spans: Dict[ElementTree.Element, int] = {}
+        above_cells: Dict[ElementTree.Element, ElementTree.Element] = {}
         row_spans: Dict[ElementTree.Element, int] = {}
         for table in root.findall(".//table"):
             last_row = None
@@ -35,7 +36,9 @@ class SpanTableProcessor(Treeprocessor):
                                 "Cannot span row before any content cell"
                             )
 
-                        above_cell = last_row[i]
+                        above_cells.setdefault(last_row[i], last_row[i])
+                        above_cell = above_cells[last_row[i]]
+                        above_cells[cell] = above_cell
                         row_spans.setdefault(above_cell, 1)
                         row_spans[above_cell] += 1
                         delete_cells.add((tr, cell))
