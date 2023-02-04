@@ -206,9 +206,7 @@ class Evolver:
             # todo too heuristic?
             stdout = result.stdout.strip().splitlines()
             if len(stdout) > 0:
-                raise LexurgyError(
-                    result.stdout.strip().splitlines()[-1]
-                )
+                raise LexurgyError(result.stdout.strip().splitlines()[-1])
             else:
                 raise LexurgyError(result.stderr)
 

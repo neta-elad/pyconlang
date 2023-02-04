@@ -45,7 +45,9 @@ def reset() -> None:
 @click.option(
     "-l", "--lexurgy", is_flag=True, default=False, help="Only install Lexurgy"
 )
-def init(directory: Path, name: str, author: str, overwrite: bool, lexurgy: bool) -> None:
+def init(
+    directory: Path, name: str, author: str, overwrite: bool, lexurgy: bool
+) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     lexurgy_zip = str(
         files("pyconlang.data").joinpath(f"lexurgy-{LEXURGY_VERSION}.zip")

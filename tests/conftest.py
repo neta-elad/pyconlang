@@ -19,7 +19,7 @@ def tmpdir():
 
 @pytest.fixture
 def tmp_pyconlang(tmpdir):
-    init.callback(tmpdir, "TestLang", "Mr. Tester", False)
+    init.callback(tmpdir, "TestLang", "Mr. Tester", False, False)
 
     yield tmpdir
 

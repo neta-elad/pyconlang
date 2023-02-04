@@ -12,6 +12,7 @@ license = { text = "BSD 3-Clause License" }
 dependencies = [
     "Markdown==3.4.1",
     "mdx-include==1.4.2",
+    "pymdown-extensions==9.9.2",
     "prompt-toolkit==3.0.30",
     "watchdog==2.1.9",
     "click==8.1.3",

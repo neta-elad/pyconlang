@@ -20,7 +20,9 @@ Smart quotes like 'this' and "this"
 |----|------|
 | Tables | Alright |
 
-You can ~delete~ and +insert+ stuff.
+You can ~~delete~~ and ^^insert^^ stuff.
+
+You can have^super\ scripts^ and~sub\ scripts~.
 
 !skip and you can comment out lines
 
