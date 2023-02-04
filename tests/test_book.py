@@ -25,6 +25,27 @@ def test_details(simple_pyconlang):
     )
 
 
+def test_table(simple_pyconlang):
+    write(
+        simple_pyconlang / "book.md",
+        """
+    |c1,1-2||c1,3|c1,4|
+    |-------|-|----|-----|
+    |c2,1|c2,2|c2-3,3|c2,4|
+    |c3-4,1-2 {:.th}||  ^   |c3,4|
+    |    ^   ||c4,3|c4,4|
+    """,
+    )
+
+    html = compile()
+
+    assert '<th colspan="2">c1,1-2</th>' in html
+
+    assert '<td rowspan="2">c2-3,3</td>' in html
+
+    assert '<td class="th" colspan="2" rowspan="2">c3-4,1-2</td>' in html
+
+
 def test_container(simple_pyconlang):
     write(
         simple_pyconlang / "grammar.md",

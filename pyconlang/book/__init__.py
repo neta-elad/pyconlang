@@ -13,6 +13,7 @@ from .block import Boxed, Details
 from .lexicon_inserter import LexiconInserter
 from .multi import MultiExtension
 from .preprocess import SkipLine
+from .span_table import SpanTable
 
 
 class Compiler:
@@ -36,6 +37,7 @@ class Compiler:
                 Boxed(),
                 Details(),
                 MultiExtension(""),
+                SpanTable(),
             ],
             extension_configs={
                 "mdx_include": {
