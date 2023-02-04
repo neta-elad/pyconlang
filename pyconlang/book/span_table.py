@@ -58,7 +58,7 @@ class SpanTableProcessor(Treeprocessor):
 
 
 def span_column(cell: ElementTree.Element) -> bool:
-    return cell.text == ""
+    return cell.text is not None and cell.text.strip() == "<"
 
 
 def span_row(cell: ElementTree.Element) -> bool:
