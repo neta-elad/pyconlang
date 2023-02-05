@@ -15,6 +15,7 @@ from .block import Boxed, Details
 from .lexicon_inserter import LexiconInserter
 from .multi import MultiExtension
 from .preprocess import SkipLine
+from .ruby import Ruby
 from .span_table import SpanTable
 
 
@@ -42,6 +43,7 @@ class Compiler:
                 SpanTable(),
                 AnyTableHeader(),
                 Abbreviation(),
+                Ruby(),
             ],
             extension_configs={
                 "mdx_include": {

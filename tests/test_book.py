@@ -98,6 +98,21 @@ def test_abbr(simple_pyconlang):
     assert '<abbr title="alice and bob">a + b</abbr>' in html
 
 
+def test_ruby(simple_pyconlang):
+    write(
+        simple_pyconlang / "book.md",
+        """
+
+    %ruby%[ˈɹuː.bi]%
+
+    """,
+    )
+
+    html = compile()
+
+    assert "<ruby>ruby <rt>[ˈɹuː.bi]</rt></ruby>" in html
+
+
 def test_book(simple_pyconlang):
     write(
         simple_pyconlang / "grammar.md",

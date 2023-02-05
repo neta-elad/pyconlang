@@ -6,18 +6,18 @@ from markdown.extensions import Extension
 from markdown.inlinepatterns import InlineProcessor
 
 
-class Abbreviation(Extension):
+class Ruby(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         md.inlinePatterns.register(
-            AbbreviationProcessor(),
-            "abbreviation",
+            RubyProcessor(),
+            "ruby",
             1,
         )
 
 
-class AbbreviationProcessor(InlineProcessor):
+class RubyProcessor(InlineProcessor):
     def __init__(self) -> None:
-        super().__init__(r"()\+(?P<abbr>[^+]+)\+(?P<title>[^+]+)\+")
+        super().__init__(r"()%(?P<text>[^%]+)%(?P<title>[^%]+)%")
 
     # InlineProcessor and its parent Pattern
     # have contradictory type annotations,
@@ -25,7 +25,9 @@ class AbbreviationProcessor(InlineProcessor):
     def handleMatch(  # type: ignore
         self, m: Match[str], data: Any
     ) -> Tuple[ElementTree.Element, int, int]:
-        abbr = ElementTree.Element("abbr")
-        abbr.text = m.group("abbr")
-        abbr.set("title", m.group("title"))
-        return abbr, m.start(0), m.end(0)
+        ruby = ElementTree.Element("ruby")
+        ruby.text = m.group("text").strip() + " "
+        title = ElementTree.Element("rt")
+        title.text = m.group("title")
+        ruby.append(title)
+        return ruby, m.start(0), m.end(0)
