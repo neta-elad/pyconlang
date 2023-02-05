@@ -9,6 +9,7 @@ from watchdog.observers import Observer
 
 from .. import PYCONLANG_PATH
 from ..metadata import Metadata
+from .any_table_header import AnyTableHeader
 from .block import Boxed, Details
 from .lexicon_inserter import LexiconInserter
 from .multi import MultiExtension
@@ -38,6 +39,7 @@ class Compiler:
                 Details(),
                 MultiExtension(""),
                 SpanTable(),
+                AnyTableHeader(),
             ],
             extension_configs={
                 "mdx_include": {

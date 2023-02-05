@@ -32,7 +32,7 @@ def test_table(simple_pyconlang):
     |c1,1-2|<|c1,3|c1,4|
     |-------|-|----|-----|
     |c2,1|c2,2|c2-3,3|c2,4|
-    |c3-5,1-2 {:.th}|<|  ^   |c3,4|
+    |c3-5,1-2>|<|  ^   |c3,4|
     |    ^   |<|c4,3|c4,4|
     |    ^   |<|c5,3|c5,4|
     
@@ -45,7 +45,7 @@ def test_table(simple_pyconlang):
 
     assert '<td rowspan="2">c2-3,3</td>' in html
 
-    assert '<td class="th" colspan="2" rowspan="3">c3-5,1-2</td>' in html
+    assert '<th colspan="2" rowspan="3">c3-5,1-2</th>' in html
 
 
 def test_container(simple_pyconlang):
