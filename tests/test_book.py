@@ -77,6 +77,27 @@ def test_container(simple_pyconlang):
     assert "<div>\n<p>test div clean</p>\n</div>" in html
 
 
+def test_abbr(simple_pyconlang):
+    write(
+        simple_pyconlang / "book.md",
+        """
+
+    +html+hypertext markup language+
+    
+    **+css+cascading style sheets+**
+    
+    +a \\+ b+alice and bob+
+
+    """,
+    )
+
+    html = compile()
+
+    assert '<abbr title="hypertext markup language">html</abbr>' in html
+    assert '<strong><abbr title="cascading style sheets">css</abbr>' in html
+    assert '<abbr title="alice and bob">a + b</abbr>' in html
+
+
 def test_book(simple_pyconlang):
     write(
         simple_pyconlang / "grammar.md",
