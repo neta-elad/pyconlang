@@ -17,11 +17,11 @@ class AnyTableHeaderProcessor(Treeprocessor):
                 for cell in tr:
                     if table_header(cell):
                         assert cell.text is not None
-                        cell.text = cell.text.strip()[:-1]
+                        cell.text = cell.text.strip()[:-2]
                         cell.tag = "th"
 
         return None
 
 
 def table_header(cell: ElementTree.Element) -> bool:
-    return cell.text is not None and cell.text.strip().endswith(">")
+    return cell.text is not None and cell.text.strip().endswith(" >")
