@@ -60,7 +60,7 @@ Sound changes are defined in `changes.lsc`,
 and applied using Lexurgy.
 
 ### Lexicon
-Pyconlang's lexicon is defined in `lexicon.txt`.
+Pyconlang's lexicon is defined in `lexicon.pycl`.
 Each line defines one of three types of records: 
 `entry`, `affix`, and `template`.
 No line breaks are allowed inside the definition of a single record.
@@ -152,7 +152,7 @@ romanizer:
     ʃ => sh
 ```
 
-and the lexicon `lexicon.txt`:
+and the lexicon `lexicon.pycl`:
 ```
 template &noun $ $.PL COL.$
     

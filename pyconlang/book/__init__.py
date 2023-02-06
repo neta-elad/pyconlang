@@ -76,7 +76,7 @@ class Handler(PatternMatchingEventHandler):
     compiler: Compiler
 
     def __init__(self) -> None:
-        super().__init__(["*.md", "*.lsc", "template.html", "lexicon.txt"])
+        super().__init__(["*.md", "*.lsc", "template.html", "lexicon.pycl"])
         self.compiler = Compiler()
         self.compiler.compile()
 

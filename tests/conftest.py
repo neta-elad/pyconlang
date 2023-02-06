@@ -90,7 +90,7 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
         """
     )
 
-    (tmp_pyconlang / "lexicon.txt").write_text(sample_lexicon)
+    (tmp_pyconlang / "lexicon.pycl").write_text(sample_lexicon)
 
     yield tmp_pyconlang
 

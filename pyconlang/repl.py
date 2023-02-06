@@ -36,7 +36,7 @@ class Handler(PatternMatchingEventHandler):
     changed: bool
 
     def __init__(self) -> None:
-        super().__init__(["changes.lsc", "lexicon.txt"])
+        super().__init__(["changes.lsc", "lexicon.pycl"])
         self.changed = False
 
     def on_any_event(self, event: FileSystemEvent) -> None:

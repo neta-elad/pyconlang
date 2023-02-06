@@ -24,7 +24,7 @@ from ..types import (
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import lexicon
 
-LEXICON_PATH = Path("lexicon.txt")
+LEXICON_PATH = Path("lexicon.pycl")
 
 
 @dataclass
