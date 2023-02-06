@@ -21,6 +21,7 @@ from .types import (
     AffixType,
     Compound,
     CompoundStress,
+    Definable,
     Fusion,
     Lexeme,
     Morpheme,
@@ -57,6 +58,12 @@ def parse_sentence(string: str) -> List[Compound]:
     return cast(List[Compound], list(sentence.parse_string(string, parse_all=True)))
 
 
+def parse_definables(string: str) -> List[Definable]:
+    return cast(
+        List[Definable], list(definable[...].parse_string(string, parse_all=True))
+    )
+
+
 ParserElement.set_default_whitespace_chars(" \t")
 
 lexeme = (
@@ -91,6 +98,8 @@ suffix = (
     .set_parse_action(token_map(Affix, AffixType.SUFFIX))
     .set_name("suffix")
 )
+
+affix = (prefix ^ suffix).set_name("affix")
 
 fusion = (
     (
@@ -129,3 +138,5 @@ compound <<= fusion_or_bracketed ^ joined_compound
 
 
 sentence = compound[...]
+
+definable = (lexeme ^ affix).set_name("definable")

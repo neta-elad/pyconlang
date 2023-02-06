@@ -36,7 +36,6 @@ class Compiler:
                 "pymdownx.caret",
                 "pymdownx.tilde",
                 SkipLine(),
-                self.lexicon,
                 Boxed(),
                 Details(),
                 MultiExtension(""),
@@ -44,6 +43,7 @@ class Compiler:
                 AnyTableHeader(),
                 Abbreviation(),
                 Ruby(),
+                self.lexicon,
             ],
             extension_configs={
                 "mdx_include": {

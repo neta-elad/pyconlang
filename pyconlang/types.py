@@ -81,6 +81,9 @@ class Affix:
         return self.type.fuse("", self.name, ".")
 
 
+Definable = Union[Lexeme, Affix]
+
+
 @dataclass(eq=True, frozen=True)
 class Var:
     affixes: Tuple[Affix, ...]
@@ -88,6 +91,15 @@ class Var:
     @classmethod
     def from_iterable(cls, iterable: Iterable[Affix]) -> "Var":
         return cls(tuple(iterable))
+
+    def show(self, stem: str) -> str:
+        for affix in self.affixes:
+            stem = affix.type.fuse(stem, affix.name, ".")
+
+        return stem
+
+    def __str__(self) -> str:
+        return self.show("$")
 
 
 Describable = Union["Unit", Affix]
@@ -166,6 +178,9 @@ class Entry:
     form: Compound
     part_of_speech: PartOfSpeech
     definition: str
+
+    def description(self) -> str:
+        return f"{self.part_of_speech} {self.definition}"
 
 
 @dataclass(eq=True, frozen=True)

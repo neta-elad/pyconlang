@@ -5,6 +5,7 @@ from pyconlang.parser import (
     joiner,
     lexeme,
     morpheme,
+    parse_definables,
     parse_sentence,
     rule,
 )
@@ -101,6 +102,14 @@ def test_sentence():
         Fusion(Lexeme("strong"), ()),
         Fusion(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),)),
         Fusion(Morpheme("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
+    )
+
+
+def test_definables():
+    assert tuple(parse_definables("<strong> COL. .PL")) == (
+        Lexeme("strong"),
+        Affix("COL", AffixType.PREFIX),
+        Affix("PL", AffixType.SUFFIX),
     )
 
 

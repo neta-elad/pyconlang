@@ -152,6 +152,14 @@ def test_templates(parsed_lexicon):
     )
 
 
+def test_define(parsed_lexicon):
+    assert (
+        parsed_lexicon.define(Affix("PL", AffixType.SUFFIX)) == "plural for inanimate"
+    )
+
+    assert parsed_lexicon.define(Lexeme("stone")) == "(n.) stone, pebble"
+
+
 def test_lookup(parsed_lexicon):
     assert parsed_lexicon.lookup(Affix("PL", AffixType.SUFFIX)) == [
         (Affix("PL", AffixType.SUFFIX), "plural for inanimate")

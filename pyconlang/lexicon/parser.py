@@ -10,6 +10,7 @@ from pyparsing import (
 )
 
 from ..parser import (
+    affix,
     base_unit,
     compound,
     explicit_opt,
@@ -52,7 +53,6 @@ rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 
 lexical_sources = Suppress("(") - lexeme[1, ...].set_parse_action(tuple) - Suppress(")")
 
-affix = (prefix ^ suffix).set_name("affix")
 
 affix_form = (base_unit ^ var).set_name("affix form")
 
@@ -98,6 +98,7 @@ comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 lexicon = (
     (Opt(record) + Opt(comment) + Suppress("\n"))[...]  # - Opt(Suppress("\n"))
 ).set_name("lexicon")
+
 
 if __name__ == "__main__":
     make_diagrams()

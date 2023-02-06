@@ -8,6 +8,7 @@ from ..types import (
     Affix,
     AffixDefinition,
     Compound,
+    Definable,
     Describable,
     Entry,
     Fusion,
@@ -147,15 +148,21 @@ class Lexicon:
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
 
+    def define(self, record: Definable) -> str:
+        match record:
+            case Affix():
+                return self.get_affix(record).description
+
+            case Lexeme():
+                return self.get_entry(record).description()
+
     def lookup(self, record: Describable) -> List[Tuple[Describable, str]]:
         match record:
             case Affix():
                 return self.singleton_lookup(record, self.get_affix(record).description)
             case Lexeme():
                 entry = self.get_entry(record)
-                return self.singleton_lookup(
-                    record, f"{entry.part_of_speech} {entry.definition}"
-                )
+                return self.singleton_lookup(record, entry.description())
             case Morpheme():
                 return self.singleton_lookup(record, str(record))
             case Fusion():
