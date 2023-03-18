@@ -17,6 +17,7 @@ from .multi import MultiExtension
 from .preprocess import SkipLine
 from .ruby import Ruby
 from .span_table import SpanTable
+from .unicode import UnicodeEscape
 
 
 class Compiler:
@@ -44,6 +45,7 @@ class Compiler:
                 Abbreviation(),
                 Ruby(),
                 self.lexicon,
+                UnicodeEscape(),
             ],
             extension_configs={
                 "mdx_include": {

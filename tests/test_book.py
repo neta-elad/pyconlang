@@ -271,6 +271,26 @@ def test_dictionary(simple_pyconlang):
     assert i_index < k_index < entry_index
 
 
+def test_unicode_escape(simple_pyconlang):
+    write(
+        simple_pyconlang / "book.md",
+        """
+          
+          \\u0041\\u0043\\u0045
+          
+          \\u0026ph{<stone>}
+          
+          """,
+    )
+
+    html = read()
+
+    print(html)
+
+    assert "ACE" in html
+    assert "&amp;ph{<stone>}"
+
+
 def write(path, text):
     path.write_text(cleandoc(text) + "\n")
 
