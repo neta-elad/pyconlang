@@ -1,0 +1,98 @@
+entry <person> *aːlu (n.) person
+entry <animal> *kiːma (n.) animal
+entry <rock> *t͡ɬete (n.) rock
+entry <man> *sura (n.) man
+
+entry <two> *t͡ɬami (n.) two
+
+entry <big thing> *maː (n.) big thing
+
+entry <many> *ra (n.) many
+
+affix pl. (<many>) plural prefix
+affix dual. (<two>) dual prefix
+
+entry <one> *ke (n.) one
+entry <indef> <one> (det.) indefinite article
+entry <this> *no (n.) this
+entry <def> <this> (det.) definite article
+
+entry <go> *ua (v.) go
+entry <finish> *ahi (v.) finish
+entry <take> *noːa (v.) take
+entry <cause> *kaːni (v.) cause
+
+affix .fut (<go>) future tense
+affix .perf (<finish>) perfective aspect
+
+affix .pass (<take>) passive voice
+affix .caus (<cause>) causative
+
+
+entry <see> *poɬu (v.) see
+entry <sit> *koː (v.) sit
+entry <give> *pao (v.) give
+
+entry <1sg> *peː (pron.) I/me
+entry <2sg> *ɬa (pron.) you (singular)
+entry <3sg> *ne (pron.) he/she/it
+entry <1pl> *si (pron.) we/us
+entry <2pl> *t͡soː (pron.) you (plural)
+entry <3pl> *waː (pron.) them
+
+entry <tree> *tamo (n.) tree
+entry <place> *kihu (n.) place
+entry <fire> *t͡ɬipi (n.) fire
+
+affix .pln (<place>) place
+
+entry <forest> <tree>.pln (n.) forest 
+entry <firepit> <fire>.pln (n.) firepit
+
+
+entry <grass> *hele (n.) grass
+entry <field> <grass>.pln (n.) field
+
+entry <home> *potu (n.) home
+entry <house> <home>.pln (n.) house
+
+entry <hunt> *tuke (v.) hunt
+entry <fish> *ɬipa (n.) fish
+
+entry <stuff> *naːka (n.) stuff
+
+affix .substance (<stuff>) the substance X is made of
+
+entry <piece> *ɬesu (n.) piece, unit
+
+affix .singulative (<piece>) the smallest unit of X
+
+entry <water> *t͡suli (n.) water
+
+entry <related to> *rano (n.) of, related to
+
+affix .like (<related to>) like or similar to X
+
+
+entry <child> *pit͡ɬu (n.) child
+
+# this should have been done with an on-demand compound
+entry <road> *tet͡sa (n.) road, path
+
+
+affix .road (<road>)
+
+entry <river> <water>.road (n.) river
+
+affix aug. (<big thing>) augmentative
+
+entry <thornbush> *hapilo (n.) thornbush
+entry <little> *t͡si (adj.) little
+
+affix dim. (<little>) diminutive
+
+entry <nuisance> dim.<thornbush> (n.) nuisance, annoyance
+
+entry <hardship> aug.<nuisance> (n.) hardship, setback, difficulty
+
+entry <walk> *t͡sakelo (v.) walk
