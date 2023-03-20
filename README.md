@@ -242,6 +242,7 @@ will turn out as
   - [ ] Partial trace, even when there's an error
   - [ ] Take file as input
   - [ ] Evolve up to a point
+  - [ ] [Syntax highlighting](https://pypi.org/project/pyparsing-highlighting/)
 - [ ] `evolve`: Evolving forms and auto-glomination
   - [x] Evolve and auto-glominate forms at the correct point of time
   - [x] Handle stress
