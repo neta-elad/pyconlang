@@ -1,6 +1,8 @@
 .env
+.venv
 .mypy_cache
 .pyconlang
 .pytest_cache
 build
 *.egg-info
+**/__pycache__

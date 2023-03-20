@@ -2,7 +2,7 @@
 A collection of Python utilities for conlanging.
 
 ### Installing
-Requires `python >= 3.10`:
+Requires `python >= 3.11`:
 ```shell
 $ pip install git+https://github.com/neta-elad/pyconlang.git
 ```

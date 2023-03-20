@@ -4,12 +4,7 @@ all: format lint type test
 .PHONY: lint
 lint: 
 	isort . -q
-	autoflake . --recursive \
-				--exclude .env \
-				--remove-unused-variables \
-				--remove-all-unused-imports \
-				--expand-star-imports \
-				--in-place
+	autoflake .
 
 .PHONY: format
 format:
@@ -22,12 +17,12 @@ type:
 
 .PHONY: test
 test:
-	pytest -q
+	pytest
 
 
 .PHONY: env
 env:
-	! [ -d .env ] && python3 -m venv .env || true
+	! [ -d .venv ] && python3 -m venv .venv || true
 
 .PHONY: install
 install:
@@ -39,5 +34,5 @@ diagrams.html: pyconlang/parser.py pyconlang/lexicon/parser.py
 
 .PHONY: clean
 clean:
-	rm -r .env
+	rm -r .venv
 	rm diagrams.html

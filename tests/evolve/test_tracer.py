@@ -4,7 +4,12 @@ from pyconlang.evolve.tracer import TraceLine, group_trace_lines, parse_trace_li
 
 
 def test_grouping():
-    assert group_trace_lines([TraceLine("rule1", "", "a", "b"),], "word1") == {
+    assert group_trace_lines(
+        [
+            TraceLine("rule1", "", "a", "b"),
+        ],
+        "word1",
+    ) == {
         "word1": [
             TraceLine("rule1", "word1", "a", "b"),
         ]
