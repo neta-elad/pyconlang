@@ -49,9 +49,14 @@ class ReplSession(Cmd):
     session: PromptSession[str] = field(default_factory=_default_prompt_session)
     watcher: Handler = field(default_factory=Handler)
     last_line: str = field(default="")
+    counter: int = field(default=0)
 
     def __post_init__(self) -> None:
         super().__init__()
+
+    def bottom_toolbar(self) -> str:
+        self.counter += 1
+        return f"Counter: {self.counter}"
 
     def run(self) -> None:
         observer = Observer()
@@ -59,7 +64,9 @@ class ReplSession(Cmd):
         observer.start()
         try:
             while True:
-                line = self.session.prompt("> ")
+                line = self.session.prompt(
+                    "> "  # , bottom_toolbar=self.bottom_toolbar, refresh_interval=1
+                )
 
                 if self.watcher.changed:
                     self.watcher.changed = False
@@ -215,4 +222,7 @@ def run(command: str = "") -> None:
     if command:
         session.run_command(command)
     else:
+        # import asyncio
+        #
+        # asyncio.run(session.run())
         session.run()

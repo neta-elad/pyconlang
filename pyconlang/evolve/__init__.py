@@ -1,4 +1,7 @@
 import pickle
+import random
+import shutil
+import string
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
@@ -21,7 +24,10 @@ from .types import Evolved
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"
 CHANGES_PATH = Path("changes.lsc")
-CACHE_PATH = EVOLVE_PATH / "cache.pickle"
+CACHE_PATH = EVOLVE_PATH / "cache"
+SIMPLE_CACHE_PATH = CACHE_PATH / "cache.pickle"
+TRACE_CACHE_PATH = CACHE_PATH / "trace_cache.pickle"
+CHECKSUM_PATH = CACHE_PATH / "checksum.txt"
 
 Evolvable = Union[str, Morpheme, ResolvedForm]
 
@@ -34,12 +40,19 @@ def get_checksum() -> bytes:
     return checksum(CHANGES_PATH)
 
 
+def random_directory() -> Path:
+    return EVOLVE_PATH / Path(
+        "".join(random.sample(string.ascii_lowercase + string.digits, 5))
+    )
+
+
 @dataclass
 class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
     trace_cache: Dict[EvolveQuery, List[TraceLine]] = field(default_factory=dict)
     batcher: Batcher = field(default_factory=Batcher)
+    evolve_directory: Path = field(default_factory=random_directory)
 
     @cached_property
     def arranger(self) -> AffixArranger:
@@ -47,20 +60,26 @@ class Evolver:
 
     @classmethod
     def load(cls) -> "Evolver":
-        if not CACHE_PATH.exists():
+        if not all(
+            [
+                path.exists()
+                for path in [SIMPLE_CACHE_PATH, TRACE_CACHE_PATH, CHECKSUM_PATH]
+            ]
+        ):
             return cls()
 
-        evolver = pickle.loads(CACHE_PATH.read_bytes())
+        cached_checksum = pickle.loads(CHECKSUM_PATH.read_bytes())
+        cache = pickle.loads(SIMPLE_CACHE_PATH.read_bytes())
+        trace_cache = pickle.loads(TRACE_CACHE_PATH.read_bytes())
 
-        if not isinstance(evolver, Evolver):
-            return cls()
+        evolver = cls(cached_checksum, cache, trace_cache)
 
         evolver.validate_cache()
 
         return evolver
 
     def __post_init__(self) -> None:
-        EVOLVE_PATH.mkdir(parents=True, exist_ok=True)
+        self.evolve_directory.mkdir(parents=True)
         self.validate_cache()
 
     def validate_cache(self) -> bool:
@@ -74,7 +93,11 @@ class Evolver:
 
     def save(self) -> int:
         self.cleanup()
-        return CACHE_PATH.write_bytes(pickle.dumps(self))
+        CACHE_PATH.mkdir(parents=True, exist_ok=True)
+        bytes_written = TRACE_CACHE_PATH.write_bytes(pickle.dumps(self.trace_cache))
+        bytes_written += SIMPLE_CACHE_PATH.write_bytes(pickle.dumps(self.cache))
+        bytes_written += CHECKSUM_PATH.write_bytes(pickle.dumps(self.checksum))
+        return bytes_written
 
     def trace(self, forms: Sequence[Evolvable]) -> List[EvolvedWithTrace]:
         self.evolve(forms, trace=True)
@@ -155,8 +178,8 @@ class Evolver:
     def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
         return [self.normalize_form(form) for form in forms]
 
-    @staticmethod
     def evolve_words(
+        self,
         words: List[str],
         *,
         start: Optional[str] = None,
@@ -168,16 +191,16 @@ class Evolver:
 
         base_name = f"words-{time():.0f}"
 
-        input_words = EVOLVE_PATH / f"{base_name}.wli"
+        input_words = self.evolve_directory / f"{base_name}.wli"
         input_words.write_text("\n".join(words))
 
-        output_words = EVOLVE_PATH / f"{base_name}_ev.wli"
+        output_words = self.evolve_directory / f"{base_name}_ev.wli"
         output_words.unlink(missing_ok=True)
 
-        phonetic_words = EVOLVE_PATH / f"{base_name}_phonetic.wli"
+        phonetic_words = self.evolve_directory / f"{base_name}_phonetic.wli"
         phonetic_words.unlink(missing_ok=True)
 
-        trace_file = EVOLVE_PATH / f"{base_name}_trace.wli"
+        trace_file = self.evolve_directory / f"{base_name}_trace.wli"
         trace_file.unlink(missing_ok=True)
 
         args = [
@@ -226,7 +249,5 @@ class Evolver:
             for proto, modern, phonetic in zip(words, moderns, phonetics)
         ], trace_lines
 
-    @staticmethod
-    def cleanup() -> None:
-        for path in EVOLVE_PATH.iterdir():
-            path.unlink()
+    def cleanup(self) -> None:
+        shutil.rmtree(self.evolve_directory)

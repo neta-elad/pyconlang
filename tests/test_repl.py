@@ -123,7 +123,7 @@ def test_trace(simple_repl):
     )
 
 
-def test_repl(capsys, mock_input, simple_pyconlang):
+def test_repl_interactive(capsys, mock_input, simple_pyconlang):
     mock_input.send_text("*apaki\n")
     mock_input.close()
 
@@ -133,6 +133,8 @@ def test_repl(capsys, mock_input, simple_pyconlang):
 
     assert captured.out == "abashi\nGoodbye.\n"
 
+
+def test_repl_command(capsys, simple_pyconlang):
     run_repl("p *apaki *baki")
 
     captured = capsys.readouterr()
