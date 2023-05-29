@@ -79,7 +79,6 @@ class Evolver:
         return evolver
 
     def __post_init__(self) -> None:
-        self.evolve_directory.mkdir(parents=True)
         self.validate_cache()
 
     def validate_cache(self) -> bool:
@@ -191,6 +190,8 @@ class Evolver:
 
         base_name = f"words-{time():.0f}"
 
+        self.evolve_directory.mkdir(parents=True, exist_ok=True)
+
         input_words = self.evolve_directory / f"{base_name}.wli"
         input_words.write_text("\n".join(words))
 
@@ -250,4 +251,5 @@ class Evolver:
         ], trace_lines
 
     def cleanup(self) -> None:
-        shutil.rmtree(self.evolve_directory)
+        if self.evolve_directory.exists():
+            shutil.rmtree(self.evolve_directory)
