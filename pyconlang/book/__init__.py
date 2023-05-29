@@ -2,6 +2,8 @@ import sys
 import time
 from pathlib import Path
 from string import Template
+from threading import Thread
+from typing import List
 
 from markdown import Markdown
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
@@ -75,26 +77,59 @@ class Compiler:
 
 
 class Handler(PatternMatchingEventHandler):
+    silent: bool
     compiler: Compiler
+    last_run: float
+    last_request: float
+    running: bool
+    threads: List[Thread]
 
-    def __init__(self) -> None:
+    def __init__(self, silent: bool = False):
         super().__init__(["*.md", "*.lsc", "template.html", "lexicon.pycl"])
+        self.silent = silent
         self.compiler = Compiler()
+        self.last_run = 0.0
+        self.last_request = time.time()
+        self.running = False
+        self.threads = []
         self.compile()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
+        self.last_request = time.time()
         self.compile()
 
     def compile(self) -> None:
-        print("Compiling book... ", end="")
-        sys.stdout.flush()
+        self.threads.append(Thread(target=self.compile_thread))
+        self.threads[-1].start()
+
+    def compile_thread(self) -> None:
+        if self.last_run >= self.last_request or self.running:
+            return
+
+        self.running = True
+
+        if not self.silent:
+            print("Compiling book... ", end="")
+            sys.stdout.flush()
+
         self.compiler.compile()
-        print("Done")
+        self.last_run = time.time()
+        self.running = False
+
+        self.compile()
+
+        if not self.silent:
+            print("Done")
+
+    def join(self) -> None:
+        for thread in self.threads:
+            thread.join()
 
 
 def watch() -> None:
+    handler = Handler()
     observer = Observer()
-    observer.schedule(Handler(), ".", recursive=True)
+    observer.schedule(handler, ".", recursive=True)
     observer.start()
     try:
         while True:
@@ -104,6 +139,7 @@ def watch() -> None:
     finally:
         observer.stop()
         observer.join()
+        handler.join()
 
 
 def compile_book() -> None:

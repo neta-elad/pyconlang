@@ -1,14 +1,16 @@
+import contextlib
 from cmd import Cmd
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Callable, List, Tuple
+from typing import Callable, Generator, List, Tuple
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
+from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 
 from . import PYCONLANG_PATH
+from .book import Handler as BookHandler
 from .errors import show_exception
 from .evolve.types import Evolved
 from .translate import Translator
@@ -32,15 +34,21 @@ def _show_lookup_record(record: Describable, description: str) -> str:
     return f"{record}: {description}"
 
 
-class Handler(PatternMatchingEventHandler):
+class Handler(BookHandler):
     changed: bool
 
     def __init__(self) -> None:
-        super().__init__(["changes.lsc", "lexicon.pycl"])
+        super().__init__(True)
         self.changed = False
 
     def on_any_event(self, event: FileSystemEvent) -> None:
+        super().on_any_event(event)
         self.changed = True
+
+    def check_changed(self) -> bool:
+        result = self.changed
+        self.changed = False
+        return result
 
 
 @dataclass
@@ -55,23 +63,24 @@ class ReplSession(Cmd):
         super().__init__()
 
     def bottom_toolbar(self) -> str:
-        self.counter += 1
-        return f"Counter: {self.counter}"
+        if self.watcher.running:
+            return "Status: updating..."
+        else:
+            return "Status: up-to-date"
 
     def run(self) -> None:
         observer = Observer()
-        observer.schedule(self.watcher, ".")
+        observer.schedule(self.watcher, ".", recursive=True)
         observer.start()
         try:
             while True:
                 line = self.session.prompt(
-                    "> "  # , bottom_toolbar=self.bottom_toolbar, refresh_interval=1
+                    "> ", bottom_toolbar=self.bottom_toolbar, refresh_interval=1
                 )
 
                 if self.watcher.changed:
                     self.watcher.changed = False
-                    if not self.translator.validate_cache():
-                        print("Detected changes, reloading.")
+                    self.translator.validate_cache()
 
                 if not line:
                     continue
@@ -216,13 +225,16 @@ class ReplSession(Cmd):
         return self.do_trace(line)
 
 
-def run(command: str = "") -> None:
+@contextlib.contextmanager
+def create_session() -> Generator[ReplSession, None, None]:
     session = ReplSession()
+    yield session
+    session.watcher.join()
 
-    if command:
-        session.run_command(command)
-    else:
-        # import asyncio
-        #
-        # asyncio.run(session.run())
-        session.run()
+
+def run(command: str = "") -> None:
+    with create_session() as session:
+        if command:
+            session.run_command(command)
+        else:
+            session.run()

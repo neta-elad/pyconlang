@@ -3,18 +3,18 @@ from inspect import cleandoc
 import pytest
 
 from pyconlang.cli import run_repl
-from pyconlang.repl import ReplSession
+from pyconlang.repl import create_session
 
 
 @pytest.fixture
 def simple_repl(capsys, simple_pyconlang):
-    session = ReplSession()
+    with create_session() as session:
 
-    def evaluate(line: str) -> str:
-        session.onecmd(line)
-        return capsys.readouterr().out.strip()
+        def evaluate(line: str) -> str:
+            session.onecmd(line)
+            return capsys.readouterr().out.strip()
 
-    yield evaluate
+        yield evaluate
 
 
 def test_basic(simple_repl):
