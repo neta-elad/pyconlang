@@ -165,7 +165,7 @@ class Compound:
         return self.era.name
 
     def __str__(self) -> str:
-        return f"[{self.head} {self.stress}{self.era_name() or ''} {self.tail}]"
+        return f"[{self.head} {self.stress}{self.era or ''} {self.tail}]"
 
 
 Unit = Union[Morpheme, Lexeme, Fusion, Compound]
