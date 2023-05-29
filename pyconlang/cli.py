@@ -6,9 +6,9 @@ from typing import List
 import click
 
 from . import PYCONLANG_PATH
+from .assets import LEXURGY_VERSION
 from .book import compile_book
 from .book import watch as watch_book
-from .data import LEXURGY_VERSION
 from .metadata import Metadata
 from .repl import run as run_repl
 
@@ -43,24 +43,24 @@ def reset() -> None:
     "-o", "--overwrite", is_flag=True, default=False, help="Overwrite user files"
 )
 @click.option(
-    "-l", "--lexurgy", is_flag=True, default=False, help="Only install Lexurgy"
+    "-l", "--lexurgy-only", is_flag=True, default=False, help="Only install Lexurgy"
 )
 def init(
-    directory: Path, name: str, author: str, overwrite: bool, lexurgy: bool
+    directory: Path, name: str, author: str, overwrite: bool, lexurgy_only: bool
 ) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     lexurgy_zip = str(
-        files("pyconlang.data").joinpath(f"lexurgy-{LEXURGY_VERSION}.zip")
+        files("pyconlang.assets").joinpath(f"lexurgy-{LEXURGY_VERSION}.zip")
     )
     shutil.unpack_archive(lexurgy_zip, directory / PYCONLANG_PATH)
 
-    if lexurgy:
+    if lexurgy_only:
         return
 
-    for file in files("pyconlang.data.book").iterdir():
+    for file in files("pyconlang.assets.template").iterdir():
         target = directory / file.name
 
-        if not file.is_file() or file.name.startswith("__"):
+        if not file.is_file():
             continue
 
         if not target.exists() or overwrite:

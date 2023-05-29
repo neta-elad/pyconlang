@@ -9,8 +9,8 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from unicodedata import normalize
 
 from .. import PYCONLANG_PATH
+from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
-from ..data import LEXURGY_VERSION
 from ..types import Morpheme, ResolvedForm
 from .arrange import AffixArranger
 from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery

@@ -28,11 +28,11 @@ $ pyconlang repl
 
 Compile the reference grammar and lexicon:
 ```shell
-$ pyconlang book compile
+$ pyconlang template compile
 ```
 or continuously watch for changes and re-compile:
 ```shell
-$ pyconlang book watch
+$ pyconlang template watch
 ```
 
 For more information and help:
