@@ -80,9 +80,12 @@ class Handler(PatternMatchingEventHandler):
     def __init__(self) -> None:
         super().__init__(["*.md", "*.lsc", "template.html", "lexicon.pycl"])
         self.compiler = Compiler()
-        self.compiler.compile()
+        self.compile()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
+        self.compile()
+
+    def compile(self) -> None:
         print("Compiling book... ", end="")
         sys.stdout.flush()
         self.compiler.compile()
