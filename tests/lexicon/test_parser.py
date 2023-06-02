@@ -13,6 +13,8 @@ from pyconlang.types import (
     Affix,
     AffixDefinition,
     AffixType,
+    Compound,
+    CompoundStress,
     Entry,
     Fusion,
     Lexeme,
@@ -79,7 +81,7 @@ def test_affix_definition():
         True,
         Affix("PL", AffixType.SUFFIX),
         Rule("era"),
-        Morpheme("proto"),
+        Fusion(Morpheme("proto")),
         (Lexeme("big"), Lexeme("pile")),
         "plural for inanimate",
     )
@@ -90,7 +92,7 @@ def test_affix_definition():
         False,
         Affix("PL", AffixType.SUFFIX),
         None,
-        Morpheme("proto", Rule("era")),
+        Fusion(Morpheme("proto", Rule("era"))),
         (),
         "plural for inanimate",
     )
@@ -104,6 +106,33 @@ def test_affix_definition():
         None,
         (Lexeme("big"), Lexeme("pile")),
         "plural for inanimate",
+    )
+
+    assert parse(
+        affix_definition, "affix COL. <big>.PL collective form"
+    ) == AffixDefinition(
+        False,
+        Affix("COL", AffixType.PREFIX),
+        None,
+        Fusion(Lexeme("big"), (Affix("PL", AffixType.SUFFIX),)),
+        (),
+        description="collective form",
+    )
+
+    assert parse(
+        affix_definition, "affix COL. [<big> !+ <pile>.PL] collective form"
+    ) == AffixDefinition(
+        False,
+        Affix("COL", AffixType.PREFIX),
+        None,
+        Compound(
+            Fusion(Lexeme("big")),
+            CompoundStress.HEAD,
+            None,
+            Fusion(Lexeme("pile"), (Affix("PL", AffixType.SUFFIX),)),
+        ),
+        (),
+        description="collective form",
     )
 
 
@@ -154,7 +183,7 @@ def test_lexicon(parsed_lexicon):
                 stressed=False,
                 affix=Affix("PL", AffixType.SUFFIX),
                 era=None,
-                form=Morpheme("iki", Rule("era1")),
+                form=Fusion(Morpheme("iki", Rule("era1"))),
                 sources=(Lexeme("big"), Lexeme("pile")),
                 description="plural for inanimate",
             ),
@@ -162,7 +191,7 @@ def test_lexicon(parsed_lexicon):
                 stressed=False,
                 affix=Affix(name="COL", type=AffixType.SUFFIX),
                 era=None,
-                form=Morpheme(form="ma", era=None),
+                form=Fusion(Morpheme(form="ma", era=None)),
                 sources=(),
                 description="collective",
             ),
@@ -178,6 +207,17 @@ def test_lexicon(parsed_lexicon):
                 ),
                 sources=(),
                 description="large plural",
+            ),
+            AffixDefinition(
+                stressed=False,
+                affix=Affix(name="STONE", type=AffixType.PREFIX),
+                era=None,
+                form=Fusion(
+                    stem=Lexeme(name="stone"),
+                    affixes=(Affix(name="COL", type=AffixType.SUFFIX),),
+                ),
+                sources=(),
+                description="made of stone",
             ),
         }
     )

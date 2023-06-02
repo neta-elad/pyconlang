@@ -33,6 +33,7 @@ def sample_lexicon():
     affix .COL *ma collective
     
     affix .LARGE $.COL.PL large plural
+    affix STONE. <stone>.COL made of stone
     
     entry <big> *iki (adj.) big, great
 

@@ -195,8 +195,8 @@ class AffixDefinition:
     def get_era(self) -> Optional[Rule]:
         if self.era is not None:
             return self.era
-        elif isinstance(self.form, Morpheme):
-            return self.form.era
+        elif isinstance(self.form, Fusion) and isinstance(self.form.stem, Morpheme):
+            return self.form.stem.era
         else:
             return None
 

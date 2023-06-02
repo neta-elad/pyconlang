@@ -86,6 +86,32 @@ def test_parsed_lexicon(parsed_lexicon):
         ),
     )
 
+    assert parsed_lexicon.resolve(
+        Fusion(Morpheme("mana"), (Affix("STONE", AffixType.PREFIX),))
+    ) == ResolvedForm(
+        stem=Morpheme(form="mana", era=None),
+        affixes=(
+            ResolvedAffix(
+                stressed=False,
+                type=AffixType.PREFIX,
+                era=None,
+                form=ResolvedForm(
+                    stem=Morpheme(form="apak", era=None),
+                    affixes=(
+                        ResolvedAffix(
+                            stressed=False,
+                            type=AffixType.SUFFIX,
+                            era=None,
+                            form=ResolvedForm(
+                                stem=Morpheme(form="ma", era=None), affixes=()
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
 
 def test_substitute_var(parsed_lexicon):
     assert parsed_lexicon.substitute(Var(()), Morpheme("apak")) == ResolvedForm(
@@ -161,8 +187,8 @@ def test_define(parsed_lexicon):
 
 
 def test_form(parsed_lexicon):
-    assert parsed_lexicon.form(Affix("PL", AffixType.SUFFIX)) == Morpheme(
-        form="iki", era=Rule(name="era1")
+    assert parsed_lexicon.form(Affix("PL", AffixType.SUFFIX)) == Fusion(
+        Morpheme(form="iki", era=Rule(name="era1"))
     )
 
     assert parsed_lexicon.form(Lexeme("gravel")) == Fusion(

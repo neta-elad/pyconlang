@@ -11,7 +11,6 @@ from pyparsing import (
 
 from ..parser import (
     affix,
-    base_unit,
     compound,
     explicit_opt,
     ident,
@@ -54,7 +53,7 @@ rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 lexical_sources = Suppress("(") - lexeme[1, ...].set_parse_action(tuple) - Suppress(")")
 
 
-affix_form = (base_unit ^ var).set_name("affix form")
+affix_form = (compound ^ var).set_name("affix form")
 
 affix_definition = (
     (
