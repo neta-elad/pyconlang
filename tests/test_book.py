@@ -126,6 +126,10 @@ def test_basic_inserter(simple_pyconlang):
           
           &d{<stone>} &d{.PL}
           
+          &df{.PL}
+          
+          &df{<gravel>}
+          
           """,
     )
 
@@ -139,6 +143,8 @@ def test_basic_inserter(simple_pyconlang):
     assert "*kika" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
+    assert "<em>*iki</em>" in html
+    assert "<em>*apak</em> + <em>*iki</em>" in html
 
 
 def test_auto_inserter(simple_pyconlang):

@@ -10,7 +10,7 @@ from markdown.preprocessors import Preprocessor
 from ..errors import show_exception
 from ..evolve.types import Evolved
 from ..translate import Translator
-from ..types import Affix, Definable, Entry, Lexeme, Morpheme, Unit
+from ..types import Affix, Definable, Entry, Lexeme, Morpheme, ResolvedForm, Unit
 
 
 class LexiconInserter(Extension):
@@ -40,6 +40,10 @@ class LexiconInserter(Extension):
 
         md.preprocessors.register(
             LexiconDefinitionProcessor(md, self), "lexicon-definition", 20
+        )
+
+        md.preprocessors.register(
+            LexiconDefinitionFormProcessor(md, self), "lexicon-definition-form", 20
         )
 
         md.preprocessors.register(
@@ -209,6 +213,19 @@ class LexiconDefinitionProcessor(LexiconMacroPreprocessor):
         return "; ".join(self.inserter.translator.define_string(text))
 
 
+class LexiconDefinitionFormProcessor(LexiconMacroPreprocessor):
+    @staticmethod
+    def token() -> str:
+        return "df"
+
+    def map_text(self, text: str) -> str:
+        return "; ".join(
+            map(
+                _join_morphemes, self.inserter.translator.resolve_definable_string(text)
+            )
+        )
+
+
 class LexiconAbbreviationProcessor(LexiconPreprocessor):
     @classmethod
     def expression(cls) -> str:
@@ -320,9 +337,7 @@ class LexiconDictionaryProcessor(Preprocessor):
         return list(map(self.show_entry, self.inserter.translator.lexicon.entries))
 
     def show_entry(self, entry: Entry) -> str:
-        sources = " \\+ ".join(
-            f"_\\*{morpheme.form}_" for morpheme in self.form_to_morphemes(entry.form)
-        )
+        sources = _join_morphemes(self.inserter.translator.lexicon.resolve(entry.form))
 
         forms = [
             f"**#{var.show(str(entry.form))}#**"
@@ -335,3 +350,7 @@ class LexiconDictionaryProcessor(Preprocessor):
 
     def form_to_morphemes(self, form: Unit) -> List[Morpheme]:
         return self.inserter.translator.lexicon.resolve(form).to_morphemes()
+
+
+def _join_morphemes(form: ResolvedForm) -> str:
+    return " \\+ ".join(f"_\\*{morpheme.form}_" for morpheme in form.to_morphemes())

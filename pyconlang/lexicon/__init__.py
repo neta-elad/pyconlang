@@ -148,6 +148,17 @@ class Lexicon:
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
 
+    def form(self, record: Definable) -> Unit:
+        match record:
+            case Affix():
+                return self.get_affix(record).get_form()
+
+            case Lexeme():
+                return self.get_entry(record).form
+
+    def resolve_definable(self, record: Definable) -> ResolvedForm:
+        return self.resolve(self.form(record))
+
     def define(self, record: Definable) -> str:
         match record:
             case Affix():

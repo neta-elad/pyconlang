@@ -160,6 +160,36 @@ def test_define(parsed_lexicon):
     assert parsed_lexicon.define(Lexeme("stone")) == "(n.) stone, pebble"
 
 
+def test_form(parsed_lexicon):
+    assert parsed_lexicon.form(Affix("PL", AffixType.SUFFIX)) == Morpheme(
+        form="iki", era=Rule(name="era1")
+    )
+
+    assert parsed_lexicon.form(Lexeme("gravel")) == Fusion(
+        stem=Lexeme(name="stone"), affixes=(Affix(name="PL", type=AffixType.SUFFIX),)
+    )
+
+
+def test_resolve_definable(parsed_lexicon):
+    assert parsed_lexicon.resolve_definable(
+        Affix("PL", AffixType.SUFFIX)
+    ) == ResolvedForm(stem=Morpheme(form="iki", era=Rule(name="era1")), affixes=())
+
+    assert parsed_lexicon.resolve_definable(Lexeme("gravel")) == ResolvedForm(
+        stem=Morpheme(form="apak", era=None),
+        affixes=(
+            ResolvedAffix(
+                stressed=False,
+                type=AffixType.SUFFIX,
+                era=Rule(name="era1"),
+                form=ResolvedForm(
+                    stem=Morpheme(form="iki", era=Rule(name="era1")), affixes=()
+                ),
+            ),
+        ),
+    )
+
+
 def test_lookup(parsed_lexicon):
     assert parsed_lexicon.lookup(Affix("PL", AffixType.SUFFIX)) == [
         (Affix("PL", AffixType.SUFFIX), "plural for inanimate")

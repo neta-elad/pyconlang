@@ -42,6 +42,12 @@ class Translator:
     def define_string(self, string: str) -> List[str]:
         return [self.lexicon.define(record) for record in self.parse_definables(string)]
 
+    def resolve_definable_string(self, string: str) -> List[ResolvedForm]:
+        return [
+            self.lexicon.resolve_definable(record)
+            for record in self.parse_definables(string)
+        ]
+
     def resolve_string(self, string: str) -> List[ResolvedForm]:
         return [self.lexicon.resolve(form) for form in self.parse_sentence(string)]
 
