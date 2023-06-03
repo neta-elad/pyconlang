@@ -1,6 +1,7 @@
 from pyconlang.parser import (
     base_unit,
     compound,
+    continue_lines,
     fusion,
     joiner,
     lexeme,
@@ -19,6 +20,12 @@ from pyconlang.types import (
     Morpheme,
     Rule,
 )
+
+
+def test_continue_lines():
+    assert list(
+        continue_lines(["a", "b", " c", "d", "\t e", "", "f", "", " g", "\t h"])
+    ) == ["a", "b c", "d\t e", "f", " g\t h"]
 
 
 def test_base_unit():

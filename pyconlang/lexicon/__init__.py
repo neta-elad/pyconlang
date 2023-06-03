@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from ..checksum import checksum
+from ..parser import continue_lines
 from ..types import (
     Affix,
     AffixDefinition,
@@ -22,7 +23,7 @@ from ..types import (
     Var,
 )
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
-from .parser import lexicon
+from .parser import parse_lexicon
 
 LEXICON_PATH = Path("lexicon.pycl")
 
@@ -43,7 +44,11 @@ class Lexicon:
 
     @classmethod
     def from_string(cls, string: str) -> "Lexicon":
-        return cls.from_iterable(lexicon.parse_string(string + "\n", parse_all=True))
+        return cls.from_lines(string.splitlines())
+
+    @classmethod
+    def from_lines(cls, lines: Iterable[str]) -> "Lexicon":
+        return cls.from_iterable(parse_lexicon(continue_lines(lines)))
 
     @classmethod
     def from_iterable(

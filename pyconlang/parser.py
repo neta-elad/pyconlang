@@ -1,5 +1,5 @@
 from string import whitespace
-from typing import Any, Callable, List, TypeVar, Union, cast
+from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 from pyparsing import (
     FollowedBy,
@@ -62,6 +62,20 @@ def parse_definables(string: str) -> List[Definable]:
     return cast(
         List[Definable], list(definable[...].parse_string(string, parse_all=True))
     )
+
+
+def continue_lines(lines: Iterable[str]) -> Iterable[str]:
+    current_line = ""
+    for line in lines:
+        if len(line) > 0 and line[0].isspace():
+            current_line += line
+        else:
+            if current_line:
+                yield current_line
+            current_line = line
+
+    if current_line:
+        yield current_line
 
 
 ParserElement.set_default_whitespace_chars(" \t")

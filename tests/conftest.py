@@ -1,5 +1,6 @@
 import os
 import tempfile
+from inspect import cleandoc
 from pathlib import Path
 
 import pytest
@@ -26,24 +27,31 @@ def tmp_pyconlang(tmpdir):
 
 @pytest.fixture
 def sample_lexicon():
-    return """
-    template &plural $ $.PL # this is a template
+    return cleandoc(
+        """
+        template &plural $ $.PL # this is a template
+        
+        affix .PL *iki@era1 (<big> <pile>) 
+            plural for inanimate
+        affix .COL *ma collective
+        
+        affix .LARGE $.COL.PL large plural
+        affix STONE. <stone>.COL made of stone
+        
+        entry <big> *iki (adj.) big, great
     
-    affix .PL *iki@era1 (<big> <pile>) plural for inanimate
-    affix .COL *ma collective
-    
-    affix .LARGE $.COL.PL large plural
-    affix STONE. <stone>.COL made of stone
-    
-    entry <big> *iki (adj.) big, great
-
-    entry <strong> *kipu@era1 (adj.) strong, stable
-    
-    # here is how to use a template
-    entry &plural <stone> *apak (n.) stone, pebble
-    
-    entry <gravel> <stone>.PL (n.) gravel
-    """
+        entry 
+            <strong> 
+            *kipu@era1 
+            (adj.) 
+            strong, stable
+        
+        # here is how to use a template
+        entry &plural <stone> *apak (n.) stone, pebble
+        
+        entry <gravel> <stone>.PL (n.) gravel
+        """
+    )
 
 
 @pytest.fixture

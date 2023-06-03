@@ -1,3 +1,5 @@
+from typing import Iterable, Union, cast
+
 from pyparsing import (
     FollowedBy,
     Opt,
@@ -25,6 +27,16 @@ from ..types import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName
 
 def make_diagrams() -> None:
     lexicon.create_diagram("diagrams.html", show_results_names=True)
+
+
+def parse_lexicon(
+    lines: Iterable[str],
+) -> Iterable[Union[Entry, AffixDefinition, Template]]:
+    return [
+        cast(Union[Entry, AffixDefinition, Template], parsed_record[0])
+        for line in lines
+        if (parsed_record := lexicon_line.parse_string(line, parse_all=True))
+    ]
 
 
 ParserElement.set_default_whitespace_chars(" \t")
@@ -94,9 +106,11 @@ record = (entry ^ affix_definition ^ template).set_name("record")
 
 comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 
-lexicon = (
-    (Opt(record) + Opt(comment) + Suppress("\n"))[...]  # - Opt(Suppress("\n"))
-).set_name("lexicon")
+lexicon_line = (Opt(record) + Opt(comment)).set_name("lexicon line")
+
+lexicon = ((lexicon_line + Suppress("\n"))[...]).set_name(  # - Opt(Suppress("\n"))
+    "lexicon"
+)
 
 
 if __name__ == "__main__":
