@@ -81,7 +81,14 @@ def continue_lines(lines: Iterable[str]) -> Iterable[str]:
 ParserElement.set_default_whitespace_chars(" \t")
 
 lexeme = (
-    (Suppress("<") - Word(alphanums + "-" + " ") - Suppress(">"))
+    (
+        Suppress("<")
+        - Word(
+            pyparsing_unicode.BasicMultilingualPlane.printables + whitespace,
+            exclude_chars="<>",
+        )
+        - Suppress(">")
+    )
     .set_parse_action(token_map(Lexeme))
     .set_name("lexeme")
 )
