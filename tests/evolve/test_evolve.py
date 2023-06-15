@@ -75,15 +75,17 @@ def test_morpheme_fuse_order(simple_evolver):
                 (
                     ResolvedAffix(
                         False,
-                        AffixType.SUFFIX,
-                        Rule("era2"),
-                        ResolvedForm(Morpheme("ka"), ()),
-                    ),
-                    ResolvedAffix(
-                        False,
                         AffixType.PREFIX,
                         None,
                         ResolvedForm(Morpheme("ma"), ()),
+                    ),
+                ),
+                (
+                    ResolvedAffix(
+                        False,
+                        AffixType.SUFFIX,
+                        Rule("era2"),
+                        ResolvedForm(Morpheme("ka"), ()),
                     ),
                 ),
             )

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from itertools import chain
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .metadata import Metadata
@@ -86,14 +86,19 @@ Definable = Union[Lexeme, Affix]
 
 @dataclass(eq=True, frozen=True)
 class Var:
-    affixes: Tuple[Affix, ...]
+    prefixes: Tuple[Affix, ...]
+    """prefixes are stored in reversed order"""
+
+    suffixes: Tuple[Affix, ...]
 
     @classmethod
-    def from_iterable(cls, iterable: Iterable[Affix]) -> "Var":
-        return cls(tuple(iterable))
+    def from_prefixes_and_suffixes(
+        cls, prefixes: List[Affix], suffixes: List[Affix]
+    ) -> "Var":
+        return cls(tuple(reversed(prefixes)), tuple(suffixes))
 
     def show(self, stem: str) -> str:
-        for affix in self.affixes:
+        for affix in self.prefixes + self.suffixes:
             stem = affix.type.fuse(stem, affix.name, ".")
 
         return stem
@@ -108,35 +113,22 @@ Describable = Union["Unit", Affix]
 @dataclass(eq=True, frozen=True)
 class Fusion:
     stem: "Unit"
-    affixes: Tuple[Affix, ...] = field(default=())
+    prefixes: Tuple[Affix, ...] = field(default=())
+    """prefixes are stored in reversed order"""
+
+    suffixes: Tuple[Affix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
         cls, prefixes: List[Affix], stem: "Unit", suffixes: List[Affix]
     ) -> "Fusion":
-        return cls(stem, tuple(list(reversed(prefixes)) + suffixes))
-
-    @classmethod
-    def from_form(cls, form: "Unit") -> "Fusion":
-        match form:
-            case Fusion():
-                return form
-            case _:
-                return Fusion(form)
+        return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
 
     def __str__(self) -> str:
         return (
-            "".join(
-                affix.name + "."
-                for affix in self.affixes
-                if affix.type == AffixType.PREFIX
-            )
+            "".join(affix.name + "." for affix in self.prefixes)
             + str(self.stem)
-            + "".join(
-                "." + affix.name
-                for affix in self.affixes
-                if affix.type == AffixType.SUFFIX
-            )
+            + "".join("." + affix.name for affix in self.suffixes)
         )
 
 
@@ -221,18 +213,34 @@ class AffixDefinition:
 @dataclass(eq=True, frozen=True)
 class ResolvedForm:
     stem: Morpheme
-    affixes: Tuple["ResolvedAffix", ...] = field(default=())
+    prefixes: Tuple["ResolvedAffix", ...] = field(default=())
+    suffixes: Tuple["ResolvedAffix", ...] = field(default=())
 
-    def extend(self, *affixes: "ResolvedAffix") -> "ResolvedForm":
-        return ResolvedForm(self.stem, self.affixes + affixes)
+    def extend_prefixes(self, *prefixes: "ResolvedAffix") -> "ResolvedForm":
+        return ResolvedForm(self.stem, prefixes + self.prefixes, self.suffixes)
+
+    def extend_suffixes(self, *suffixes: "ResolvedAffix") -> "ResolvedForm":
+        return ResolvedForm(self.stem, self.prefixes, self.suffixes + suffixes)
+
+    def extend(
+        self,
+        prefixes: Tuple["ResolvedAffix", ...],
+        suffixes: Tuple["ResolvedAffix", ...],
+    ) -> "ResolvedForm":
+        return self.extend_prefixes(*prefixes).extend_suffixes(*suffixes)
+
+    def extend_any(self, affix: "ResolvedAffix") -> "ResolvedForm":
+        if affix.type is AffixType.PREFIX:
+            return self.extend_prefixes(affix)
+        else:
+            return self.extend_suffixes(affix)
 
     def to_morphemes(self) -> List[Morpheme]:
-        morphemes = [[self.stem]]
-        for affix in self.affixes:
-            if affix.type is AffixType.PREFIX:
-                morphemes.insert(0, affix.form.to_morphemes())
-            else:
-                morphemes.append(affix.form.to_morphemes())
+        morphemes = (
+            [prefix.form.to_morphemes() for prefix in self.prefixes]
+            + [[self.stem]]
+            + [suffix.form.to_morphemes() for suffix in self.suffixes]
+        )
 
         return list(chain(*morphemes))
 

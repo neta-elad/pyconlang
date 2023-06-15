@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
-from ..types import AffixType, ResolvedForm
+from ..types import AffixType
 from ..unicode import remove_primary_stress
 from .errors import BadAffixation
-from .types import Evolved
+from .types import ArrangedForm, Evolved
 
 Cache = Dict["EvolveQuery", Evolved]
 
@@ -130,7 +130,7 @@ class QueryWalker:
 
 @dataclass
 class Batcher:
-    cache: Dict[ResolvedForm, EvolveQuery] = field(default_factory=dict)
+    cache: Dict[ArrangedForm, EvolveQuery] = field(default_factory=dict)
 
     @staticmethod
     def order_in_layers(queries: List[EvolveQuery]) -> List[List[EvolveQuery]]:
@@ -149,7 +149,7 @@ class Batcher:
 
         return segments
 
-    def build_query(self, form: ResolvedForm) -> EvolveQuery:
+    def build_query(self, form: ArrangedForm) -> EvolveQuery:
         if form in self.cache:
             return self.cache[form]
 
@@ -199,9 +199,9 @@ class Batcher:
 
     def build_and_order(
         self,
-        forms: Sequence[ResolvedForm],
-    ) -> Tuple[Mapping[ResolvedForm, EvolveQuery], List[List[EvolveQuery]]]:
-        mapping: Dict[ResolvedForm, EvolveQuery] = {}
+        forms: Sequence[ArrangedForm],
+    ) -> Tuple[Mapping[ArrangedForm, EvolveQuery], List[List[EvolveQuery]]]:
+        mapping: Dict[ArrangedForm, EvolveQuery] = {}
         queries: List[EvolveQuery] = []
 
         for form in forms:

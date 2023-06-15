@@ -19,7 +19,7 @@ from .arrange import AffixArranger
 from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
-from .types import Evolved
+from .types import ArrangedForm, Evolved
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"
@@ -56,7 +56,7 @@ class Evolver:
 
     @cached_property
     def arranger(self) -> AffixArranger:
-        return AffixArranger(CHANGES_PATH)
+        return AffixArranger.from_path(CHANGES_PATH)
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -166,7 +166,7 @@ class Evolver:
 
         return result
 
-    def normalize_form(self, form: Evolvable) -> ResolvedForm:
+    def normalize_form(self, form: Evolvable) -> ArrangedForm:
         if isinstance(form, str):
             form = Morpheme(form)
         if isinstance(form, Morpheme):
@@ -174,7 +174,7 @@ class Evolver:
 
         return self.arranger.rearrange(form)
 
-    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
+    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ArrangedForm]:
         return [self.normalize_form(form) for form in forms]
 
     def evolve_words(

@@ -91,8 +91,12 @@ class Lexicon:
                 chain(
                     *[
                         self.resolve_affix(sub_affix)
-                        for sub_affix in definition.get_var().affixes
-                    ]
+                        for sub_affix in definition.get_var().prefixes
+                    ],
+                    *[
+                        self.resolve_affix(sub_affix)
+                        for sub_affix in definition.get_var().suffixes
+                    ],
                 )
             )
         else:
@@ -104,6 +108,9 @@ class Lexicon:
                     self.resolve(definition.get_form()),
                 )
             ]
+
+    def resolve_affixes(self, affixes: Tuple[Affix, ...]) -> Tuple[ResolvedAffix, ...]:
+        return tuple(chain(*[self.resolve_affix(affix) for affix in affixes]))
 
     def resolve(self, unit: Unit) -> ResolvedForm:
         match unit:
@@ -117,30 +124,30 @@ class Lexicon:
                 return self.resolve_compound(unit)
 
     def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
-        affixes = tuple(chain(*[self.resolve_affix(affix) for affix in fusion.affixes]))
-        return self.resolve(fusion.stem).extend(*affixes)
+        prefixes = self.resolve_affixes(fusion.prefixes)
+        suffixes = self.resolve_affixes(fusion.suffixes)
+        return self.resolve(fusion.stem).extend(prefixes, suffixes)
 
     def resolve_compound(self, compound: Compound) -> ResolvedForm:
         head = self.resolve(compound.head)
         tail = self.resolve(compound.tail)
         tail_as_affix = ResolvedAffix.from_compound(compound, tail)
-        return head.extend(tail_as_affix)
+        return head.extend_any(tail_as_affix)
 
     def resolve_with_affixes(
-        self, form: Unit, affixes: Tuple[Affix, ...]
+        self, form: Unit, prefixes: Tuple[Affix, ...], suffixes: Tuple[Affix, ...]
     ) -> ResolvedForm:
-        resolved_affixes = tuple(
-            chain(*[self.resolve_affix(affix) for affix in affixes])
-        )
+        resolved_prefixes = self.resolve_affixes(prefixes)
+        resolved_suffixes = self.resolve_affixes(suffixes)
         resolved = self.resolve(form)
-        return resolved.extend(*resolved_affixes)
+        return resolved.extend(resolved_prefixes, resolved_suffixes)
 
     def substitute(self, var: Var, form: Unit) -> ResolvedForm:
-        return self.resolve_with_affixes(form, var.affixes)
+        return self.resolve_with_affixes(form, var.prefixes, var.suffixes)
 
     def get_vars(self, name: Optional[TemplateName]) -> Tuple[Var, ...]:
         if name is None:
-            return (Var(()),)
+            return (Var((), ()),)
         else:
             for template in self.templates:
                 if template.name == name:
@@ -182,7 +189,9 @@ class Lexicon:
             case Morpheme():
                 return self.singleton_lookup(record, str(record))
             case Fusion():
-                return self.lookup_records(record.stem, *record.affixes)
+                return self.lookup_records(
+                    record.stem, *record.prefixes, *record.suffixes
+                )
             case Compound():
                 return self.lookup(record.head) + self.lookup(record.tail)
 

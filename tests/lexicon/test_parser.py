@@ -48,7 +48,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Morpheme("kipu", Rule("era1")), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Morpheme("kipu", Rule("era1")), (), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -58,7 +58,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Lexeme("heavy"), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("heavy"), (), (Affix("PL", AffixType.SUFFIX),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -114,7 +114,7 @@ def test_affix_definition():
         False,
         Affix("COL", AffixType.PREFIX),
         None,
-        Fusion(Lexeme("big"), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("big"), (), (Affix("PL", AffixType.SUFFIX),)),
         (),
         description="collective form",
     )
@@ -129,7 +129,7 @@ def test_affix_definition():
             Fusion(Lexeme("big")),
             CompoundStress.HEAD,
             None,
-            Fusion(Lexeme("pile"), (Affix("PL", AffixType.SUFFIX),)),
+            Fusion(Lexeme("pile"), (), (Affix("PL", AffixType.SUFFIX),)),
         ),
         (),
         description="collective form",
@@ -170,7 +170,7 @@ def test_lexicon(parsed_lexicon):
             Entry(
                 None,
                 Lexeme("gravel"),
-                Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
+                Fusion(Lexeme("stone"), (), (Affix("PL", AffixType.SUFFIX),)),
                 PartOfSpeech("n"),
                 "gravel",
             ),
@@ -200,10 +200,11 @@ def test_lexicon(parsed_lexicon):
                 affix=Affix(name="LARGE", type=AffixType.SUFFIX),
                 era=None,
                 form=Var(
-                    affixes=(
+                    prefixes=(),
+                    suffixes=(
                         Affix(name="COL", type=AffixType.SUFFIX),
                         Affix(name="PL", type=AffixType.SUFFIX),
-                    )
+                    ),
                 ),
                 sources=(),
                 description="large plural",
@@ -214,7 +215,8 @@ def test_lexicon(parsed_lexicon):
                 era=None,
                 form=Fusion(
                     stem=Lexeme(name="stone"),
-                    affixes=(Affix(name="COL", type=AffixType.SUFFIX),),
+                    prefixes=(),
+                    suffixes=(Affix(name="COL", type=AffixType.SUFFIX),),
                 ),
                 sources=(),
                 description="made of stone",
@@ -225,19 +227,20 @@ def test_lexicon(parsed_lexicon):
     assert frozenset(parsed_lexicon.templates) == frozenset(
         {
             Template(
-                TemplateName("plural"), (Var(()), Var((Affix("PL", AffixType.SUFFIX),)))
+                TemplateName("plural"),
+                (Var((), ()), Var((), (Affix("PL", AffixType.SUFFIX),))),
             )
         }
     )
 
 
 def test_var(sample_lexicon):
-    assert parse(var, "$") == Var(())
-    assert parse(var, "$.PL") == Var((Affix("PL", AffixType.SUFFIX),))
+    assert parse(var, "$") == Var((), ())
+    assert parse(var, "$.PL") == Var((), (Affix("PL", AffixType.SUFFIX),))
     assert parse(var, "DEF.$.PL.COL") == Var(
+        (Affix("DEF", AffixType.PREFIX),),
         (
-            Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
             Affix("COL", AffixType.SUFFIX),
-        )
+        ),
     )

@@ -2,6 +2,7 @@ from typing import Iterable, Union, cast
 
 from pyparsing import (
     FollowedBy,
+    Group,
     Opt,
     ParserElement,
     Regex,
@@ -43,8 +44,12 @@ ParserElement.set_default_whitespace_chars(" \t")
 
 
 var = (
-    ((prefix[...] + FollowedBy("$")) - Suppress("$") - suffix[...])
-    .set_parse_action(Var.from_iterable)
+    (
+        (Group(prefix[...], True) + FollowedBy("$"))
+        - Suppress("$")
+        - Group(suffix[...], True)
+    )
+    .set_parse_action(tokens_map(Var.from_prefixes_and_suffixes))
     .set_name("var")
 )
 template_name = (

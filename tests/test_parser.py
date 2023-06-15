@@ -43,8 +43,8 @@ def test_base_unit():
 def test_fusion():
     assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone"),
+        (Affix("DEF", AffixType.PREFIX),),
         (
-            Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
             Affix("ACC", AffixType.SUFFIX),
         ),
@@ -52,8 +52,8 @@ def test_fusion():
 
     assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone"),
+        (Affix("DEF", AffixType.PREFIX),),
         (
-            Affix("DEF", AffixType.PREFIX),
             Affix("PL", AffixType.SUFFIX),
             Affix("ACC", AffixType.SUFFIX),
         ),
@@ -63,10 +63,8 @@ def test_fusion():
 
     assert parse(fusion, "DEF.*proto@era1.PL") == Fusion(
         Morpheme("proto", Rule("era1")),
-        (
-            Affix("DEF", AffixType.PREFIX),
-            Affix("PL", AffixType.SUFFIX),
-        ),
+        (Affix("DEF", AffixType.PREFIX),),
+        (Affix("PL", AffixType.SUFFIX),),
     )
 
 
@@ -107,8 +105,8 @@ def test_sentence():
     assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
         Fusion(Morpheme("aka")),
         Fusion(Lexeme("strong"), ()),
-        Fusion(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),)),
-        Fusion(Morpheme("taka", Rule("start")), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("with space"), (Affix("COL", AffixType.PREFIX),), ()),
+        Fusion(Morpheme("taka", Rule("start")), (), (Affix("PL", AffixType.SUFFIX),)),
     )
 
 

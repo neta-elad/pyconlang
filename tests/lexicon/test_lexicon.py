@@ -16,9 +16,10 @@ from pyconlang.types import (
 
 def test_parsed_lexicon(parsed_lexicon):
     assert parsed_lexicon.resolve(
-        Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Fusion(Lexeme("stone"), (), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -32,6 +33,7 @@ def test_parsed_lexicon(parsed_lexicon):
     assert parsed_lexicon.resolve(
         Fusion(
             Lexeme("stone"),
+            (),
             (
                 Affix("COL", AffixType.SUFFIX),
                 Affix("PL", AffixType.SUFFIX),
@@ -39,6 +41,7 @@ def test_parsed_lexicon(parsed_lexicon):
         )
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -56,9 +59,10 @@ def test_parsed_lexicon(parsed_lexicon):
     )
 
     assert parsed_lexicon.resolve(
-        Fusion(Lexeme("stone"), (Affix("LARGE", AffixType.SUFFIX),))
+        Fusion(Lexeme("stone"), (), (Affix("LARGE", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -79,6 +83,7 @@ def test_parsed_lexicon(parsed_lexicon):
         Compound(Lexeme("stone"), CompoundStress.TAIL, None, Morpheme("baka"))
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 True, AffixType.SUFFIX, None, ResolvedForm(Morpheme("baka"), ())
@@ -90,39 +95,40 @@ def test_parsed_lexicon(parsed_lexicon):
         Fusion(Morpheme("mana"), (Affix("STONE", AffixType.PREFIX),))
     ) == ResolvedForm(
         stem=Morpheme(form="mana", era=None),
-        affixes=(
+        prefixes=(
             ResolvedAffix(
                 stressed=False,
                 type=AffixType.PREFIX,
                 era=None,
                 form=ResolvedForm(
                     stem=Morpheme(form="apak", era=None),
-                    affixes=(
+                    prefixes=(),
+                    suffixes=(
                         ResolvedAffix(
                             stressed=False,
                             type=AffixType.SUFFIX,
                             era=None,
-                            form=ResolvedForm(
-                                stem=Morpheme(form="ma", era=None), affixes=()
-                            ),
+                            form=ResolvedForm(stem=Morpheme(form="ma", era=None)),
                         ),
                     ),
                 ),
             ),
         ),
+        suffixes=(),
     )
 
 
 def test_substitute_var(parsed_lexicon):
-    assert parsed_lexicon.substitute(Var(()), Morpheme("apak")) == ResolvedForm(
+    assert parsed_lexicon.substitute(Var((), ()), Morpheme("apak")) == ResolvedForm(
         Morpheme("apak"),
         (),
     )
 
     assert parsed_lexicon.substitute(
-        Var((Affix("PL", AffixType.SUFFIX),)), Morpheme("apak")
+        Var((), (Affix("PL", AffixType.SUFFIX),)), Morpheme("apak")
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -134,9 +140,10 @@ def test_substitute_var(parsed_lexicon):
     )
 
     assert parsed_lexicon.substitute(
-        Var(()), Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),))
+        Var((), ()), Fusion(Lexeme("stone"), (), (Affix("PL", AffixType.SUFFIX),))
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -148,10 +155,11 @@ def test_substitute_var(parsed_lexicon):
     )
 
     assert parsed_lexicon.substitute(
-        Var((Affix("PL", AffixType.SUFFIX),)),
-        Fusion(Lexeme("stone"), (Affix("PL", AffixType.SUFFIX),)),
+        Var((), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("stone"), (), (Affix("PL", AffixType.SUFFIX),)),
     ) == ResolvedForm(
         Morpheme("apak"),
+        (),
         (
             ResolvedAffix(
                 False,
@@ -170,11 +178,11 @@ def test_substitute_var(parsed_lexicon):
 
 
 def test_templates(parsed_lexicon):
-    assert parsed_lexicon.get_vars(None) == (Var(()),)
+    assert parsed_lexicon.get_vars(None) == (Var((), ()),)
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
-        Var(()),
-        Var((Affix("PL", AffixType.SUFFIX),)),
+        Var((), ()),
+        Var((), (Affix("PL", AffixType.SUFFIX),)),
     )
 
 
@@ -192,24 +200,29 @@ def test_form(parsed_lexicon):
     )
 
     assert parsed_lexicon.form(Lexeme("gravel")) == Fusion(
-        stem=Lexeme(name="stone"), affixes=(Affix(name="PL", type=AffixType.SUFFIX),)
+        stem=Lexeme(name="stone"),
+        prefixes=(),
+        suffixes=(Affix(name="PL", type=AffixType.SUFFIX),),
     )
 
 
 def test_resolve_definable(parsed_lexicon):
     assert parsed_lexicon.resolve_definable(
         Affix("PL", AffixType.SUFFIX)
-    ) == ResolvedForm(stem=Morpheme(form="iki", era=Rule(name="era1")), affixes=())
+    ) == ResolvedForm(
+        stem=Morpheme(form="iki", era=Rule(name="era1")), prefixes=(), suffixes=()
+    )
 
     assert parsed_lexicon.resolve_definable(Lexeme("gravel")) == ResolvedForm(
         stem=Morpheme(form="apak", era=None),
-        affixes=(
+        prefixes=(),
+        suffixes=(
             ResolvedAffix(
                 stressed=False,
                 type=AffixType.SUFFIX,
                 era=Rule(name="era1"),
                 form=ResolvedForm(
-                    stem=Morpheme(form="iki", era=Rule(name="era1")), affixes=()
+                    stem=Morpheme(form="iki", era=Rule(name="era1")),
                 ),
             ),
         ),

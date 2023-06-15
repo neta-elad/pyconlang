@@ -20,6 +20,11 @@ test:
 	pytest
 
 
+.PHONY: coverage
+coverage:
+	pytest --cov=pyconlang
+
+
 .PHONY: env
 env:
 	! [ -d .venv ] && python3 -m venv .venv || true
