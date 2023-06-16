@@ -1,9 +1,9 @@
 import pytest
 
+from pyconlang.domain import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 from pyconlang.evolve.arrange import AffixArranger
 from pyconlang.evolve.batch import Batcher, LeafEvolveQuery, NodeEvolveQuery
 from pyconlang.evolve.errors import BadAffixation
-from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 
 
 @pytest.fixture(scope="session")

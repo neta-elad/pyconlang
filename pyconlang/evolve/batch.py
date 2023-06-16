@@ -1,10 +1,10 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from ..types import AffixType
+from ..domain import AffixType
 from ..unicode import remove_primary_stress
+from .domain import ArrangedForm, Evolved
 from .errors import BadAffixation
-from .types import ArrangedForm, Evolved
 
 Cache = dict["EvolveQuery", Evolved]
 

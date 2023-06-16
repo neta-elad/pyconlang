@@ -17,7 +17,7 @@ from pyparsing import (
     token_map,
 )
 
-from .types import (
+from .domain import (
     Compound,
     Definable,
     Fusion,

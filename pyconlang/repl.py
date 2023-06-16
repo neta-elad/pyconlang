@@ -11,10 +11,10 @@ from watchdog.observers import Observer
 
 from . import PYCONLANG_PATH
 from .book import Handler as BookHandler
+from .domain import Describable
 from .errors import show_exception
-from .evolve.types import Evolved
+from .evolve.domain import Evolved
 from .translate import Translator
-from .types import Describable
 from .unicode import center, length
 
 HISTORY_PATH = PYCONLANG_PATH / "repl.history"

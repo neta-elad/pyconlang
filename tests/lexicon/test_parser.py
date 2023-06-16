@@ -1,15 +1,4 @@
-from pyconlang.lexicon import Lexicon
-from pyconlang.lexicon.parser import (
-    affix_definition,
-    comment,
-    entry,
-    lexical_sources,
-    part_of_speech,
-    template_name,
-    var,
-)
-from pyconlang.parser import affix
-from pyconlang.types import (
+from pyconlang.domain import (
     AffixDefinition,
     Compound,
     Entry,
@@ -25,6 +14,17 @@ from pyconlang.types import (
     TemplateName,
     Var,
 )
+from pyconlang.lexicon import Lexicon
+from pyconlang.lexicon.parser import (
+    affix_definition,
+    comment,
+    entry,
+    lexical_sources,
+    part_of_speech,
+    template_name,
+    var,
+)
+from pyconlang.parser import affix
 
 from ..test_parser import parse
 

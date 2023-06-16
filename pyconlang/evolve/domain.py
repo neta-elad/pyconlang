@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from unidecode import unidecode
 
-from ..types import AffixType, Morpheme, Rule
+from ..domain import AffixType, Morpheme, Rule
 
 
 @dataclass(eq=True, frozen=True)

@@ -1,7 +1,8 @@
-import abc
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from itertools import chain
+from typing import Generic, TypeVar
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .metadata import Metadata
@@ -74,15 +75,15 @@ class AffixType(Enum):
 
 
 @dataclass(eq=True, frozen=True)
-class Affix(abc.ABC):
+class Affix(ABC):
     name: str
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def type(self) -> AffixType:
         ...  # todo: remvoe
 
-    @abc.abstractmethod
+    @abstractmethod
     def __str__(self) -> str:
         ...
 
@@ -322,3 +323,40 @@ class Template:
     @classmethod
     def from_args(cls, name: TemplateName, *var_args: Var) -> "Template":
         return cls(name, var_args)
+
+
+T = TypeVar("T")
+
+
+@dataclass(eq=True, frozen=True)
+class BranchJoin(Generic[T]):
+    head: "JoinTree[T]"
+    joiner: Joiner
+    tail: "JoinTree[T]"
+
+    @property
+    def stress(self) -> JoinerStress:  # todo: remove
+        return self.joiner.stress
+
+    @property
+    def era(self) -> Rule | None:  # todo: remove
+        return self.joiner.era
+
+    def era_name(self) -> str | None:
+        if self.era is None:
+            return None
+        return self.era.name
+
+    def __str__(self) -> str:
+        return f"[{self.head} {self.joiner} {self.tail}]"
+
+
+@dataclass(eq=True, frozen=True)
+class LeafJoin(Generic[T]):
+    value: T
+
+    def __str__(self) -> str:
+        return f"[{self.value}]"
+
+
+JoinTree = LeafJoin[T] | BranchJoin[T]

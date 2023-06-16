@@ -2,6 +2,16 @@ from typing import Any
 
 from pyparsing import ParserElement
 
+from pyconlang.domain import (
+    Compound,
+    Fusion,
+    Joiner,
+    Lexeme,
+    Morpheme,
+    Prefix,
+    Rule,
+    Suffix,
+)
 from pyconlang.parser import (
     base_unit,
     compound,
@@ -13,16 +23,6 @@ from pyconlang.parser import (
     parse_definables,
     parse_sentence,
     rule,
-)
-from pyconlang.types import (
-    Compound,
-    Fusion,
-    Joiner,
-    Lexeme,
-    Morpheme,
-    Prefix,
-    Rule,
-    Suffix,
 )
 
 

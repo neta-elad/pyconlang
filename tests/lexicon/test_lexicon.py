@@ -1,5 +1,4 @@
-from pyconlang.lexicon import Lexicon
-from pyconlang.types import (
+from pyconlang.domain import (
     AffixType,
     Compound,
     Fusion,
@@ -14,6 +13,7 @@ from pyconlang.types import (
     TemplateName,
     Var,
 )
+from pyconlang.lexicon import Lexicon
 
 
 def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:

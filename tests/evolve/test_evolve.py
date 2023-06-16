@@ -1,8 +1,8 @@
+from pyconlang.domain import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 from pyconlang.evolve import Evolver
+from pyconlang.evolve.domain import Evolved
 from pyconlang.evolve.tracer import TraceLine
-from pyconlang.evolve.types import Evolved
 from pyconlang.metadata import Metadata
-from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 
 
 def test_evolve_words(simple_evolver: Evolver) -> None:

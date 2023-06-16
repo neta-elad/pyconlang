@@ -6,10 +6,10 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from ..domain import Affix, Definable, Entry, Lexeme, Morpheme, ResolvedForm, Unit
 from ..errors import show_exception
-from ..evolve.types import Evolved
+from ..evolve.domain import Evolved
 from ..translate import Translator
-from ..types import Affix, Definable, Entry, Lexeme, Morpheme, ResolvedForm, Unit
 
 
 class LexiconInserter(Extension):

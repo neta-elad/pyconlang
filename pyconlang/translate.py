@@ -1,11 +1,11 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
+from .domain import Definable, Describable, Entry, ResolvedForm, Unit
 from .evolve import EvolvedWithTrace, Evolver
-from .evolve.types import Evolved
+from .evolve.domain import Evolved
 from .lexicon import Lexicon
 from .parser import parse_definables, parse_sentence
-from .types import Definable, Describable, Entry, ResolvedForm, Unit
 
 
 @dataclass

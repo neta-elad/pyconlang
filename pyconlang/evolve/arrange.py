@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 
-from ..types import ResolvedAffix, ResolvedForm
-from .types import ArrangedAffix, ArrangedForm
+from ..domain import ResolvedAffix, ResolvedForm
+from .domain import ArrangedAffix, ArrangedForm
 
 RULE_PATTERN = r"^\s*([A-Za-z0-9-]+)\s*:"
 

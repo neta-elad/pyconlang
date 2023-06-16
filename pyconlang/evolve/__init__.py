@@ -14,12 +14,12 @@ from unicodedata import normalize
 from .. import PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
-from ..types import Morpheme, ResolvedForm
+from ..domain import Morpheme, ResolvedForm
 from .arrange import AffixArranger
 from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
+from .domain import ArrangedForm, Evolved
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
-from .types import ArrangedForm, Evolved
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"

@@ -13,6 +13,7 @@ from pyparsing import (
     token_map,
 )
 
+from ..domain import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
 from ..parser import (
     affix,
     compound,
@@ -24,7 +25,6 @@ from ..parser import (
     suffix,
     tokens_map,
 )
-from ..types import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
 
 
 def make_diagrams() -> None:

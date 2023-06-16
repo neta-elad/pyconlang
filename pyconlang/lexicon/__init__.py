@@ -4,8 +4,7 @@ from itertools import chain
 from pathlib import Path
 
 from ..checksum import checksum
-from ..parser import continue_lines
-from ..types import (
+from ..domain import (
     Affix,
     AffixDefinition,
     Compound,
@@ -22,6 +21,7 @@ from ..types import (
     Unit,
     Var,
 )
+from ..parser import continue_lines
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
 
