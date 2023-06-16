@@ -1,6 +1,5 @@
 from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.parser import (
-    affix,
     affix_definition,
     comment,
     entry,
@@ -9,6 +8,7 @@ from pyconlang.lexicon.parser import (
     template_name,
     var,
 )
+from pyconlang.parser import affix
 from pyconlang.types import (
     AffixDefinition,
     Compound,
@@ -29,12 +29,12 @@ from pyconlang.types import (
 from ..test_parser import parse
 
 
-def test_entry_parts():
+def test_entry_parts() -> None:
     assert parse(template_name, "&template") == TemplateName("template")
     assert parse(part_of_speech, "(adj.)") == PartOfSpeech("adj")
 
 
-def test_entry():
+def test_entry() -> None:
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Lexeme("strong"),
@@ -64,12 +64,12 @@ def test_entry():
     )
 
 
-def test_affix():
+def test_affix() -> None:
     assert parse(affix, ".PL") == Suffix("PL")
     assert parse(affix, "PL.") == Prefix("PL")
 
 
-def test_affix_definition():
+def test_affix_definition() -> None:
     assert parse(lexical_sources, "(<big> <pile>)") == (
         Lexeme("big"),
         Lexeme("pile"),
@@ -135,12 +135,12 @@ def test_affix_definition():
     )
 
 
-def test_comment():
+def test_comment() -> None:
     assert not comment.parse_string("# <nothing at all *..", parse_all=True)
     assert not comment.parse_string("   ### <nothing at all *..", parse_all=True)
 
 
-def test_lexicon(parsed_lexicon):
+def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert isinstance(parsed_lexicon, Lexicon)
 
     assert frozenset(parsed_lexicon.entries) == frozenset(
@@ -233,7 +233,7 @@ def test_lexicon(parsed_lexicon):
     )
 
 
-def test_var(sample_lexicon):
+def test_var() -> None:
     assert parse(var, "$") == Var((), ())
     assert parse(var, "$.PL") == Var((), (Suffix("PL"),))
     assert parse(var, "DEF.$.PL.COL") == Var(

@@ -1,32 +1,34 @@
 import os
 import tempfile
+from collections.abc import Generator
 from inspect import cleandoc
 from pathlib import Path
 
 import pytest
 from prompt_toolkit.application import create_app_session
-from prompt_toolkit.input import create_pipe_input
+from prompt_toolkit.input import PipeInput, create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
 from pyconlang.cli import init
 
 
 @pytest.fixture
-def tmpdir():
+def tmpdir() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as tmpdir:
         os.chdir(tmpdir)
         yield Path(tmpdir)
 
 
 @pytest.fixture
-def tmp_pyconlang(tmpdir):
+def tmp_pyconlang(tmpdir: Path) -> Generator[Path, None, None]:
+    assert init.callback is not None
     init.callback(tmpdir, "TestLang", "Mr. Tester", False, False)
 
     yield tmpdir
 
 
 @pytest.fixture
-def sample_lexicon():
+def sample_lexicon() -> str:
     return cleandoc(
         """
         template &plural $ $.PL # this is a template
@@ -55,7 +57,9 @@ def sample_lexicon():
 
 
 @pytest.fixture
-def simple_pyconlang(tmp_pyconlang, sample_lexicon):
+def simple_pyconlang(
+    tmp_pyconlang: Path, sample_lexicon: str
+) -> Generator[Path, None, None]:
     (tmp_pyconlang / "changes.lsc").write_text(
         """
         Feature type (*consonant, vowel)
@@ -105,7 +109,7 @@ def simple_pyconlang(tmp_pyconlang, sample_lexicon):
 
 
 @pytest.fixture(autouse=True, scope="function")
-def mock_input():
+def mock_input() -> Generator[PipeInput, None, None]:
     with create_pipe_input() as pipe_input:
         with create_app_session(input=pipe_input, output=DummyOutput()):
             yield pipe_input

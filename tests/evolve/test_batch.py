@@ -7,16 +7,16 @@ from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Ru
 
 
 @pytest.fixture(scope="session")
-def batcher():
+def batcher() -> Batcher:
     return Batcher()
 
 
 @pytest.fixture(scope="session")
-def arranger():
+def arranger() -> AffixArranger:
     return AffixArranger(["1", "2"])
 
 
-def test_one_node(batcher, arranger):
+def test_one_node(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a"))
     assert batcher.build_query(arranger.rearrange(a)) == LeafEvolveQuery("a")
 
@@ -24,7 +24,7 @@ def test_one_node(batcher, arranger):
     assert batcher.build_query(arranger.rearrange(a)) == LeafEvolveQuery("a", start="1")
 
 
-def test_two_nodes_same(batcher, arranger):
+def test_two_nodes_same(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
 
@@ -45,7 +45,7 @@ def test_two_nodes_same(batcher, arranger):
     )
 
 
-def test_two_nodes_different(batcher, arranger):
+def test_two_nodes_different(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a"))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
@@ -76,7 +76,9 @@ def test_two_nodes_different(batcher, arranger):
     )
 
 
-def test_two_nodes_different_era_inside_affix(batcher, arranger):
+def test_two_nodes_different_era_inside_affix(
+    batcher: Batcher, arranger: AffixArranger
+) -> None:
     a = ResolvedForm(Morpheme("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b")))
 
@@ -88,7 +90,7 @@ def test_two_nodes_different_era_inside_affix(batcher, arranger):
     )
 
 
-def test_three_nodes_at_most_one_era(batcher, arranger):
+def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a"))
     b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
     c = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("c")))
@@ -165,7 +167,7 @@ def test_three_nodes_at_most_one_era(batcher, arranger):
     )
 
 
-def test_three_nodes_two_eras(batcher, arranger):
+def test_three_nodes_two_eras(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a"))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
@@ -213,7 +215,7 @@ def test_three_nodes_two_eras(batcher, arranger):
     )
 
 
-def test_node_query(batcher):
+def test_node_query(batcher: Batcher) -> None:
     a_b = NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"))
 
     assert a_b.get_query({}) == "ab"
@@ -238,7 +240,7 @@ def test_node_query(batcher):
         assert a_b.get_query({})
 
 
-def test_single_layer(batcher):
+def test_single_layer(batcher: Batcher) -> None:
     query = NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")),
@@ -250,7 +252,7 @@ def test_single_layer(batcher):
     assert batcher.order_in_layers([query]) == [[query]]
 
 
-def test_two_layers(batcher):
+def test_two_layers(batcher: Batcher) -> None:
     query = NodeEvolveQuery(
         AffixType.SUFFIX,
         NodeEvolveQuery(
@@ -270,7 +272,7 @@ def test_two_layers(batcher):
     ]
 
 
-def test_build_and_order(batcher, arranger):
+def test_build_and_order(batcher: Batcher, arranger: AffixArranger) -> None:
     a = ResolvedForm(Morpheme("a", Rule("1")))
     b = ResolvedAffix(
         False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))

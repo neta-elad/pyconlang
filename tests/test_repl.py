@@ -1,13 +1,25 @@
+from collections.abc import Generator
 from inspect import cleandoc
+from pathlib import Path
+from typing import Protocol
 
 import pytest
+from prompt_toolkit.input import PipeInput
+from pytest import CaptureFixture
 
-from pyconlang.cli import run_repl
 from pyconlang.repl import create_session
+from pyconlang.repl import run as run_repl
+
+
+class Evaluator(Protocol):
+    def __call__(self, line: str) -> str:
+        ...
 
 
 @pytest.fixture
-def simple_repl(capsys, simple_pyconlang):
+def simple_repl(
+    capsys: CaptureFixture[str], simple_pyconlang: Path
+) -> Generator[Evaluator, None, None]:
     with create_session() as session:
 
         def evaluate(line: str) -> str:
@@ -17,7 +29,7 @@ def simple_repl(capsys, simple_pyconlang):
         yield evaluate
 
 
-def test_basic(simple_repl):
+def test_basic(simple_repl: Evaluator) -> None:
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("<big>") == "ishi"
     assert simple_repl("d <big>") == "ishi"
@@ -27,7 +39,7 @@ def test_basic(simple_repl):
     assert simple_repl("*apak +!@era1 *i") == "abagi"
 
 
-def test_phonetic(simple_repl):
+def test_phonetic(simple_repl: Evaluator) -> None:
     assert simple_repl("p *apaki") == "abaʃi"
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("p") == "abaʃi"
@@ -35,14 +47,14 @@ def test_phonetic(simple_repl):
     assert simple_repl("phonetic <big>.PL") == "iʃiigi"
 
 
-def test_simple(simple_repl):
+def test_simple(simple_repl: Evaluator) -> None:
     assert simple_repl("*apakí") == "abashí"
     assert simple_repl("s") == "abashi"
     assert simple_repl("s *apakí") == "abashi"
     assert simple_repl("simple *apakí") == "abashi"
 
 
-def test_gloss(simple_repl):
+def test_gloss(simple_repl: Evaluator) -> None:
     assert simple_repl("<big>.PL") == "ishiigi"
     assert simple_repl("g") == "ishiigi  \n <big>.PL"
     assert simple_repl("g <big>.PL") == "ishiigi  \n <big>.PL"
@@ -54,7 +66,7 @@ def test_gloss(simple_repl):
     )
 
 
-def test_lookup(simple_repl):
+def test_lookup(simple_repl: Evaluator) -> None:
     assert simple_repl("<big>.PL") == "ishiigi"
     assert simple_repl("l") == "<big>: (adj.) big, great\n.PL: plural for inanimate"
     assert (
@@ -78,7 +90,7 @@ def test_lookup(simple_repl):
     )
 
 
-def test_trace(simple_repl):
+def test_trace(simple_repl: Evaluator) -> None:
     assert simple_repl("<big>") == "ishi"
     assert simple_repl("t") == cleandoc(
         """
@@ -123,7 +135,9 @@ def test_trace(simple_repl):
     )
 
 
-def test_repl_interactive(capsys, mock_input, simple_pyconlang):
+def test_repl_interactive(
+    capsys: CaptureFixture[str], mock_input: PipeInput, simple_pyconlang: Path
+) -> None:
     mock_input.send_text("*apaki\n")
     mock_input.close()
 
@@ -134,7 +148,7 @@ def test_repl_interactive(capsys, mock_input, simple_pyconlang):
     assert captured.out == "abashi\nGoodbye.\n"
 
 
-def test_repl_command(capsys, simple_pyconlang):
+def test_repl_command(capsys: CaptureFixture[str], simple_pyconlang: Path) -> None:
     run_repl("p *apaki *baki")
 
     captured = capsys.readouterr()

@@ -15,7 +15,7 @@ format:
 
 .PHONY: type
 type:
-	mypy --strict pyconlang
+	mypy --strict pyconlang tests
 
 
 .PHONY: test

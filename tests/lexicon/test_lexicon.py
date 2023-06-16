@@ -1,3 +1,4 @@
+from pyconlang.lexicon import Lexicon
 from pyconlang.types import (
     AffixType,
     Compound,
@@ -15,7 +16,7 @@ from pyconlang.types import (
 )
 
 
-def test_parsed_lexicon(parsed_lexicon):
+def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Fusion(Lexeme("stone"), (), (Suffix("PL"),))
     ) == ResolvedForm(
@@ -121,7 +122,7 @@ def test_parsed_lexicon(parsed_lexicon):
     )
 
 
-def test_substitute_var(parsed_lexicon):
+def test_substitute_var(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(Var((), ()), Morpheme("apak")) == ResolvedForm(
         Morpheme("apak"),
         (),
@@ -180,7 +181,7 @@ def test_substitute_var(parsed_lexicon):
     )
 
 
-def test_templates(parsed_lexicon):
+def test_templates(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.get_vars(None) == (Var((), ()),)
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
@@ -189,13 +190,13 @@ def test_templates(parsed_lexicon):
     )
 
 
-def test_define(parsed_lexicon):
+def test_define(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.define(Suffix("PL")) == "plural for inanimate"
 
     assert parsed_lexicon.define(Lexeme("stone")) == "(n.) stone, pebble"
 
 
-def test_form(parsed_lexicon):
+def test_form(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.form(Suffix("PL")) == Fusion(
         Morpheme(form="iki", era=Rule(name="era1"))
     )
@@ -207,7 +208,7 @@ def test_form(parsed_lexicon):
     )
 
 
-def test_resolve_definable(parsed_lexicon):
+def test_resolve_definable(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve_definable(Suffix("PL")) == ResolvedForm(
         stem=Morpheme(form="iki", era=Rule(name="era1")), prefixes=(), suffixes=()
     )
@@ -228,7 +229,7 @@ def test_resolve_definable(parsed_lexicon):
     )
 
 
-def test_lookup(parsed_lexicon):
+def test_lookup(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.lookup(Suffix("PL")) == [
         (Suffix("PL"), "plural for inanimate")
     ]
@@ -255,7 +256,7 @@ def test_lookup(parsed_lexicon):
         )
     ]
 
-    fusion = Fusion(Lexeme("stone"), (Suffix("PL"),))
+    fusion = Fusion(Lexeme("stone"), (), (Suffix("PL"),))
     assert parsed_lexicon.lookup(fusion) == [
         (
             Lexeme("stone"),
@@ -264,7 +265,7 @@ def test_lookup(parsed_lexicon):
         (Suffix("PL"), "plural for inanimate"),
     ]
 
-    fusion = Fusion(Morpheme("baka"), (Suffix("PL"),))
+    fusion = Fusion(Morpheme("baka"), (), (Suffix("PL"),))
     assert parsed_lexicon.lookup(fusion) == [
         (
             Morpheme("baka"),
@@ -274,7 +275,7 @@ def test_lookup(parsed_lexicon):
     ]
 
     compound = Compound(
-        Fusion(Morpheme("baka"), (Suffix("PL"),)),
+        Fusion(Morpheme("baka"), (), (Suffix("PL"),)),
         Joiner.head(),
         Lexeme("stone"),
     )

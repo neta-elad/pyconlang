@@ -1,10 +1,11 @@
 from inspect import cleandoc
+from pathlib import Path
 
 from pyconlang import PYCONLANG_PATH
-from pyconlang.cli import compile_book
+from pyconlang.book import compile_book
 
 
-def test_details(simple_pyconlang):
+def test_details(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
@@ -25,7 +26,7 @@ def test_details(simple_pyconlang):
     )
 
 
-def test_table(simple_pyconlang):
+def test_table(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -48,7 +49,7 @@ def test_table(simple_pyconlang):
     assert '<th colspan="2" rowspan="3">c3-5,1-2</th>' in html
 
 
-def test_container(simple_pyconlang):
+def test_container(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
@@ -77,7 +78,7 @@ def test_container(simple_pyconlang):
     assert "<div>\n<p>test div clean</p>\n</div>" in html
 
 
-def test_abbr(simple_pyconlang):
+def test_abbr(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -98,7 +99,7 @@ def test_abbr(simple_pyconlang):
     assert '<abbr title="alice and bob">a + b</abbr>' in html
 
 
-def test_ruby(simple_pyconlang):
+def test_ruby(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -113,7 +114,7 @@ def test_ruby(simple_pyconlang):
     assert "<ruby>ruby <rt>[ˈɹuː.bi]</rt></ruby>" in html
 
 
-def test_basic_inserter(simple_pyconlang):
+def test_basic_inserter(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -147,7 +148,7 @@ def test_basic_inserter(simple_pyconlang):
     assert "<em>*apak</em> + <em>*iki</em>" in html
 
 
-def test_auto_inserter(simple_pyconlang):
+def test_auto_inserter(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -179,7 +180,7 @@ def test_auto_inserter(simple_pyconlang):
     assert "<ruby>shiga <rt>[ʃiga]</rt></ruby>" in html
 
 
-def test_gloss_table(simple_pyconlang):
+def test_gloss_table(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
@@ -204,7 +205,7 @@ def test_gloss_table(simple_pyconlang):
     )
 
 
-def test_metadata(simple_pyconlang):
+def test_metadata(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
@@ -217,7 +218,7 @@ def test_metadata(simple_pyconlang):
     assert "this TestLang is written by Mr. Tester!" in html
 
 
-def test_grouping(simple_pyconlang):
+def test_grouping(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         cleandoc(
@@ -249,7 +250,7 @@ def test_grouping(simple_pyconlang):
     assert a_index < also_index < t_index < that_index < this_index
 
 
-def test_dictionary(simple_pyconlang):
+def test_dictionary(simple_pyconlang: Path) -> None:
     html = read()
 
     assert (
@@ -277,7 +278,7 @@ def test_dictionary(simple_pyconlang):
     assert i_index < k_index < entry_index
 
 
-def test_unicode_escape(simple_pyconlang):
+def test_unicode_escape(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
@@ -291,17 +292,15 @@ def test_unicode_escape(simple_pyconlang):
 
     html = read()
 
-    print(html)
-
     assert "ACE" in html
     assert "&amp;ph{<stone>}"
 
 
-def write(path, text):
+def write(path: Path, text: str) -> None:
     path.write_text(cleandoc(text) + "\n")
 
 
-def read():
+def read() -> str:
     compile_book()
 
     return (PYCONLANG_PATH / "output.html").read_text()

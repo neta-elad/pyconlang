@@ -3,7 +3,7 @@ from inspect import cleandoc
 from pyconlang.evolve.tracer import TraceLine, group_trace_lines, parse_trace_lines
 
 
-def test_grouping():
+def test_grouping() -> None:
     assert group_trace_lines(
         [
             TraceLine("rule1", "", "a", "b"),
@@ -34,7 +34,7 @@ def test_grouping():
     }
 
 
-def test_parser():
+def test_parser() -> None:
     assert (
         parse_trace_lines(
             cleandoc(

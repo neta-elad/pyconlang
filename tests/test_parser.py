@@ -1,3 +1,7 @@
+from typing import Any
+
+from pyparsing import ParserElement
+
 from pyconlang.parser import (
     base_unit,
     compound,
@@ -22,13 +26,13 @@ from pyconlang.types import (
 )
 
 
-def test_continue_lines():
+def test_continue_lines() -> None:
     assert list(
         continue_lines(["a", "b", " c", "d", "\t e", "", "f", "", " g", "\t h"])
     ) == ["a", "b c", "d\t e", "f", " g\t h"]
 
 
-def test_base_unit():
+def test_base_unit() -> None:
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
     assert parse(base_unit, "<name of the-form>") == Lexeme("name of the-form")
@@ -40,7 +44,7 @@ def test_base_unit():
     assert parse(base_unit, "*proto@era1") == Morpheme("proto", Rule("era1"))
 
 
-def test_fusion():
+def test_fusion() -> None:
     assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone"),
         (Prefix("DEF"),),
@@ -68,14 +72,14 @@ def test_fusion():
     )
 
 
-def test_joiner():
+def test_joiner() -> None:
     assert parse(joiner, "!+") == Joiner.head()
     assert parse(joiner, "+!") == Joiner.tail()
     assert parse(joiner, "!+@foo") == Joiner.head(Rule("foo"))
     assert parse(joiner, "+!@bar") == Joiner.tail(Rule("bar"))
 
 
-def test_compound():
+def test_compound() -> None:
     assert parse(compound, "*foo") == Fusion(Morpheme("foo"), ())
     assert parse(compound, "*foo +! *bar") == Compound(
         Fusion(Morpheme("foo"), ()), Joiner.tail(), Fusion(Morpheme("bar"))
@@ -101,7 +105,7 @@ def test_compound():
     )
 
 
-def test_sentence():
+def test_sentence() -> None:
     assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
         Fusion(Morpheme("aka")),
         Fusion(Lexeme("strong"), ()),
@@ -110,7 +114,7 @@ def test_sentence():
     )
 
 
-def test_definables():
+def test_definables() -> None:
     assert tuple(parse_definables("<strong> COL. .PL")) == (
         Lexeme("strong"),
         Prefix("COL"),
@@ -118,5 +122,5 @@ def test_definables():
     )
 
 
-def parse(parser, string):
+def parse(parser: ParserElement, string: str) -> Any:
     return parser.parse_string(string, parse_all=True)[0]

@@ -1,9 +1,11 @@
-from pyconlang.evolve import Evolved, TraceLine
+from pyconlang.evolve import Evolver
+from pyconlang.evolve.tracer import TraceLine
+from pyconlang.evolve.types import Evolved
 from pyconlang.metadata import Metadata
 from pyconlang.types import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
 
 
-def test_evolve_words(simple_evolver):
+def test_evolve_words(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve_words(["apaki", "apakí"]) == (
         [
             Evolved("apaki", "abashi", "abaʃi"),
@@ -23,7 +25,7 @@ def test_evolve_words(simple_evolver):
     )
 
 
-def test_evolve_forms(simple_evolver):
+def test_evolve_forms(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve([Morpheme("apaki")]) == [
         Evolved("apaki", "abashi", "abaʃi")
     ]
@@ -49,7 +51,7 @@ def test_evolve_forms(simple_evolver):
     ) == [Evolved("apakiʃi", "abagishi", "abagiʃi")]
 
 
-def test_morpheme_fuse(simple_evolver):
+def test_morpheme_fuse(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
             ResolvedForm(
@@ -67,7 +69,7 @@ def test_morpheme_fuse(simple_evolver):
     ) == [Evolved("maapak", "maabak", "maabak")]
 
 
-def test_morpheme_fuse_order(simple_evolver):
+def test_morpheme_fuse_order(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
             ResolvedForm(
@@ -93,7 +95,7 @@ def test_morpheme_fuse_order(simple_evolver):
     ) == [Evolved("mabagaka", "mabagaka", "mabagaka")]
 
 
-def test_stress(simple_evolver):
+def test_stress(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
             ResolvedForm(
@@ -143,7 +145,7 @@ def test_stress(simple_evolver):
     ) == [Evolved("mˈiabik", "miabik", "mˈiabik")]
 
 
-def test_explicit_syllables(simple_evolver):
+def test_explicit_syllables(simple_evolver: Evolver) -> None:
     Metadata.default().syllables = True
     assert simple_evolver.evolve(
         [
@@ -163,7 +165,7 @@ def test_explicit_syllables(simple_evolver):
     Metadata.default().syllables = False
 
 
-def test_evolve_empty_stem(simple_evolver):
+def test_evolve_empty_stem(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
             ResolvedForm(
@@ -181,7 +183,7 @@ def test_evolve_empty_stem(simple_evolver):
     ) == [Evolved("abak", "abak", "abak")]
 
 
-def test_trace(simple_evolver):
+def test_trace(simple_evolver: Evolver) -> None:
     assert simple_evolver.trace([Morpheme("apaki")]) == [
         (
             Evolved("apaki", "abashi", "abaʃi"),

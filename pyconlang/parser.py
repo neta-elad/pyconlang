@@ -27,6 +27,7 @@ from .types import (
     Prefix,
     Rule,
     Suffix,
+    Unit,
 )
 
 T = TypeVar("T")
@@ -55,8 +56,8 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> List[Compound]:
-    return cast(List[Compound], list(sentence.parse_string(string, parse_all=True)))
+def parse_sentence(string: str) -> List[Unit]:
+    return cast(List[Unit], list(sentence.parse_string(string, parse_all=True)))
 
 
 def parse_definables(string: str) -> List[Definable]:
