@@ -18,9 +18,10 @@ from pyparsing import (
 
 from .types import (
     Compound,
-    CompoundStress,
     Definable,
     Fusion,
+    Joiner,
+    JoinerStress,
     Lexeme,
     Morpheme,
     Prefix,
@@ -124,12 +125,14 @@ fusion = (
     .set_name("fusion")
 )
 
-head_stresser = Literal("!+").set_parse_action(const_action(CompoundStress.HEAD))
-tail_stresser = Literal("+!").set_parse_action(const_action(CompoundStress.TAIL))
+head_stresser = Literal("!+").set_parse_action(const_action(JoinerStress.HEAD))
+tail_stresser = Literal("+!").set_parse_action(const_action(JoinerStress.TAIL))
 
 joiner = (
-    (head_stresser ^ tail_stresser) - explicit_opt(rule).set_name("maybe rule")
-).set_name("joiner")
+    ((head_stresser ^ tail_stresser) - explicit_opt(rule).set_name("maybe rule"))
+    .set_parse_action(tokens_map(Joiner))
+    .set_name("joiner")
+)
 
 compound = Forward()
 compound.set_name("compound")

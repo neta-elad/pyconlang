@@ -159,24 +159,48 @@ class Fusion:
         )
 
 
-class CompoundStress(Enum):
+class JoinerStress(Enum):
     HEAD = auto()
     TAIL = auto()
 
     def __str__(self) -> str:
         match self:
-            case CompoundStress.HEAD:
+            case JoinerStress.HEAD:
                 return "!+"
-            case CompoundStress.TAIL:
+            case JoinerStress.TAIL:
                 return "+!"
+
+
+@dataclass(eq=True, frozen=True)
+class Joiner:
+    stress: JoinerStress
+    era: Optional[Rule] = field(default=None)
+
+    @classmethod
+    def head(cls, era: Optional[Rule] = None) -> "Joiner":
+        return cls(JoinerStress.HEAD, era)
+
+    @classmethod
+    def tail(cls, era: Optional[Rule] = None) -> "Joiner":
+        return cls(JoinerStress.TAIL, era)
+
+    def __str__(self) -> str:
+        return f"{self.stress}{self.era or ''}"
 
 
 @dataclass(eq=True, frozen=True)
 class Compound:
     head: "Unit"
-    stress: CompoundStress
-    era: Optional[Rule]
+    joiner: Joiner
     tail: "Unit"
+
+    @property
+    def stress(self) -> JoinerStress:  # todo: remove
+        return self.joiner.stress
+
+    @property
+    def era(self) -> Optional[Rule]:  # todo: remove
+        return self.joiner.era
 
     def era_name(self) -> Optional[str]:
         if self.era is None:
@@ -184,7 +208,7 @@ class Compound:
         return self.era.name
 
     def __str__(self) -> str:
-        return f"[{self.head} {self.stress}{self.era or ''} {self.tail}]"
+        return f"[{self.head} {self.joiner} {self.tail}]"
 
 
 Unit = Union[Morpheme, Lexeme, Fusion, Compound]
@@ -282,7 +306,7 @@ class ResolvedAffix:
     @classmethod
     def from_compound(cls, compound: Compound, tail: ResolvedForm) -> "ResolvedAffix":
         return cls(
-            compound.stress == CompoundStress.TAIL, AffixType.SUFFIX, compound.era, tail
+            compound.stress == JoinerStress.TAIL, AffixType.SUFFIX, compound.era, tail
         )
 
     def era_name(self) -> Optional[str]:

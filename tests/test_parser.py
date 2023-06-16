@@ -12,8 +12,8 @@ from pyconlang.parser import (
 )
 from pyconlang.types import (
     Compound,
-    CompoundStress,
     Fusion,
+    Joiner,
     Lexeme,
     Morpheme,
     Prefix,
@@ -68,35 +68,35 @@ def test_fusion():
     )
 
 
-def test_compound():
-    assert parse(joiner, "!+") == CompoundStress.HEAD
-    assert parse(joiner, "+!") == CompoundStress.TAIL
+def test_joiner():
+    assert parse(joiner, "!+") == Joiner.head()
+    assert parse(joiner, "+!") == Joiner.tail()
+    assert parse(joiner, "!+@foo") == Joiner.head(Rule("foo"))
+    assert parse(joiner, "+!@bar") == Joiner.tail(Rule("bar"))
 
+
+def test_compound():
     assert parse(compound, "*foo") == Fusion(Morpheme("foo"), ())
     assert parse(compound, "*foo +! *bar") == Compound(
-        Fusion(Morpheme("foo"), ()), CompoundStress.TAIL, None, Fusion(Morpheme("bar"))
+        Fusion(Morpheme("foo"), ()), Joiner.tail(), Fusion(Morpheme("bar"))
     )
     assert parse(compound, "*foo !+@era *bar") == Compound(
         Fusion(Morpheme("foo"), ()),
-        CompoundStress.HEAD,
-        Rule("era"),
+        Joiner.head(Rule("era")),
         Fusion(Morpheme("bar")),
     )
     assert parse(compound, "[*foo !+@era *bar]") == Compound(
         Fusion(Morpheme("foo"), ()),
-        CompoundStress.HEAD,
-        Rule("era"),
+        Joiner.head(Rule("era")),
         Fusion(Morpheme("bar")),
     )
     assert parse(compound, "[*foo +!@era *bar] !+ *baz") == Compound(
         Compound(
             Fusion(Morpheme("foo"), ()),
-            CompoundStress.TAIL,
-            Rule("era"),
+            Joiner.tail(Rule("era")),
             Fusion(Morpheme("bar")),
         ),
-        CompoundStress.HEAD,
-        None,
+        Joiner.head(),
         Fusion(Morpheme("baz")),
     )
 

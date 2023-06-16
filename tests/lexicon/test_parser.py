@@ -12,9 +12,9 @@ from pyconlang.lexicon.parser import (
 from pyconlang.types import (
     AffixDefinition,
     Compound,
-    CompoundStress,
     Entry,
     Fusion,
+    Joiner,
     Lexeme,
     Morpheme,
     PartOfSpeech,
@@ -127,8 +127,7 @@ def test_affix_definition():
         None,
         Compound(
             Fusion(Lexeme("big")),
-            CompoundStress.HEAD,
-            None,
+            Joiner.head(),
             Fusion(Lexeme("pile"), (), (Suffix("PL"),)),
         ),
         (),

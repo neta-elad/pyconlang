@@ -1,8 +1,8 @@
 from pyconlang.types import (
     AffixType,
     Compound,
-    CompoundStress,
     Fusion,
+    Joiner,
     Lexeme,
     Morpheme,
     Prefix,
@@ -83,7 +83,7 @@ def test_parsed_lexicon(parsed_lexicon):
     )
 
     assert parsed_lexicon.resolve(
-        Compound(Lexeme("stone"), CompoundStress.TAIL, None, Morpheme("baka"))
+        Compound(Lexeme("stone"), Joiner.tail(), Morpheme("baka"))
     ) == ResolvedForm(
         Morpheme("apak"),
         (),
@@ -275,8 +275,7 @@ def test_lookup(parsed_lexicon):
 
     compound = Compound(
         Fusion(Morpheme("baka"), (Suffix("PL"),)),
-        CompoundStress.HEAD,
-        None,
+        Joiner.head(),
         Lexeme("stone"),
     )
     assert parsed_lexicon.lookup(compound) == [
