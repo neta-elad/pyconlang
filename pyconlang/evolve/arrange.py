@@ -1,8 +1,8 @@
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import List, Mapping, Optional
 
 from ..types import ResolvedAffix, ResolvedForm
 from .types import ArrangedAffix, ArrangedForm
@@ -12,7 +12,7 @@ RULE_PATTERN = r"^\s*([A-Za-z0-9-]+)\s*:"
 
 @dataclass
 class AffixArranger:
-    raw_rules: List[str]
+    raw_rules: list[str]
 
     @classmethod
     def from_path(cls, path: Path) -> "AffixArranger":
@@ -24,7 +24,7 @@ class AffixArranger:
         return cls(rules)
 
     @cached_property
-    def rules(self) -> Mapping[Optional[str], int]:
+    def rules(self) -> Mapping[str | None, int]:
         return {rule: i for i, rule in enumerate(self.raw_rules)} | {None: -1}
 
     def rearrange(self, form: ResolvedForm) -> ArrangedForm:

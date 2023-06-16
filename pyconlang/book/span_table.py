@@ -1,4 +1,3 @@
-from typing import Dict, Optional, Set, Tuple
 from xml.etree import ElementTree
 
 from markdown import Extension, Markdown
@@ -11,11 +10,11 @@ class SpanTable(Extension):
 
 
 class SpanTableProcessor(Treeprocessor):
-    def run(self, root: ElementTree.Element) -> Optional[ElementTree.Element]:
-        delete_cells: Set[Tuple[ElementTree.Element, ElementTree.Element]] = set()
-        column_spans: Dict[ElementTree.Element, int] = {}
-        above_cells: Dict[ElementTree.Element, ElementTree.Element] = {}
-        row_spans: Dict[ElementTree.Element, int] = {}
+    def run(self, root: ElementTree.Element) -> ElementTree.Element | None:
+        delete_cells: set[tuple[ElementTree.Element, ElementTree.Element]] = set()
+        column_spans: dict[ElementTree.Element, int] = {}
+        above_cells: dict[ElementTree.Element, ElementTree.Element] = {}
+        row_spans: dict[ElementTree.Element, int] = {}
         for table in root.findall(".//table"):
             last_row = None
             for tr in table.findall(".//tr"):

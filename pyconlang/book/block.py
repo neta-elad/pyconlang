@@ -1,5 +1,4 @@
 import re
-from typing import List
 from xml.etree import ElementTree
 
 from markdown import Markdown
@@ -21,7 +20,7 @@ class DelimitedProcessor(BlockProcessor):
     def test(self, parent: ElementTree.Element, block: str) -> bool:
         return re.match(self.pattern(), block) is not None
 
-    def run(self, parent: ElementTree.Element, blocks: List[str]) -> bool:
+    def run(self, parent: ElementTree.Element, blocks: list[str]) -> bool:
         for i, block in enumerate(blocks[1:]):
             if not re.search(self.pattern(), block):
                 continue
@@ -33,7 +32,7 @@ class DelimitedProcessor(BlockProcessor):
             return True
         return False
 
-    def run_inner_blocks(self, parent: ElementTree.Element, blocks: List[str]) -> None:
+    def run_inner_blocks(self, parent: ElementTree.Element, blocks: list[str]) -> None:
         pass
 
 
@@ -41,7 +40,7 @@ class BoxedProcessor(DelimitedProcessor):
     def __init__(self, parser: BlockParser) -> None:
         super().__init__(parser, "boxed")
 
-    def run_inner_blocks(self, parent: ElementTree.Element, blocks: List[str]) -> None:
+    def run_inner_blocks(self, parent: ElementTree.Element, blocks: list[str]) -> None:
         e = ElementTree.SubElement(parent, "div")
         e.set("class", "boxed")
         self.parser.parseBlocks(e, blocks)
@@ -65,7 +64,7 @@ class DetailsProcessor(BlockProcessor):
     def test(self, parent: ElementTree.Element, block: str) -> bool:
         return re.match(self.open_pattern(), block) is not None
 
-    def run(self, parent: ElementTree.Element, blocks: List[str]) -> bool:
+    def run(self, parent: ElementTree.Element, blocks: list[str]) -> bool:
         for i, block in enumerate(blocks[1:]):
             if not re.search(self.close_pattern(), block):
                 continue
@@ -78,7 +77,7 @@ class DetailsProcessor(BlockProcessor):
         return False
 
     def build_details(
-        self, parent: ElementTree.Element, summary: str, blocks: List[str]
+        self, parent: ElementTree.Element, summary: str, blocks: list[str]
     ) -> None:
         details = ElementTree.SubElement(parent, "details")
         summary_element = ElementTree.SubElement(details, "summary")

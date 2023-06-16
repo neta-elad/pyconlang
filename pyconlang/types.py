@@ -2,7 +2,6 @@ import abc
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from itertools import chain
-from typing import List, Optional, Tuple, Union
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .metadata import Metadata
@@ -28,9 +27,9 @@ class Lexeme:
 @dataclass(eq=True, frozen=True)
 class Morpheme:
     form: str
-    era: Optional[Rule] = field(default=None)
+    era: Rule | None = field(default=None)
 
-    def era_name(self) -> Optional[str]:
+    def era_name(self) -> str | None:
         if self.era is None:
             return None
         return self.era.name
@@ -56,7 +55,7 @@ class AffixType(Enum):
     PREFIX = auto()
     SUFFIX = auto()
 
-    def fuse(self, stem: str, affix: str, syllable_break: Optional[str] = None) -> str:
+    def fuse(self, stem: str, affix: str, syllable_break: str | None = None) -> str:
         if syllable_break is None:
             syllable_break = self.syllable_break()
 
@@ -108,19 +107,19 @@ class Suffix(Affix):
         return combine("", self.name, ".")
 
 
-Definable = Union[Lexeme, Prefix, Suffix]
+Definable = Lexeme | Affix
 
 
 @dataclass(eq=True, frozen=True)
 class Var:
-    prefixes: Tuple[Prefix, ...]
+    prefixes: tuple[Prefix, ...]
     """prefixes are stored in reversed order"""
 
-    suffixes: Tuple[Suffix, ...]
+    suffixes: tuple[Suffix, ...]
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Prefix], suffixes: List[Suffix]
+        cls, prefixes: list[Prefix], suffixes: list[Suffix]
     ) -> "Var":
         return cls(tuple(reversed(prefixes)), tuple(suffixes))
 
@@ -134,20 +133,17 @@ class Var:
         return self.show("$")
 
 
-Describable = Union["Unit", Affix]
-
-
 @dataclass(eq=True, frozen=True)
 class Fusion:
     stem: "Unit"
-    prefixes: Tuple[Prefix, ...] = field(default=())
+    prefixes: tuple[Prefix, ...] = field(default=())
     """prefixes are stored in reversed order"""
 
-    suffixes: Tuple[Suffix, ...] = field(default=())
+    suffixes: tuple[Suffix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Prefix], stem: "Unit", suffixes: List[Suffix]
+        cls, prefixes: list[Prefix], stem: "Unit", suffixes: list[Suffix]
     ) -> "Fusion":
         return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
 
@@ -174,14 +170,14 @@ class JoinerStress(Enum):
 @dataclass(eq=True, frozen=True)
 class Joiner:
     stress: JoinerStress
-    era: Optional[Rule] = field(default=None)
+    era: Rule | None = field(default=None)
 
     @classmethod
-    def head(cls, era: Optional[Rule] = None) -> "Joiner":
+    def head(cls, era: Rule | None = None) -> "Joiner":
         return cls(JoinerStress.HEAD, era)
 
     @classmethod
-    def tail(cls, era: Optional[Rule] = None) -> "Joiner":
+    def tail(cls, era: Rule | None = None) -> "Joiner":
         return cls(JoinerStress.TAIL, era)
 
     def __str__(self) -> str:
@@ -199,10 +195,10 @@ class Compound:
         return self.joiner.stress
 
     @property
-    def era(self) -> Optional[Rule]:  # todo: remove
+    def era(self) -> Rule | None:  # todo: remove
         return self.joiner.era
 
-    def era_name(self) -> Optional[str]:
+    def era_name(self) -> str | None:
         if self.era is None:
             return None
         return self.era.name
@@ -211,12 +207,15 @@ class Compound:
         return f"[{self.head} {self.joiner} {self.tail}]"
 
 
-Unit = Union[Morpheme, Lexeme, Fusion, Compound]
+Unit = Morpheme | Lexeme | Fusion | Compound
+
+
+Describable = Unit | Affix
 
 
 @dataclass(eq=True, frozen=True)
 class Entry:
-    template: Optional[TemplateName]
+    template: TemplateName | None
     lexeme: Lexeme
     form: Unit
     part_of_speech: PartOfSpeech
@@ -230,12 +229,12 @@ class Entry:
 class AffixDefinition:
     stressed: bool
     affix: Affix
-    era: Optional[Rule]
-    form: Optional[Union[Unit, Var]]
-    sources: Tuple[Lexeme, ...]  # or Form - can bare Proto appear?
+    era: Rule | None
+    form: Unit | Var | None
+    sources: tuple[Lexeme, ...]  # or Form - can bare Proto appear?
     description: str
 
-    def get_era(self) -> Optional[Rule]:
+    def get_era(self) -> Rule | None:
         if self.era is not None:
             return self.era
         elif isinstance(self.form, Fusion) and isinstance(self.form.stem, Morpheme):
@@ -264,8 +263,8 @@ class AffixDefinition:
 @dataclass(eq=True, frozen=True)
 class ResolvedForm:
     stem: Morpheme
-    prefixes: Tuple["ResolvedAffix", ...] = field(default=())
-    suffixes: Tuple["ResolvedAffix", ...] = field(default=())
+    prefixes: tuple["ResolvedAffix", ...] = field(default=())
+    suffixes: tuple["ResolvedAffix", ...] = field(default=())
 
     def extend_prefixes(self, *prefixes: "ResolvedAffix") -> "ResolvedForm":
         return ResolvedForm(self.stem, prefixes + self.prefixes, self.suffixes)
@@ -275,8 +274,8 @@ class ResolvedForm:
 
     def extend(
         self,
-        prefixes: Tuple["ResolvedAffix", ...],
-        suffixes: Tuple["ResolvedAffix", ...],
+        prefixes: tuple["ResolvedAffix", ...],
+        suffixes: tuple["ResolvedAffix", ...],
     ) -> "ResolvedForm":
         return self.extend_prefixes(*prefixes).extend_suffixes(*suffixes)
 
@@ -286,7 +285,7 @@ class ResolvedForm:
         else:
             return self.extend_suffixes(affix)
 
-    def to_morphemes(self) -> List[Morpheme]:
+    def to_morphemes(self) -> list[Morpheme]:
         morphemes = (
             [prefix.form.to_morphemes() for prefix in self.prefixes]
             + [[self.stem]]
@@ -300,7 +299,7 @@ class ResolvedForm:
 class ResolvedAffix:
     stressed: bool
     type: AffixType
-    era: Optional[Rule]
+    era: Rule | None
     form: ResolvedForm
 
     @classmethod
@@ -309,7 +308,7 @@ class ResolvedAffix:
             compound.stress == JoinerStress.TAIL, AffixType.SUFFIX, compound.era, tail
         )
 
-    def era_name(self) -> Optional[str]:
+    def era_name(self) -> str | None:
         if self.era is None:
             return None
         return self.era.name
@@ -318,7 +317,7 @@ class ResolvedAffix:
 @dataclass(eq=True, frozen=True)
 class Template:
     name: TemplateName
-    vars: Tuple[Var, ...]
+    vars: tuple[Var, ...]
 
     @classmethod
     def from_args(cls, name: TemplateName, *var_args: Var) -> "Template":

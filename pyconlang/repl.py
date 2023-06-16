@@ -1,8 +1,8 @@
 import contextlib
 from cmd import Cmd
+from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Callable, Generator, List, Tuple
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -24,7 +24,7 @@ def _default_prompt_session() -> PromptSession[str]:
     return PromptSession(history=FileHistory(str(HISTORY_PATH)))
 
 
-def _show_lookup_records(records: List[Tuple[Describable, str]]) -> str:
+def _show_lookup_records(records: list[tuple[Describable, str]]) -> str:
     return "\n".join(
         _show_lookup_record(record, description) for record, description in records
     )

@@ -1,4 +1,5 @@
-from typing import Any, Match, Tuple
+from re import Match
+from typing import Any
 from xml.etree import ElementTree
 
 from markdown import Markdown
@@ -24,7 +25,7 @@ class AbbreviationProcessor(InlineProcessor):
     # so we have to ignore type.
     def handleMatch(  # type: ignore
         self, m: Match[str], data: Any
-    ) -> Tuple[ElementTree.Element, int, int]:
+    ) -> tuple[ElementTree.Element, int, int]:
         abbr = ElementTree.Element("abbr")
         abbr.text = m.group("abbr")
         abbr.set("title", m.group("title"))

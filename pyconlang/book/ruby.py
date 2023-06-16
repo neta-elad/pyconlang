@@ -1,4 +1,5 @@
-from typing import Any, Match, Tuple
+import re
+from typing import Any
 from xml.etree import ElementTree
 
 from markdown import Markdown
@@ -23,8 +24,8 @@ class RubyProcessor(InlineProcessor):
     # have contradictory type annotations,
     # so we have to ignore type.
     def handleMatch(  # type: ignore
-        self, m: Match[str], data: Any
-    ) -> Tuple[ElementTree.Element, int, int]:
+        self, m: re.Match[str], data: Any
+    ) -> tuple[ElementTree.Element, int, int]:
         ruby = ElementTree.Element("ruby")
         ruby.text = m.group("text").strip() + " "
         title = ElementTree.Element("rt")

@@ -1,5 +1,5 @@
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping
 
 from pyparsing import ParserElement, Suppress, Word, pyparsing_unicode, rest_of_line
 
@@ -40,14 +40,14 @@ trace_line_heading = Word("Tracing") - rest_of_line - Suppress("\n")
 trace_lines = Suppress(trace_line_heading) - trace_line[...]
 
 
-def parse_trace_lines(string: str, default: str = "") -> Mapping[str, List[TraceLine]]:
+def parse_trace_lines(string: str, default: str = "") -> Mapping[str, list[TraceLine]]:
     return group_trace_lines(trace_lines.parse_string(string, parse_all=True), default)
 
 
 def group_trace_lines(
     lines: Iterable[TraceLine], default: str = ""
-) -> Mapping[str, List[TraceLine]]:
-    result: Dict[str, List[TraceLine]] = {}
+) -> Mapping[str, list[TraceLine]]:
+    result: dict[str, list[TraceLine]] = {}
     for line in lines:
         if line.before == line.after:
             continue

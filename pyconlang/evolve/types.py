@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
 
 from unidecode import unidecode
 
@@ -20,17 +19,17 @@ class Evolved:
 @dataclass(eq=True, frozen=True)
 class ArrangedForm:
     stem: Morpheme
-    affixes: Tuple["ArrangedAffix", ...] = field(default=())
+    affixes: tuple["ArrangedAffix", ...] = field(default=())
 
 
 @dataclass(eq=True, frozen=True)
 class ArrangedAffix:
     stressed: bool
     type: AffixType
-    era: Optional[Rule]
+    era: Rule | None
     form: ArrangedForm
 
-    def era_name(self) -> Optional[str]:
+    def era_name(self) -> str | None:
         if self.era is None:
             return None
         return self.era.name

@@ -1,4 +1,3 @@
-from typing import Optional
 from xml.etree import ElementTree
 
 from markdown import Extension, Markdown
@@ -11,7 +10,7 @@ class AnyTableHeader(Extension):
 
 
 class AnyTableHeaderProcessor(Treeprocessor):
-    def run(self, root: ElementTree.Element) -> Optional[ElementTree.Element]:
+    def run(self, root: ElementTree.Element) -> ElementTree.Element | None:
         for table in root.findall(".//table"):
             for tr in table.findall(".//tr"):
                 for cell in tr:

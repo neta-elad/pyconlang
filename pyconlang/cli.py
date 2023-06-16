@@ -1,7 +1,6 @@
 import shutil
 from importlib.resources import files
 from pathlib import Path
-from typing import List
 
 import click
 
@@ -71,7 +70,7 @@ def init(
 
 @run.command
 @click.argument("command", nargs=-1)
-def repl(command: List[str]) -> None:
+def repl(command: list[str]) -> None:
     run_repl(" ".join(command))
 
 

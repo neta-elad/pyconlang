@@ -1,5 +1,6 @@
+from collections.abc import Callable, Iterable
 from string import whitespace
-from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
+from typing import Any, TypeVar, cast
 
 from pyparsing import (
     FollowedBy,
@@ -33,7 +34,7 @@ from .types import (
 T = TypeVar("T")
 
 
-def explicit_opt(expr: Union[ParserElement, str], value: Any = None) -> ParserElement:
+def explicit_opt(expr: ParserElement | str, value: Any = None) -> ParserElement:
     def first_or(tokens: ParseResults) -> Any:
         return tokens or [value]
 
@@ -56,13 +57,13 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> List[Unit]:
-    return cast(List[Unit], list(sentence.parse_string(string, parse_all=True)))
+def parse_sentence(string: str) -> list[Unit]:
+    return cast(list[Unit], list(sentence.parse_string(string, parse_all=True)))
 
 
-def parse_definables(string: str) -> List[Definable]:
+def parse_definables(string: str) -> list[Definable]:
     return cast(
-        List[Definable], list(definable[...].parse_string(string, parse_all=True))
+        list[Definable], list(definable[...].parse_string(string, parse_all=True))
     )
 
 

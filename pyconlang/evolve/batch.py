@@ -1,24 +1,24 @@
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..types import AffixType
 from ..unicode import remove_primary_stress
 from .errors import BadAffixation
 from .types import ArrangedForm, Evolved
 
-Cache = Dict["EvolveQuery", Evolved]
+Cache = dict["EvolveQuery", Evolved]
 
 
 @dataclass(eq=True, frozen=True)
 class LeafEvolveQuery:
     query: str
-    start: Optional[str] = field(default=None, kw_only=True)
-    end: Optional[str] = field(default=None, kw_only=True)
+    start: str | None = field(default=None, kw_only=True)
+    end: str | None = field(default=None, kw_only=True)
 
     def get_query(self, cache: Cache) -> str:
         return self.query
 
-    def set_end(self, end: Optional[str]) -> "LeafEvolveQuery":
+    def set_end(self, end: str | None) -> "LeafEvolveQuery":
         return LeafEvolveQuery(self.query, start=self.start, end=end)
 
 
@@ -28,8 +28,8 @@ class NodeEvolveQuery:
     stem: "EvolveQuery"
     affix: "EvolveQuery"
     stressed: bool = field(default=False, kw_only=True)
-    start: Optional[str] = field(default=None, kw_only=True)
-    end: Optional[str] = field(default=None, kw_only=True)
+    start: str | None = field(default=None, kw_only=True)
+    end: str | None = field(default=None, kw_only=True)
 
     def get_query(self, cache: Cache) -> str:
         assert self.stem.end == self.start
@@ -54,7 +54,7 @@ class NodeEvolveQuery:
 
         return self.affix_type.fuse(stem, affix)
 
-    def set_end(self, end: Optional[str]) -> "NodeEvolveQuery":
+    def set_end(self, end: str | None) -> "NodeEvolveQuery":
         return NodeEvolveQuery(
             self.affix_type,
             self.stem,
@@ -68,14 +68,14 @@ class NodeEvolveQuery:
         return self.start != self.stem.start or self.start != self.affix.start
 
 
-EvolveQuery = Union[LeafEvolveQuery, NodeEvolveQuery]
-DependableQuery = Union[str, EvolveQuery]
+EvolveQuery = LeafEvolveQuery | NodeEvolveQuery
+DependableQuery = str | EvolveQuery
 
 
 @dataclass
 class QueryWalker:
-    queries: Dict[int, EvolveQuery] = field(default_factory=dict)
-    layers: Dict[int, int] = field(default_factory=dict)
+    queries: dict[int, EvolveQuery] = field(default_factory=dict)
+    layers: dict[int, int] = field(default_factory=dict)
     max_layer: int = field(default=0)
 
     def set_layer(self, query: EvolveQuery, layer: int = 0) -> None:
@@ -104,7 +104,7 @@ class QueryWalker:
                 self.set_layer(query, layer)
                 self.max_layer = max(self.max_layer, layer)
 
-    def walk_queries(self, queries: List[EvolveQuery]) -> List[List[EvolveQuery]]:
+    def walk_queries(self, queries: list[EvolveQuery]) -> list[list[EvolveQuery]]:
         # when do I need a query:
         # when start != end
         # or start == end == None *and* it is in the original list
@@ -114,7 +114,7 @@ class QueryWalker:
         for query in queries:
             self.walk_query(query)
 
-        result: List[List[EvolveQuery]] = []
+        result: list[list[EvolveQuery]] = []
         for _i in range(1 + self.max_layer):
             result.append([])
 
@@ -130,17 +130,17 @@ class QueryWalker:
 
 @dataclass
 class Batcher:
-    cache: Dict[ArrangedForm, EvolveQuery] = field(default_factory=dict)
+    cache: dict[ArrangedForm, EvolveQuery] = field(default_factory=dict)
 
     @staticmethod
-    def order_in_layers(queries: List[EvolveQuery]) -> List[List[EvolveQuery]]:
+    def order_in_layers(queries: list[EvolveQuery]) -> list[list[EvolveQuery]]:
         return QueryWalker().walk_queries(queries)
 
     @staticmethod
     def segment_by_start_end(
-        queries: List[EvolveQuery],
-    ) -> Mapping[Tuple[Optional[str], Optional[str]], List[EvolveQuery]]:
-        segments: Dict[Tuple[Optional[str], Optional[str]], List[EvolveQuery]] = {}
+        queries: list[EvolveQuery],
+    ) -> Mapping[tuple[str | None, str | None], list[EvolveQuery]]:
+        segments: dict[tuple[str | None, str | None], list[EvolveQuery]] = {}
 
         for query in queries:
             start_end = query.start, query.end
@@ -200,9 +200,9 @@ class Batcher:
     def build_and_order(
         self,
         forms: Sequence[ArrangedForm],
-    ) -> Tuple[Mapping[ArrangedForm, EvolveQuery], List[List[EvolveQuery]]]:
-        mapping: Dict[ArrangedForm, EvolveQuery] = {}
-        queries: List[EvolveQuery] = []
+    ) -> tuple[Mapping[ArrangedForm, EvolveQuery], list[list[EvolveQuery]]]:
+        mapping: dict[ArrangedForm, EvolveQuery] = {}
+        queries: list[EvolveQuery] = []
 
         for form in forms:
             query = self.build_query(form)

@@ -1,5 +1,3 @@
-from typing import List
-
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
@@ -12,7 +10,7 @@ class SkipLinePreprocessor(Preprocessor):
         super().__init__(md)
         self.state = state
 
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         kept_lines = []
         skipped_lines = []
         for line in lines:
@@ -25,7 +23,7 @@ class SkipLinePreprocessor(Preprocessor):
 
 
 class SkipLine(Extension):
-    skipped: List[str]
+    skipped: list[str]
 
     def __init__(self) -> None:
         super().__init__()

@@ -2,13 +2,13 @@ import pickle
 import random
 import shutil
 import string
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
 from subprocess import run
 from time import time
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from unicodedata import normalize
 
 from .. import PYCONLANG_PATH
@@ -29,11 +29,11 @@ SIMPLE_CACHE_PATH = CACHE_PATH / "cache.pickle"
 TRACE_CACHE_PATH = CACHE_PATH / "trace_cache.pickle"
 CHECKSUM_PATH = CACHE_PATH / "checksum.txt"
 
-Evolvable = Union[str, Morpheme, ResolvedForm]
+Evolvable = str | Morpheme | ResolvedForm
 
-QueryTrace = Tuple[str, List[TraceLine]]
-Trace = List[QueryTrace]
-EvolvedWithTrace = Tuple[Evolved, Trace]
+QueryTrace = tuple[str, list[TraceLine]]
+Trace = list[QueryTrace]
+EvolvedWithTrace = tuple[Evolved, Trace]
 
 
 def get_checksum() -> bytes:
@@ -50,7 +50,7 @@ def random_directory() -> Path:
 class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
-    trace_cache: Dict[EvolveQuery, List[TraceLine]] = field(default_factory=dict)
+    trace_cache: dict[EvolveQuery, list[TraceLine]] = field(default_factory=dict)
     batcher: Batcher = field(default_factory=Batcher)
     evolve_directory: Path = field(default_factory=random_directory)
 
@@ -98,7 +98,7 @@ class Evolver:
         bytes_written += CHECKSUM_PATH.write_bytes(pickle.dumps(self.checksum))
         return bytes_written
 
-    def trace(self, forms: Sequence[Evolvable]) -> List[EvolvedWithTrace]:
+    def trace(self, forms: Sequence[Evolvable]) -> list[EvolvedWithTrace]:
         self.evolve(forms, trace=True)
 
         result = []
@@ -125,7 +125,7 @@ class Evolver:
 
     def evolve(
         self, forms: Sequence[Evolvable], *, trace: bool = False
-    ) -> List[Evolved]:
+    ) -> list[Evolved]:
         resolved_forms = self.normalize_forms(forms)
 
         mapping, layers = self.batcher.build_and_order(resolved_forms)
@@ -157,7 +157,7 @@ class Evolver:
                         if evolved.proto in trace_lines:
                             self.trace_cache[query] = trace_lines[evolved.proto]
 
-        result: List[Evolved] = []
+        result: list[Evolved] = []
 
         for form in resolved_forms:
             evolved_result = self.cache[mapping[form]]
@@ -179,12 +179,12 @@ class Evolver:
 
     def evolve_words(
         self,
-        words: List[str],
+        words: list[str],
         *,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
+        start: str | None = None,
+        end: str | None = None,
         trace: bool = False,
-    ) -> Tuple[List[Evolved], Mapping[str, List[TraceLine]]]:
+    ) -> tuple[list[Evolved], Mapping[str, list[TraceLine]]]:
         if not words:
             return [], {}
 
@@ -241,7 +241,7 @@ class Evolver:
         else:
             phonetics = moderns
 
-        trace_lines: Mapping[str, List[TraceLine]] = {}
+        trace_lines: Mapping[str, list[TraceLine]] = {}
         if trace:
             trace_lines = parse_trace_lines(trace_file.read_text(), words[0])
 

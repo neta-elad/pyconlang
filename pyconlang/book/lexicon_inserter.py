@@ -1,7 +1,6 @@
 import re
 from abc import ABCMeta, abstractmethod
 from itertools import chain
-from typing import Dict, List, Match, Pattern
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -76,9 +75,9 @@ class LexiconInserter(Extension):
 
 
 class LexiconGroupingProcessor(Preprocessor):
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         new_lines = []
-        groups: List[str] = []
+        groups: list[str] = []
         grouping = False
         for line in lines:
             if line.strip() == "!group":
@@ -95,8 +94,8 @@ class LexiconGroupingProcessor(Preprocessor):
 
         return new_lines
 
-    def order_group(self, groups: List[str]) -> List[str]:
-        ordered_groups: Dict[str, List[str]] = {}
+    def order_group(self, groups: list[str]) -> list[str]:
+        ordered_groups: dict[str, list[str]] = {}
 
         for line in groups:
             match = re.search(r"\w", line)
@@ -122,7 +121,7 @@ class LexiconGroupingProcessor(Preprocessor):
 
 
 class LexiconPreprocessor(Preprocessor, metaclass=ABCMeta):
-    pattern: Pattern[str]
+    pattern: re.Pattern[str]
     inserter: LexiconInserter
 
     def __init__(self, md: Markdown, inserter: LexiconInserter) -> None:
@@ -137,10 +136,10 @@ class LexiconPreprocessor(Preprocessor, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         pass
 
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         return [self.map_line(line) for line in lines]
 
     def map_line(self, line: str) -> str:
@@ -161,7 +160,7 @@ class LexiconMacroPreprocessor(LexiconPreprocessor, metaclass=ABCMeta):
     def map_text(self, text: str) -> str:
         pass
 
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         return self.map_text(match.group("text"))
 
 
@@ -231,7 +230,7 @@ class LexiconAbbreviationProcessor(LexiconPreprocessor):
     def expression(cls) -> str:
         return r"\+\+(?P<definables>.+?)\+\+"
 
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         definables = match.group("definables")
 
         return "".join(
@@ -253,13 +252,13 @@ class LexiconAbbreviationProcessor(LexiconPreprocessor):
 
 
 class LexiconBatchingRomanizerProcessor(LexiconPreprocessor):
-    batch: List[str] = []
+    batch: list[str] = []
 
     @classmethod
     def expression(cls) -> str:
         return r"#(?P<text>[^#]+?)#"
 
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         self.batch = []
         lines = super().run(lines)
 
@@ -270,7 +269,7 @@ class LexiconBatchingRomanizerProcessor(LexiconPreprocessor):
 
         return lines
 
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         text = match.group("text")
         self.batch.append(text.strip())
         return f"&r{{{text}}}"
@@ -281,7 +280,7 @@ class LexiconRubyProcessor(LexiconPreprocessor):
     def expression(cls) -> str:
         return r"%%(?P<text>.+?)%%"
 
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         text = match.group("text")
         return f"%&r{{{text}}}%[&ph{{{text}}}]%"
 
@@ -291,7 +290,7 @@ class LexiconGlossTableProcessor(LexiconPreprocessor):
     def expression(cls) -> str:
         return r"##(?P<text>[^#]+?)##"
 
-    def map_match(self, match: Match[str]) -> str:
+    def map_match(self, match: re.Match[str]) -> str:
         words = self.inserter.translator.parse_sentence(match.group("text").strip())
 
         result = (
@@ -307,7 +306,7 @@ class LexiconGlossTableProcessor(LexiconPreprocessor):
 
 class LexiconDictionaryProcessor(Preprocessor):
     inserter: LexiconInserter
-    cache: List[str]
+    cache: list[str]
 
     def __init__(self, md: Markdown, inserter: LexiconInserter) -> None:
         super().__init__(md)
@@ -315,7 +314,7 @@ class LexiconDictionaryProcessor(Preprocessor):
         self.inserter = inserter
         self.cache = self.build_cache()
 
-    def run(self, lines: List[str]) -> List[str]:
+    def run(self, lines: list[str]) -> list[str]:
         new_lines = []
         for line in lines:
             if line.strip() == "!dictionary":
@@ -327,13 +326,13 @@ class LexiconDictionaryProcessor(Preprocessor):
 
         return new_lines
 
-    def dictionary(self) -> List[str]:
+    def dictionary(self) -> list[str]:
         if not self.inserter.valid_cache:
             self.cache = self.build_cache()
 
         return self.cache
 
-    def build_cache(self) -> List[str]:
+    def build_cache(self) -> list[str]:
         return list(map(self.show_entry, self.inserter.translator.lexicon.entries))
 
     def show_entry(self, entry: Entry) -> str:
@@ -348,7 +347,7 @@ class LexiconDictionaryProcessor(Preprocessor):
             ", ".join(forms) + f" [&ph{{{entry.form}}}] {sources} {entry.description()}"
         )
 
-    def form_to_morphemes(self, form: Unit) -> List[Morpheme]:
+    def form_to_morphemes(self, form: Unit) -> list[Morpheme]:
         return self.inserter.translator.lexicon.resolve(form).to_morphemes()
 
 

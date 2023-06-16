@@ -1,4 +1,5 @@
-from typing import Iterable, Union, cast
+from collections.abc import Iterable
+from typing import cast
 
 from pyparsing import (
     FollowedBy,
@@ -32,9 +33,9 @@ def make_diagrams() -> None:
 
 def parse_lexicon(
     lines: Iterable[str],
-) -> Iterable[Union[Entry, AffixDefinition, Template]]:
+) -> Iterable[Entry | AffixDefinition | Template]:
     return [
-        cast(Union[Entry, AffixDefinition, Template], parsed_record[0])
+        cast(Entry | AffixDefinition | Template, parsed_record[0])
         for line in lines
         if (parsed_record := lexicon_line.parse_string(line, parse_all=True))
     ]

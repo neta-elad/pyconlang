@@ -1,7 +1,7 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from ..checksum import checksum
 from ..parser import continue_lines
@@ -30,9 +30,9 @@ LEXICON_PATH = Path("lexicon.pycl")
 
 @dataclass
 class Lexicon:
-    entries: Set[Entry]
-    affixes: Set[AffixDefinition]
-    templates: Set[Template]
+    entries: set[Entry]
+    affixes: set[AffixDefinition]
+    templates: set[Template]
 
     @staticmethod
     def checksum() -> bytes:
@@ -52,7 +52,7 @@ class Lexicon:
 
     @classmethod
     def from_iterable(
-        cls, iterable: Iterable[Union[Entry, AffixDefinition, Template]]
+        cls, iterable: Iterable[Entry | AffixDefinition | Template]
     ) -> "Lexicon":
         entries = set()
         affixes = set()
@@ -84,7 +84,7 @@ class Lexicon:
 
         raise MissingAffix(affix.name)
 
-    def resolve_affix(self, affix: Affix) -> List[ResolvedAffix]:
+    def resolve_affix(self, affix: Affix) -> list[ResolvedAffix]:
         definition = self.get_affix(affix)
         if definition.is_var():
             return list(
@@ -109,7 +109,7 @@ class Lexicon:
                 )
             ]
 
-    def resolve_affixes(self, affixes: Tuple[Affix, ...]) -> Tuple[ResolvedAffix, ...]:
+    def resolve_affixes(self, affixes: tuple[Affix, ...]) -> tuple[ResolvedAffix, ...]:
         return tuple(chain(*[self.resolve_affix(affix) for affix in affixes]))
 
     def resolve(self, unit: Unit) -> ResolvedForm:
@@ -135,7 +135,7 @@ class Lexicon:
         return head.extend_any(tail_as_affix)
 
     def resolve_with_affixes(
-        self, form: Unit, prefixes: Tuple[Affix, ...], suffixes: Tuple[Affix, ...]
+        self, form: Unit, prefixes: tuple[Affix, ...], suffixes: tuple[Affix, ...]
     ) -> ResolvedForm:
         resolved_prefixes = self.resolve_affixes(prefixes)
         resolved_suffixes = self.resolve_affixes(suffixes)
@@ -145,7 +145,7 @@ class Lexicon:
     def substitute(self, var: Var, form: Unit) -> ResolvedForm:
         return self.resolve_with_affixes(form, var.prefixes, var.suffixes)
 
-    def get_vars(self, name: Optional[TemplateName]) -> Tuple[Var, ...]:
+    def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:
         if name is None:
             return (Var((), ()),)
         else:
@@ -155,7 +155,7 @@ class Lexicon:
 
             raise MissingTemplate(name.name)
 
-    def resolve_entry(self, entry: Entry) -> List[ResolvedForm]:
+    def resolve_entry(self, entry: Entry) -> list[ResolvedForm]:
         return [
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
@@ -179,7 +179,7 @@ class Lexicon:
             case Lexeme():
                 return self.get_entry(record).description()
 
-    def lookup(self, record: Describable) -> List[Tuple[Describable, str]]:
+    def lookup(self, record: Describable) -> list[tuple[Describable, str]]:
         match record:
             case Affix():
                 return self.singleton_lookup(record, self.get_affix(record).description)
@@ -195,11 +195,11 @@ class Lexicon:
             case Compound():
                 return self.lookup(record.head) + self.lookup(record.tail)
 
-    def lookup_records(self, *records: Describable) -> List[Tuple[Describable, str]]:
+    def lookup_records(self, *records: Describable) -> list[tuple[Describable, str]]:
         return list(chain(*map(self.lookup, records)))
 
     @staticmethod
     def singleton_lookup(
         record: Describable, description: str
-    ) -> List[Tuple[Describable, str]]:
+    ) -> list[tuple[Describable, str]]:
         return [(record, description)]

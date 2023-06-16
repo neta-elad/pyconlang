@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, field
 from functools import cache
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import toml
 
@@ -23,7 +23,7 @@ class Metadata:
     def default(cls) -> "Metadata":
         return cls.from_file()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def save(self, path: Path = METADATA_PATH, overwrite: bool = True) -> None:

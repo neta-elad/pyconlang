@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Match, Tuple
+from typing import Any
 from xml.etree import ElementTree
 
 from markdown import Markdown
@@ -18,8 +18,8 @@ class MultiInlineProcessor(InlineProcessor):
     # have contradictory type annotations,
     # so we have to ignore type.
     def handleMatch(  # type: ignore
-        self, m: Match[str], data: Any
-    ) -> Tuple[ElementTree.Element, int, int]:
+        self, m: re.Match[str], data: Any
+    ) -> tuple[ElementTree.Element, int, int]:
         el = ElementTree.Element("span")
         el.text = m.group(2)
         return el, m.start(0), m.end(0)
@@ -43,7 +43,7 @@ class MultiBlockProcessor(BlockProcessor):
     def test(self, parent: ElementTree.Element, block: str) -> bool:
         return re.match(self.open_pattern(), block) is not None
 
-    def run(self, parent: ElementTree.Element, blocks: List[str]) -> bool:
+    def run(self, parent: ElementTree.Element, blocks: list[str]) -> bool:
         for i, block in enumerate(blocks[1:]):
             match = re.match(self.close_pattern(), block)
             if match is None:
@@ -61,7 +61,7 @@ class MultiBlockProcessor(BlockProcessor):
         return False
 
     def run_inner_blocks(
-        self, parent: ElementTree.Element, blocks: List[str]
+        self, parent: ElementTree.Element, blocks: list[str]
     ) -> ElementTree.Element:
         container = ElementTree.SubElement(parent, "div")
         self.parser.parseBlocks(container, blocks)

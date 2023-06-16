@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 from string import Template
 from threading import Thread
-from typing import List
 
 from markdown import Markdown
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
@@ -82,7 +81,7 @@ class Handler(PatternMatchingEventHandler):
     last_run: float
     last_request: float
     running: bool
-    threads: List[Thread]
+    threads: list[Thread]
 
     def __init__(self, silent: bool = False):
         super().__init__(["*.md", "*.lsc", "template.html", "lexicon.pycl"])
