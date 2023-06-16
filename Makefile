@@ -1,6 +1,9 @@
 .PHONY: all
 all: format lint type test
 
+.PHONY: static
+static: format lint type
+
 .PHONY: lint
 lint: 
 	isort . -q

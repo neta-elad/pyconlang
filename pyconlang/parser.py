@@ -17,15 +17,15 @@ from pyparsing import (
 )
 
 from .types import (
-    Affix,
-    AffixType,
     Compound,
     CompoundStress,
     Definable,
     Fusion,
     Lexeme,
     Morpheme,
+    Prefix,
     Rule,
+    Suffix,
 )
 
 T = TypeVar("T")
@@ -109,16 +109,8 @@ morpheme = (
 
 base_unit = (lexeme ^ morpheme).set_name("base unit")
 
-prefix = (
-    (ident - Suppress("."))
-    .set_parse_action(token_map(Affix, AffixType.PREFIX))
-    .set_name("prefix")
-)
-suffix = (
-    (Suppress(".") - ident)
-    .set_parse_action(token_map(Affix, AffixType.SUFFIX))
-    .set_name("suffix")
-)
+prefix = (ident - Suppress(".")).set_parse_action(token_map(Prefix)).set_name("prefix")
+suffix = (Suppress(".") - ident).set_parse_action(token_map(Suffix)).set_name("suffix")
 
 affix = (prefix ^ suffix).set_name("affix")
 

@@ -10,9 +10,7 @@ from pyconlang.lexicon.parser import (
     var,
 )
 from pyconlang.types import (
-    Affix,
     AffixDefinition,
-    AffixType,
     Compound,
     CompoundStress,
     Entry,
@@ -20,7 +18,9 @@ from pyconlang.types import (
     Lexeme,
     Morpheme,
     PartOfSpeech,
+    Prefix,
     Rule,
+    Suffix,
     Template,
     TemplateName,
     Var,
@@ -48,7 +48,7 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Morpheme("kipu", Rule("era1")), (), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -58,15 +58,15 @@ def test_entry():
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Lexeme("heavy"), (), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("heavy"), (), (Suffix("PL"),)),
         PartOfSpeech("adj"),
         "strong, stable",
     )
 
 
 def test_affix():
-    assert parse(affix, ".PL") == Affix("PL", AffixType.SUFFIX)
-    assert parse(affix, "PL.") == Affix("PL", AffixType.PREFIX)
+    assert parse(affix, ".PL") == Suffix("PL")
+    assert parse(affix, "PL.") == Prefix("PL")
 
 
 def test_affix_definition():
@@ -79,7 +79,7 @@ def test_affix_definition():
         affix_definition, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         True,
-        Affix("PL", AffixType.SUFFIX),
+        Suffix("PL"),
         Rule("era"),
         Fusion(Morpheme("proto")),
         (Lexeme("big"), Lexeme("pile")),
@@ -90,7 +90,7 @@ def test_affix_definition():
         affix_definition, "affix .PL *proto@era plural for inanimate"
     ) == AffixDefinition(
         False,
-        Affix("PL", AffixType.SUFFIX),
+        Suffix("PL"),
         None,
         Fusion(Morpheme("proto", Rule("era"))),
         (),
@@ -101,7 +101,7 @@ def test_affix_definition():
         affix_definition, "affix .PL (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         False,
-        Affix("PL", AffixType.SUFFIX),
+        Suffix("PL"),
         None,
         None,
         (Lexeme("big"), Lexeme("pile")),
@@ -112,9 +112,9 @@ def test_affix_definition():
         affix_definition, "affix COL. <big>.PL collective form"
     ) == AffixDefinition(
         False,
-        Affix("COL", AffixType.PREFIX),
+        Prefix("COL"),
         None,
-        Fusion(Lexeme("big"), (), (Affix("PL", AffixType.SUFFIX),)),
+        Fusion(Lexeme("big"), (), (Suffix("PL"),)),
         (),
         description="collective form",
     )
@@ -123,13 +123,13 @@ def test_affix_definition():
         affix_definition, "affix COL. [<big> !+ <pile>.PL] collective form"
     ) == AffixDefinition(
         False,
-        Affix("COL", AffixType.PREFIX),
+        Prefix("COL"),
         None,
         Compound(
             Fusion(Lexeme("big")),
             CompoundStress.HEAD,
             None,
-            Fusion(Lexeme("pile"), (), (Affix("PL", AffixType.SUFFIX),)),
+            Fusion(Lexeme("pile"), (), (Suffix("PL"),)),
         ),
         (),
         description="collective form",
@@ -170,7 +170,7 @@ def test_lexicon(parsed_lexicon):
             Entry(
                 None,
                 Lexeme("gravel"),
-                Fusion(Lexeme("stone"), (), (Affix("PL", AffixType.SUFFIX),)),
+                Fusion(Lexeme("stone"), (), (Suffix("PL"),)),
                 PartOfSpeech("n"),
                 "gravel",
             ),
@@ -181,7 +181,7 @@ def test_lexicon(parsed_lexicon):
         {
             AffixDefinition(
                 stressed=False,
-                affix=Affix("PL", AffixType.SUFFIX),
+                affix=Suffix("PL"),
                 era=None,
                 form=Fusion(Morpheme("iki", Rule("era1"))),
                 sources=(Lexeme("big"), Lexeme("pile")),
@@ -189,7 +189,7 @@ def test_lexicon(parsed_lexicon):
             ),
             AffixDefinition(
                 stressed=False,
-                affix=Affix(name="COL", type=AffixType.SUFFIX),
+                affix=Suffix("COL"),
                 era=None,
                 form=Fusion(Morpheme(form="ma", era=None)),
                 sources=(),
@@ -197,13 +197,13 @@ def test_lexicon(parsed_lexicon):
             ),
             AffixDefinition(
                 stressed=False,
-                affix=Affix(name="LARGE", type=AffixType.SUFFIX),
+                affix=Suffix("LARGE"),
                 era=None,
                 form=Var(
                     prefixes=(),
                     suffixes=(
-                        Affix(name="COL", type=AffixType.SUFFIX),
-                        Affix(name="PL", type=AffixType.SUFFIX),
+                        Suffix("COL"),
+                        Suffix("PL"),
                     ),
                 ),
                 sources=(),
@@ -211,12 +211,12 @@ def test_lexicon(parsed_lexicon):
             ),
             AffixDefinition(
                 stressed=False,
-                affix=Affix(name="STONE", type=AffixType.PREFIX),
+                affix=Prefix("STONE"),
                 era=None,
                 form=Fusion(
                     stem=Lexeme(name="stone"),
                     prefixes=(),
-                    suffixes=(Affix(name="COL", type=AffixType.SUFFIX),),
+                    suffixes=(Suffix("COL"),),
                 ),
                 sources=(),
                 description="made of stone",
@@ -228,7 +228,7 @@ def test_lexicon(parsed_lexicon):
         {
             Template(
                 TemplateName("plural"),
-                (Var((), ()), Var((), (Affix("PL", AffixType.SUFFIX),))),
+                (Var((), ()), Var((), (Suffix("PL"),))),
             )
         }
     )
@@ -236,11 +236,11 @@ def test_lexicon(parsed_lexicon):
 
 def test_var(sample_lexicon):
     assert parse(var, "$") == Var((), ())
-    assert parse(var, "$.PL") == Var((), (Affix("PL", AffixType.SUFFIX),))
+    assert parse(var, "$.PL") == Var((), (Suffix("PL"),))
     assert parse(var, "DEF.$.PL.COL") == Var(
-        (Affix("DEF", AffixType.PREFIX),),
+        (Prefix("DEF"),),
         (
-            Affix("PL", AffixType.SUFFIX),
-            Affix("COL", AffixType.SUFFIX),
+            Suffix("PL"),
+            Suffix("COL"),
         ),
     )

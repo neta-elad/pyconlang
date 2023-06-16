@@ -1,3 +1,4 @@
+import abc
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from itertools import chain
@@ -5,6 +6,7 @@ from typing import List, Optional, Tuple, Union
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .metadata import Metadata
+from .unicode import combine
 
 
 @dataclass(eq=True, frozen=True)
@@ -73,27 +75,52 @@ class AffixType(Enum):
 
 
 @dataclass(eq=True, frozen=True)
-class Affix:
+class Affix(abc.ABC):
     name: str
-    type: AffixType
+
+    @property
+    @abc.abstractmethod
+    def type(self) -> AffixType:
+        ...  # todo: remvoe
+
+    @abc.abstractmethod
+    def __str__(self) -> str:
+        ...
+
+
+@dataclass(eq=True, frozen=True)
+class Prefix(Affix):
+    @property
+    def type(self) -> AffixType:  # todo: remove
+        return AffixType.PREFIX
 
     def __str__(self) -> str:
-        return self.type.fuse("", self.name, ".")
+        return combine(self.name, "", ".")
 
 
-Definable = Union[Lexeme, Affix]
+@dataclass(eq=True, frozen=True)
+class Suffix(Affix):
+    @property
+    def type(self) -> AffixType:  # todo: remove
+        return AffixType.SUFFIX
+
+    def __str__(self) -> str:
+        return combine("", self.name, ".")
+
+
+Definable = Union[Lexeme, Prefix, Suffix]
 
 
 @dataclass(eq=True, frozen=True)
 class Var:
-    prefixes: Tuple[Affix, ...]
+    prefixes: Tuple[Prefix, ...]
     """prefixes are stored in reversed order"""
 
-    suffixes: Tuple[Affix, ...]
+    suffixes: Tuple[Suffix, ...]
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Affix], suffixes: List[Affix]
+        cls, prefixes: List[Prefix], suffixes: List[Suffix]
     ) -> "Var":
         return cls(tuple(reversed(prefixes)), tuple(suffixes))
 
@@ -113,14 +140,14 @@ Describable = Union["Unit", Affix]
 @dataclass(eq=True, frozen=True)
 class Fusion:
     stem: "Unit"
-    prefixes: Tuple[Affix, ...] = field(default=())
+    prefixes: Tuple[Prefix, ...] = field(default=())
     """prefixes are stored in reversed order"""
 
-    suffixes: Tuple[Affix, ...] = field(default=())
+    suffixes: Tuple[Suffix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: List[Affix], stem: "Unit", suffixes: List[Affix]
+        cls, prefixes: List[Prefix], stem: "Unit", suffixes: List[Suffix]
     ) -> "Fusion":
         return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
 
