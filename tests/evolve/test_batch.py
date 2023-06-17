@@ -1,250 +1,219 @@
 import pytest
 
-from pyconlang.domain import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
+from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve.arrange import AffixArranger
-from pyconlang.evolve.batch import Batcher, LeafEvolveQuery, NodeEvolveQuery
+from pyconlang.evolve.batch import Batcher, ComponentQuery, CompoundQuery
 from pyconlang.evolve.errors import BadAffixation
 
 
-@pytest.fixture(scope="session")
-def batcher() -> Batcher:
-    return Batcher()
-
-
-@pytest.fixture(scope="session")
-def arranger() -> AffixArranger:
-    return AffixArranger(["1", "2"])
-
-
 def test_one_node(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    assert batcher.build_query(arranger.rearrange(a)) == LeafEvolveQuery("a")
+    a = Component(Morpheme("a"))
+    assert batcher.build_query(arranger.rearrange(a)) == ComponentQuery("a")
 
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    assert batcher.build_query(arranger.rearrange(a)) == LeafEvolveQuery("a", start="1")
+    a = Component(Morpheme("a", Rule("1")))
+    assert batcher.build_query(arranger.rearrange(a)) == ComponentQuery("a", start="1")
 
 
 def test_two_nodes_same(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b"))
 
-    assert batcher.build_query(arranger.rearrange(a.extend_any(b))) == NodeEvolveQuery(
-        AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")
+    form = arranger.rearrange(Compound(a, Joiner.head(), b))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a"), Joiner.head(), ComponentQuery("b")
     )
 
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
+    a = Component(Morpheme("a", Rule("1")))
+    b = Component(Morpheme("b", Rule("1")))
 
-    assert batcher.build_query(arranger.rearrange(a.extend_any(b))) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        LeafEvolveQuery("a", start="1", end="1"),
-        LeafEvolveQuery("b", start="1", end="1"),
-        start="1",
+    form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a", start="1", end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("b", start="1", end="1"),
     )
 
 
 def test_two_nodes_different(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b", Rule("1")))
 
-    assert batcher.build_query(arranger.rearrange(a.extend_any(b))) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        LeafEvolveQuery("a", end="1"),
-        LeafEvolveQuery("b", start="1", end="1"),
-        start="1",
+    form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a", end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("b", start="1", end="1"),
     )
 
     with pytest.raises(BadAffixation):
-        a = ResolvedForm(Morpheme("a", Rule("1")))
-        b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
+        a = Component(Morpheme("a", Rule("1")))
+        b = Component(Morpheme("b"))
+        form = Compound(a, Joiner.head(), b)
+        batcher.build_query(form)
 
-        batcher.build_query(arranger.rearrange(a.extend_any(b)))
+    a = Component(Morpheme("a", Rule("1")))
+    b = Component(Morpheme("b", Rule("2")))
 
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Morpheme("b", Rule("2")))
-    )
-    assert batcher.build_query(arranger.rearrange(a.extend_any(b))) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        LeafEvolveQuery("a", start="1", end="2"),
-        LeafEvolveQuery("b", start="2", end="2"),
-        start="2",
+    form = arranger.rearrange(Compound(a, Joiner.head(Rule("2")), b))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a", start="1", end="2"),
+        Joiner.head(Rule("2")),
+        ComponentQuery("b", start="2", end="2"),
     )
 
 
 def test_two_nodes_different_era_inside_affix(
     batcher: Batcher, arranger: AffixArranger
 ) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b")))
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b"))
 
-    assert batcher.build_query(arranger.rearrange(a.extend_any(b))) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        LeafEvolveQuery("a", end="1"),
-        LeafEvolveQuery("b", end="1"),
-        start="1",
+    form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a", end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("b", end="1"),
     )
 
 
 def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
-    c = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("c")))
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b"))
+    c = Component(Morpheme("c"))
 
-    assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")),
-        LeafEvolveQuery("c"),
+    form = arranger.rearrange(Compound(Compound(a, Joiner.head(), b), Joiner.head(), c))
+
+    assert batcher.build_query(form) == CompoundQuery(
+        CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b")),
+        Joiner.head(),
+        ComponentQuery("c"),
     )
 
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(False, AffixType.SUFFIX, None, ResolvedForm(Morpheme("b")))
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("c", Rule("1")))
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b"))
+    c = Component(Morpheme("c", Rule("1")))
+
+    form = arranger.rearrange(
+        Compound(a, Joiner.head(), Compound(b, Joiner.head(Rule("1")), c))
     )
 
-    assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"), end="1"
-        ),
-        LeafEvolveQuery("c", start="1", end="1"),
-        start="1",
+    assert batcher.build_query(form) == CompoundQuery(
+        CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b"), end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("c", start="1", end="1"),
     )
 
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("c", Rule("1")))
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b", Rule("1")))
+    c = Component(Morpheme("c", Rule("1")))
+
+    form = arranger.rearrange(
+        Compound(Compound(a, Joiner.head(Rule("1")), b), Joiner.head(Rule("1")), c)
     )
 
-    assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX,
-            LeafEvolveQuery("a", end="1"),
-            LeafEvolveQuery("b", start="1", end="1"),
-            start="1",
+    assert batcher.build_query(form) == CompoundQuery(
+        CompoundQuery(
+            ComponentQuery("a", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
             end="1",
         ),
-        LeafEvolveQuery("c", start="1", end="1"),
-        start="1",
+        Joiner.head(Rule("1")),
+        ComponentQuery("c", start="1", end="1"),
     )
 
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("c", Rule("1")))
-    )
+    a = Component(Morpheme("a", Rule("1")))
+    b = Component(Morpheme("b", Rule("1")))
+    c = Component(Morpheme("c", Rule("1")))
 
-    assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX,
-            LeafEvolveQuery("a", start="1", end="1"),
-            LeafEvolveQuery("b", start="1", end="1"),
-            start="1",
+    form = arranger.rearrange(
+        Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("1")), c))
+    )
+    assert batcher.build_query(form) == CompoundQuery(
+        ComponentQuery("a", start="1", end="1"),
+        Joiner.head(Rule("1")),
+        CompoundQuery(
+            ComponentQuery("b", start="1", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("c", start="1", end="1"),
             end="1",
         ),
-        LeafEvolveQuery("c", start="1", end="1"),
-        start="1",
     )
 
 
 def test_three_nodes_two_eras(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a"))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Morpheme("c", Rule("2")))
-    )
+    a = Component(Morpheme("a"))
+    b = Component(Morpheme("b", Rule("1")))
+    c = Component(Morpheme("c", Rule("2")))
 
     assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX,
-            LeafEvolveQuery("a", end="1"),
-            LeafEvolveQuery("b", start="1", end="1"),
-            start="1",
+        arranger.rearrange(
+            Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
+        )
+    ) == CompoundQuery(
+        CompoundQuery(
+            ComponentQuery("a", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
             end="2",
         ),
-        LeafEvolveQuery("c", start="2", end="2"),
-        start="2",
+        Joiner.head(Rule("2")),
+        ComponentQuery("c", start="2", end="2"),
     )
 
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Morpheme("c", Rule("2")))
-    )
+    a = Component(Morpheme("a", Rule("1")))
+    b = Component(Morpheme("b", Rule("1")))
+    c = Component(Morpheme("c", Rule("2")))
 
     assert batcher.build_query(
-        arranger.rearrange(a.extend_any(b).extend_any(c))
-    ) == NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX,
-            LeafEvolveQuery("a", start="1", end="1"),
-            LeafEvolveQuery("b", start="1", end="1"),
-            start="1",
+        arranger.rearrange(
+            Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
+        )
+    ) == CompoundQuery(
+        CompoundQuery(
+            ComponentQuery("a", start="1", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
             end="2",
         ),
-        LeafEvolveQuery("c", start="2", end="2"),
-        start="2",
+        Joiner.head(Rule("2")),
+        ComponentQuery("c", start="2", end="2"),
     )
 
 
 def test_node_query(batcher: Batcher) -> None:
-    a_b = NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"))
+    a_b = CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b"))
 
     assert a_b.get_query({}) == "ab"
 
-    a_b = NodeEvolveQuery(
-        AffixType.SUFFIX,
-        LeafEvolveQuery("a", start="1", end="1"),
-        LeafEvolveQuery("b", start="1", end="1"),
-        start="1",
+    a_b = CompoundQuery(
+        ComponentQuery("a", start="1", end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("b", start="1", end="1"),
     )
 
     assert a_b.get_query({}) == "ab"
 
     with pytest.raises(AssertionError):
-        a_b = NodeEvolveQuery(
-            AffixType.SUFFIX,
-            LeafEvolveQuery("a", end="1"),
-            LeafEvolveQuery("b", start="1", end="1"),
-            start="1",
+        a_b = CompoundQuery(
+            ComponentQuery("a", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
         )
 
         assert a_b.get_query({})
 
 
 def test_single_layer(batcher: Batcher) -> None:
-    query = NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b")),
-        LeafEvolveQuery("c"),
+    query = CompoundQuery(
+        CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b")),
+        Joiner.head(),
+        ComponentQuery("c"),
     )
 
     assert query.get_query({}) == "abc"
@@ -253,19 +222,16 @@ def test_single_layer(batcher: Batcher) -> None:
 
 
 def test_two_layers(batcher: Batcher) -> None:
-    query = NodeEvolveQuery(
-        AffixType.SUFFIX,
-        NodeEvolveQuery(
-            AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"), end="1"
-        ),
-        LeafEvolveQuery("c", start="1", end="1"),
-        start="1",
+    query = CompoundQuery(
+        CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b"), end="1"),
+        Joiner.head(Rule("2")),
+        ComponentQuery("c", start="1", end="1"),
     )
 
     assert batcher.order_in_layers([query]) == [
         [
-            NodeEvolveQuery(
-                AffixType.SUFFIX, LeafEvolveQuery("a"), LeafEvolveQuery("b"), end="1"
+            CompoundQuery(
+                ComponentQuery("a"), Joiner.head(), ComponentQuery("b"), end="1"
             )
         ],
         [query],
@@ -273,53 +239,44 @@ def test_two_layers(batcher: Batcher) -> None:
 
 
 def test_build_and_order(batcher: Batcher, arranger: AffixArranger) -> None:
-    a = ResolvedForm(Morpheme("a", Rule("1")))
-    b = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("1"), ResolvedForm(Morpheme("b", Rule("1")))
-    )
-    c = ResolvedAffix(
-        False, AffixType.SUFFIX, Rule("2"), ResolvedForm(Morpheme("c", Rule("2")))
-    )
-    form = arranger.rearrange(a.extend_any(b).extend_any(c))
+    a = Component(Morpheme("a", Rule("1")))
+    b = Component(Morpheme("b", Rule("1")))
+    c = Component(Morpheme("c", Rule("2")))
 
-    assert batcher.build_and_order([form]) == (
-        {
-            form: NodeEvolveQuery(
-                AffixType.SUFFIX,
-                NodeEvolveQuery(
-                    AffixType.SUFFIX,
-                    LeafEvolveQuery("a", start="1", end="1"),
-                    LeafEvolveQuery("b", start="1", end="1"),
-                    start="1",
-                    end="2",
-                ),
-                LeafEvolveQuery("c", start="2", end="2"),
-                start="2",
-            )
-        },
-        [
-            [
-                NodeEvolveQuery(
-                    AffixType.SUFFIX,
-                    LeafEvolveQuery("a", start="1", end="1"),
-                    LeafEvolveQuery("b", start="1", end="1"),
-                    start="1",
-                    end="2",
-                )
-            ],
-            [
-                NodeEvolveQuery(
-                    AffixType.SUFFIX,
-                    NodeEvolveQuery(
-                        AffixType.SUFFIX,
-                        LeafEvolveQuery("a", start="1", end="1"),
-                        LeafEvolveQuery("b", start="1", end="1"),
-                        start="1",
-                        end="2",
-                    ),
-                    LeafEvolveQuery("c", start="2", end="2"),
-                    start="2",
-                )
-            ],
-        ],
+    form = arranger.rearrange(
+        Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
+    )
+
+    mapping, layered_queries = batcher.build_and_order([form])
+
+    assert len(mapping) == 1
+    assert form in mapping
+    assert mapping[form] == CompoundQuery(
+        CompoundQuery(
+            ComponentQuery("a", start="1", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
+            end="2",
+        ),
+        Joiner.head(Rule("2")),
+        ComponentQuery("c", start="2", end="2"),
+    )
+    assert len(layered_queries) == 2
+    assert len(layered_queries[0]) == 1
+    assert layered_queries[0][0] == CompoundQuery(
+        ComponentQuery("a", start="1", end="1"),
+        Joiner.head(Rule("1")),
+        ComponentQuery("b", start="1", end="1"),
+        end="2",
+    )
+    assert len(layered_queries[1]) == 1
+    assert layered_queries[1][0] == CompoundQuery(
+        CompoundQuery(
+            ComponentQuery("a", start="1", end="1"),
+            Joiner.head(Rule("1")),
+            ComponentQuery("b", start="1", end="1"),
+            end="2",
+        ),
+        Joiner.head(Rule("2")),
+        ComponentQuery("c", start="2", end="2"),
     )

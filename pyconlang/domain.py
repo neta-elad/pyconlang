@@ -1,11 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from itertools import chain
 from typing import Generic, TypeVar
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
-from .metadata import Metadata
 from .unicode import combine
 
 
@@ -52,61 +50,31 @@ class PartOfSpeech:
         return f"({self.name}.)"
 
 
-class AffixType(Enum):
-    PREFIX = auto()
-    SUFFIX = auto()
-
-    def fuse(self, stem: str, affix: str, syllable_break: str | None = None) -> str:
-        if syllable_break is None:
-            syllable_break = self.syllable_break()
-
-        match self:
-            case AffixType.PREFIX:
-                return affix + syllable_break + stem
-            case AffixType.SUFFIX:
-                return stem + syllable_break + affix
-
-    @staticmethod
-    def syllable_break() -> str:
-        if Metadata.default().syllables:
-            return "."
-        else:
-            return ""
-
-
 @dataclass(eq=True, frozen=True)
-class Affix(ABC):
+class AffixBase(ABC):
     name: str
 
-    @property
     @abstractmethod
-    def type(self) -> AffixType:
-        ...  # todo: remvoe
-
-    @abstractmethod
-    def __str__(self) -> str:
+    def combine(self, stem: str, name: str) -> str:
         ...
 
-
-@dataclass(eq=True, frozen=True)
-class Prefix(Affix):
-    @property
-    def type(self) -> AffixType:  # todo: remove
-        return AffixType.PREFIX
-
     def __str__(self) -> str:
-        return combine(self.name, "", ".")
+        return self.combine("", self.name)
 
 
 @dataclass(eq=True, frozen=True)
-class Suffix(Affix):
-    @property
-    def type(self) -> AffixType:  # todo: remove
-        return AffixType.SUFFIX
+class Prefix(AffixBase):
+    def combine(self, stem: str, name: str) -> str:
+        return combine(name, stem, ".")
 
-    def __str__(self) -> str:
-        return combine("", self.name, ".")
 
+@dataclass(eq=True, frozen=True)
+class Suffix(AffixBase):
+    def combine(self, stem: str, name: str) -> str:
+        return combine(stem, name, ".")
+
+
+Affix = Prefix | Suffix
 
 Definable = Lexeme | Affix
 
@@ -126,7 +94,7 @@ class Var:
 
     def show(self, stem: str) -> str:
         for affix in self.prefixes + self.suffixes:
-            stem = affix.type.fuse(stem, affix.name, ".")
+            stem = affix.combine(stem, affix.name)
 
         return stem
 
@@ -159,12 +127,21 @@ class Fusion:
 Compoundable = TypeVar("Compoundable", Morpheme, Fusion)
 
 
+class Tree(Generic[Compoundable], metaclass=ABCMeta):
+    @abstractmethod
+    def leaves(self) -> list[Compoundable]:
+        ...
+
+
 @dataclass(eq=True, frozen=True)
-class Component(Generic[Compoundable]):
+class Component(Tree[Compoundable]):
     form: Compoundable
 
     def __str__(self) -> str:
         return str(self.form)
+
+    def leaves(self) -> list[Compoundable]:
+        return [self.form]
 
 
 class JoinerStress(Enum):
@@ -195,28 +172,23 @@ class Joiner:
     def __str__(self) -> str:
         return f"{self.stress}{self.era or ''}"
 
-
-@dataclass(eq=True, frozen=True)
-class Compound(Generic[Compoundable]):
-    head: "Word[Compoundable]"
-    joiner: Joiner
-    tail: "Word[Compoundable]"
-
-    @property
-    def stress(self) -> JoinerStress:  # todo: remove
-        return self.joiner.stress
-
-    @property
-    def era(self) -> Rule | None:  # todo: remove
-        return self.joiner.era
-
     def era_name(self) -> str | None:
         if self.era is None:
             return None
         return self.era.name
 
+
+@dataclass(eq=True, frozen=True)
+class Compound(Tree[Compoundable]):
+    head: "Word[Compoundable]"
+    joiner: Joiner
+    tail: "Word[Compoundable]"
+
     def __str__(self) -> str:
         return f"[{self.head} {self.joiner} {self.tail}]"
+
+    def leaves(self) -> list[Compoundable]:
+        return self.head.leaves() + self.tail.leaves()
 
 
 Word = Component[Compoundable] | Compound[Compoundable]
@@ -268,7 +240,7 @@ class AffixDefinition:
     def get_form(self) -> Word[Fusion]:
         if self.form is not None and not isinstance(self.form, Var):
             return self.form
-        elif len(self.sources) == 1:
+        elif len(self.sources) == 1:  # todo: should be done differently with compounds
             return Component(Fusion(self.sources[0]))
         else:
             raise AffixDefinitionMissingForm(self)
@@ -280,60 +252,7 @@ class AffixDefinition:
             raise AffixDefinitionMissingVar(self)
 
 
-@dataclass(eq=True, frozen=True)
-class ResolvedForm:
-    stem: Morpheme
-    prefixes: tuple["ResolvedAffix", ...] = field(default=())
-    suffixes: tuple["ResolvedAffix", ...] = field(default=())
-
-    def extend_prefixes(self, *prefixes: "ResolvedAffix") -> "ResolvedForm":
-        return ResolvedForm(self.stem, prefixes + self.prefixes, self.suffixes)
-
-    def extend_suffixes(self, *suffixes: "ResolvedAffix") -> "ResolvedForm":
-        return ResolvedForm(self.stem, self.prefixes, self.suffixes + suffixes)
-
-    def extend(
-        self,
-        prefixes: tuple["ResolvedAffix", ...],
-        suffixes: tuple["ResolvedAffix", ...],
-    ) -> "ResolvedForm":
-        return self.extend_prefixes(*prefixes).extend_suffixes(*suffixes)
-
-    def extend_any(self, affix: "ResolvedAffix") -> "ResolvedForm":
-        if affix.type is AffixType.PREFIX:
-            return self.extend_prefixes(affix)
-        else:
-            return self.extend_suffixes(affix)
-
-    def to_morphemes(self) -> list[Morpheme]:
-        morphemes = (
-            [prefix.form.to_morphemes() for prefix in self.prefixes]
-            + [[self.stem]]
-            + [suffix.form.to_morphemes() for suffix in self.suffixes]
-        )
-
-        return list(chain(*morphemes))
-
-
-@dataclass(eq=True, frozen=True)
-class ResolvedAffix:
-    stressed: bool
-    type: AffixType
-    era: Rule | None
-    form: ResolvedForm
-
-    @classmethod
-    def from_compound(
-        cls, compound: Compound[Fusion], tail: ResolvedForm
-    ) -> "ResolvedAffix":
-        return cls(
-            compound.stress == JoinerStress.TAIL, AffixType.SUFFIX, compound.era, tail
-        )
-
-    def era_name(self) -> str | None:
-        if self.era is None:
-            return None
-        return self.era.name
+ResolvedForm = Word[Morpheme]
 
 
 @dataclass(eq=True, frozen=True)
@@ -347,37 +266,3 @@ class Template:
 
 
 T = TypeVar("T")
-
-
-@dataclass(eq=True, frozen=True)
-class BranchJoin(Generic[T]):
-    head: "JoinTree[T]"
-    joiner: Joiner
-    tail: "JoinTree[T]"
-
-    @property
-    def stress(self) -> JoinerStress:  # todo: remove
-        return self.joiner.stress
-
-    @property
-    def era(self) -> Rule | None:  # todo: remove
-        return self.joiner.era
-
-    def era_name(self) -> str | None:
-        if self.era is None:
-            return None
-        return self.era.name
-
-    def __str__(self) -> str:
-        return f"[{self.head} {self.joiner} {self.tail}]"
-
-
-@dataclass(eq=True, frozen=True)
-class LeafJoin(Generic[T]):
-    value: T
-
-    def __str__(self) -> str:
-        return f"[{self.value}]"
-
-
-JoinTree = LeafJoin[T] | BranchJoin[T]

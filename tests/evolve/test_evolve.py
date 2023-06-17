@@ -1,4 +1,4 @@
-from pyconlang.domain import AffixType, Morpheme, ResolvedAffix, ResolvedForm, Rule
+from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.domain import Evolved
 from pyconlang.evolve.tracer import TraceLine
@@ -36,16 +36,10 @@ def test_evolve_forms(simple_evolver: Evolver) -> None:
 
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apak"),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.SUFFIX,
-                        Rule("era1"),
-                        ResolvedForm(Morpheme("iki"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("apak")),
+                Joiner.head(Rule("era1")),
+                Component(Morpheme("iki")),
             )
         ]
     ) == [Evolved("apakiʃi", "abagishi", "abagiʃi")]
@@ -54,16 +48,8 @@ def test_evolve_forms(simple_evolver: Evolver) -> None:
 def test_morpheme_fuse(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apak"),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.PREFIX,
-                        None,
-                        ResolvedForm(Morpheme("ma"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("ma")), Joiner.tail(), Component(Morpheme("apak"))
             )
         ]
     ) == [Evolved("maapak", "maabak", "maabak")]
@@ -72,23 +58,13 @@ def test_morpheme_fuse(simple_evolver: Evolver) -> None:
 def test_morpheme_fuse_order(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("paka"),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.PREFIX,
-                        None,
-                        ResolvedForm(Morpheme("ma"), ()),
-                    ),
-                ),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.SUFFIX,
-                        Rule("era2"),
-                        ResolvedForm(Morpheme("ka"), ()),
-                    ),
+            Compound(
+                Component(Morpheme("ma")),
+                Joiner.tail(),
+                Compound(
+                    Component(Morpheme("paka")),
+                    Joiner.head(Rule("era2")),
+                    Component(Morpheme("ka")),
                 ),
             )
         ]
@@ -98,48 +74,26 @@ def test_morpheme_fuse_order(simple_evolver: Evolver) -> None:
 def test_stress(simple_evolver: Evolver) -> None:
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apˈak"),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.PREFIX,
-                        None,
-                        ResolvedForm(Morpheme("mˈa"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("mˈa")), Joiner.tail(), Component(Morpheme("apˈak"))
             )
         ]
     ) == [Evolved("maapˈak", "maabik", "maabˈik")]
 
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apˈak"),
-                (
-                    ResolvedAffix(
-                        True,
-                        AffixType.PREFIX,
-                        None,
-                        ResolvedForm(Morpheme("mˈa"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("mˈa")), Joiner.head(), Component(Morpheme("apˈak"))
             )
         ]
     ) == [Evolved("mˈaapak", "miabak", "mˈiabak")]
 
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apˈak"),
-                (
-                    ResolvedAffix(
-                        True,
-                        AffixType.PREFIX,
-                        Rule("era2"),
-                        ResolvedForm(Morpheme("mˈa"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("mˈa")),
+                Joiner.head(Rule("era2")),
+                Component(Morpheme("apˈak")),
             )
         ]
     ) == [Evolved("mˈiabik", "miabik", "mˈiabik")]
@@ -149,38 +103,14 @@ def test_explicit_syllables(simple_evolver: Evolver) -> None:
     Metadata.default().syllables = True
     assert simple_evolver.evolve(
         [
-            ResolvedForm(
-                Morpheme("apˈak"),
-                (
-                    ResolvedAffix(
-                        True,
-                        AffixType.PREFIX,
-                        Rule("era2"),
-                        ResolvedForm(Morpheme("mˈa"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("mˈa")),
+                Joiner.head(Rule("era2")),
+                Component(Morpheme("apˈak")),
             )
         ]
     ) == [Evolved("mˈi.abik", "miabik", "mˈi.abik")]
     Metadata.default().syllables = False
-
-
-def test_evolve_empty_stem(simple_evolver: Evolver) -> None:
-    assert simple_evolver.evolve(
-        [
-            ResolvedForm(
-                Morpheme("", Rule("era2")),
-                (
-                    ResolvedAffix(
-                        True,
-                        AffixType.PREFIX,
-                        Rule("era2"),
-                        ResolvedForm(Morpheme("apak"), ()),
-                    ),
-                ),
-            )
-        ]
-    ) == [Evolved("abak", "abak", "abak")]
 
 
 def test_trace(simple_evolver: Evolver) -> None:
@@ -202,16 +132,10 @@ def test_trace(simple_evolver: Evolver) -> None:
 
     assert simple_evolver.trace(
         [
-            ResolvedForm(
-                Morpheme("apaki"),
-                (
-                    ResolvedAffix(
-                        False,
-                        AffixType.PREFIX,
-                        Rule("era1"),
-                        ResolvedForm(Morpheme("ma"), ()),
-                    ),
-                ),
+            Compound(
+                Component(Morpheme("ma")),
+                Joiner.tail(Rule("era1")),
+                Component(Morpheme("apaki")),
             )
         ]
     ) == [

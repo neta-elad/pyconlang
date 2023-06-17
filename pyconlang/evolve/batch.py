@@ -1,16 +1,17 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from ..domain import AffixType
+from ..domain import Component, Compound, Joiner, JoinerStress
+from ..metadata import Metadata
 from ..unicode import remove_primary_stress
 from .domain import ArrangedForm, Evolved
 from .errors import BadAffixation
 
-Cache = dict["EvolveQuery", Evolved]
+Cache = dict["Query", Evolved]
 
 
 @dataclass(eq=True, frozen=True)
-class LeafEvolveQuery:
+class ComponentQuery:
     query: str
     start: str | None = field(default=None, kw_only=True)
     end: str | None = field(default=None, kw_only=True)
@@ -18,67 +19,72 @@ class LeafEvolveQuery:
     def get_query(self, cache: Cache) -> str:
         return self.query
 
-    def set_end(self, end: str | None) -> "LeafEvolveQuery":
-        return LeafEvolveQuery(self.query, start=self.start, end=end)
+    def set_end(self, end: str | None) -> "ComponentQuery":
+        return ComponentQuery(self.query, start=self.start, end=end)
 
 
 @dataclass(eq=True, frozen=True)
-class NodeEvolveQuery:
-    affix_type: AffixType
-    stem: "EvolveQuery"
-    affix: "EvolveQuery"
-    stressed: bool = field(default=False, kw_only=True)
-    start: str | None = field(default=None, kw_only=True)
+class CompoundQuery:
+    head: "Query"
+    joiner: Joiner
+    tail: "Query"
     end: str | None = field(default=None, kw_only=True)
 
+    @property
+    def start(self) -> str | None:
+        return self.joiner.era_name()
+
     def get_query(self, cache: Cache) -> str:
-        assert self.stem.end == self.start
-        assert self.affix.end == self.start
+        assert self.head.end == self.start
+        assert self.tail.end == self.start
 
-        if self.stem.start != self.start:
-            assert self.stem in cache
-            stem = cache[self.stem].phonetic
+        if self.head.start != self.start:
+            assert self.head in cache
+            head = cache[self.head].phonetic
         else:
-            stem = self.stem.get_query(cache)
+            head = self.head.get_query(cache)
 
-        if self.affix.start != self.start:
-            assert self.affix in cache
-            affix = cache[self.affix].phonetic
+        if self.tail.start != self.start:
+            assert self.tail in cache
+            tail = cache[self.tail].phonetic
         else:
-            affix = self.affix.get_query(cache)
+            tail = self.tail.get_query(cache)
 
-        if self.stressed:
-            stem = remove_primary_stress(stem)
+        if self.joiner.stress is JoinerStress.HEAD:
+            tail = remove_primary_stress(tail)
         else:
-            affix = remove_primary_stress(affix)
+            head = remove_primary_stress(head)
 
-        return self.affix_type.fuse(stem, affix)
+        syllable_break = ""
+        if Metadata.default().syllables:  # todo: differently
+            syllable_break = "."
 
-    def set_end(self, end: str | None) -> "NodeEvolveQuery":
-        return NodeEvolveQuery(
-            self.affix_type,
-            self.stem,
-            self.affix,
-            stressed=self.stressed,
-            start=self.start,
+        return head + syllable_break + tail
+
+    def set_end(self, end: str | None) -> "CompoundQuery":
+        return CompoundQuery(
+            self.head,
+            self.joiner,
+            self.tail,
             end=end,
         )
 
     def is_dependent(self) -> bool:
-        return self.start != self.stem.start or self.start != self.affix.start
+        """non-immediate query"""
+        return self.start != self.head.start or self.start != self.tail.start
 
 
-EvolveQuery = LeafEvolveQuery | NodeEvolveQuery
-DependableQuery = str | EvolveQuery
+Query = ComponentQuery | CompoundQuery
+DependableQuery = str | Query
 
 
 @dataclass
 class QueryWalker:
-    queries: dict[int, EvolveQuery] = field(default_factory=dict)
+    queries: dict[int, Query] = field(default_factory=dict)
     layers: dict[int, int] = field(default_factory=dict)
     max_layer: int = field(default=0)
 
-    def set_layer(self, query: EvolveQuery, layer: int = 0) -> None:
+    def set_layer(self, query: Query, layer: int = 0) -> None:
         self.layers[id(query)] = layer
         self.queries[id(query)] = query
 
@@ -87,24 +93,24 @@ class QueryWalker:
             return 0
         return self.layers[id(query)]
 
-    def get_query(self, query_id: int) -> EvolveQuery:
+    def get_query(self, query_id: int) -> Query:
         return self.queries[query_id]
 
-    def walk_query(self, query: EvolveQuery) -> None:
+    def walk_query(self, query: Query) -> None:
         match query:
-            case LeafEvolveQuery():
+            case ComponentQuery():
                 self.set_layer(query)
-            case NodeEvolveQuery():
-                self.walk_query(query.stem)
-                self.walk_query(query.affix)
+            case CompoundQuery():
+                self.walk_query(query.head)
+                self.walk_query(query.tail)
 
                 layer = int(query.is_dependent()) + max(
-                    self.get_layer(query.stem), self.get_layer(query.affix)
+                    self.get_layer(query.head), self.get_layer(query.tail)
                 )
                 self.set_layer(query, layer)
                 self.max_layer = max(self.max_layer, layer)
 
-    def walk_queries(self, queries: list[EvolveQuery]) -> list[list[EvolveQuery]]:
+    def walk_queries(self, queries: list[Query]) -> list[list[Query]]:
         # when do I need a query:
         # when start != end
         # or start == end == None *and* it is in the original list
@@ -114,7 +120,7 @@ class QueryWalker:
         for query in queries:
             self.walk_query(query)
 
-        result: list[list[EvolveQuery]] = []
+        result: list[list[Query]] = []
         for _i in range(1 + self.max_layer):
             result.append([])
 
@@ -130,17 +136,17 @@ class QueryWalker:
 
 @dataclass
 class Batcher:
-    cache: dict[ArrangedForm, EvolveQuery] = field(default_factory=dict)
+    cache: dict[ArrangedForm, Query] = field(default_factory=dict)
 
     @staticmethod
-    def order_in_layers(queries: list[EvolveQuery]) -> list[list[EvolveQuery]]:
+    def order_in_layers(queries: list[Query]) -> list[list[Query]]:
         return QueryWalker().walk_queries(queries)
 
     @staticmethod
     def segment_by_start_end(
-        queries: list[EvolveQuery],
-    ) -> Mapping[tuple[str | None, str | None], list[EvolveQuery]]:
-        segments: dict[tuple[str | None, str | None], list[EvolveQuery]] = {}
+        queries: list[Query],
+    ) -> Mapping[tuple[str | None, str | None], list[Query]]:
+        segments: dict[tuple[str | None, str | None], list[Query]] = {}
 
         for query in queries:
             start_end = query.start, query.end
@@ -149,60 +155,40 @@ class Batcher:
 
         return segments
 
-    def build_query(self, form: ArrangedForm) -> EvolveQuery:
+    def build_query_uncached(self, form: ArrangedForm) -> Query:
+        match form:
+            case Component():
+                return ComponentQuery(form.form.form, start=form.form.era_name())
+            case Compound():
+                joiner = form.joiner
+                head = self.build_query(form.head).set_end(joiner.era_name())
+                tail = self.build_query(form.tail).set_end(joiner.era_name())
+
+                if joiner.era_name() is None and (
+                    head.start is not None or tail.start is not None
+                ):
+                    # todo: this is just a heuristic
+                    raise BadAffixation(
+                        "Affix time must always be later than stem's time"
+                    )
+
+                return CompoundQuery(head, form.joiner, tail)
+
+    def build_query(self, form: ArrangedForm) -> Query:
         if form in self.cache:
             return self.cache[form]
 
-        stem = form.stem
-        stem_query: EvolveQuery = LeafEvolveQuery(stem.form, start=stem.era_name())
-        for affix in form.affixes:
-            affix_query = self.build_query(affix.form)
-            affix_era = affix.era_name()
+        query = self.build_query_uncached(form)
 
-            if affix_era is None and stem_query.start is not None:
-                raise BadAffixation("Affix time must always be later than stem's time")
-
-            elif affix_era is None and stem_query.start is None:
-                stem_query = NodeEvolveQuery(
-                    affix.type,
-                    stem_query,
-                    affix_query,
-                    stressed=affix.stressed,
-                )
-
-            elif affix_era is not None and stem_query.start != affix_era:
-                # assume affix.era > stem_query.start
-                affix_query = affix_query.set_end(affix_era)
-                stem_query = stem_query.set_end(affix_era)
-
-                stem_query = NodeEvolveQuery(
-                    affix.type,
-                    stem_query,
-                    affix_query,
-                    stressed=affix.stressed,
-                    start=affix_era,
-                )
-
-            else:  # affix start == query_start != None
-                affix_query = affix_query.set_end(affix_era)
-                stem_query = stem_query.set_end(affix_era)
-                stem_query = NodeEvolveQuery(
-                    affix.type,
-                    stem_query,
-                    affix_query,
-                    stressed=affix.stressed,
-                    start=stem_query.start,
-                )
-
-        self.cache[form] = stem_query
-        return stem_query
+        self.cache[form] = query
+        return query
 
     def build_and_order(
         self,
         forms: Sequence[ArrangedForm],
-    ) -> tuple[Mapping[ArrangedForm, EvolveQuery], list[list[EvolveQuery]]]:
-        mapping: dict[ArrangedForm, EvolveQuery] = {}
-        queries: list[EvolveQuery] = []
+    ) -> tuple[Mapping[ArrangedForm, Query], list[list[Query]]]:
+        mapping: dict[ArrangedForm, Query] = {}
+        queries: list[Query] = []
 
         for form in forms:
             query = self.build_query(form)

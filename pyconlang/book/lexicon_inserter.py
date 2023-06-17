@@ -7,13 +7,14 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 from ..domain import (
-    Affix,
     Definable,
     Entry,
     Fusion,
     Lexeme,
     Morpheme,
+    Prefix,
     ResolvedForm,
+    Suffix,
     Word,
 )
 from ..errors import show_exception
@@ -254,10 +255,8 @@ class LexiconAbbreviationProcessor(LexiconPreprocessor):
         match definable:
             case Lexeme():
                 return f"+{definable.name}+&d{{{definable}}}+"
-            case Affix():
-                return definable.type.fuse(
-                    "", f"+{definable.name}+&d{{{definable}}}+", "."
-                )
+            case Prefix() | Suffix():
+                return definable.combine("", f"+{definable.name}+&d{{{definable}}}+")
 
 
 class LexiconBatchingRomanizerProcessor(LexiconPreprocessor):
@@ -357,8 +356,8 @@ class LexiconDictionaryProcessor(Preprocessor):
         )
 
     def form_to_morphemes(self, form: Word[Fusion]) -> list[Morpheme]:
-        return self.inserter.translator.lexicon.resolve(form).to_morphemes()
+        return self.inserter.translator.lexicon.resolve(form).leaves()
 
 
 def _join_morphemes(form: ResolvedForm) -> str:
-    return " \\+ ".join(f"_\\*{morpheme.form}_" for morpheme in form.to_morphemes())
+    return " \\+ ".join(f"_\\*{morpheme.form}_" for morpheme in form.leaves())

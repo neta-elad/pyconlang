@@ -14,10 +14,10 @@ from unicodedata import normalize
 from .. import PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
-from ..domain import Morpheme, ResolvedForm
+from ..domain import Component, Morpheme, ResolvedForm
 from .arrange import AffixArranger
-from .batch import Batcher, Cache, EvolveQuery, LeafEvolveQuery, NodeEvolveQuery
-from .domain import ArrangedForm, Evolved
+from .batch import Batcher, Cache, ComponentQuery, CompoundQuery, Query
+from .domain import Evolved
 from .errors import LexurgyError
 from .tracer import TraceLine, parse_trace_lines
 
@@ -50,7 +50,7 @@ def random_directory() -> Path:
 class Evolver:
     checksum: bytes = field(default_factory=get_checksum)
     cache: Cache = field(default_factory=dict)
-    trace_cache: dict[EvolveQuery, list[TraceLine]] = field(default_factory=dict)
+    trace_cache: dict[Query, list[TraceLine]] = field(default_factory=dict)
     batcher: Batcher = field(default_factory=Batcher)
     evolve_directory: Path = field(default_factory=random_directory)
 
@@ -109,17 +109,17 @@ class Evolver:
 
         return result
 
-    def get_trace(self, query: EvolveQuery) -> Trace:
+    def get_trace(self, query: Query) -> Trace:
         if query not in self.trace_cache:
             return []
         query_trace = (query.get_query(self.cache), self.trace_cache[query])
         match query:
-            case LeafEvolveQuery():
+            case ComponentQuery():
                 return [query_trace]
-            case NodeEvolveQuery():
+            case CompoundQuery():
                 return (
-                    self.get_trace(query.stem)
-                    + self.get_trace(query.affix)
+                    self.get_trace(query.head)
+                    + self.get_trace(query.tail)
                     + [query_trace]
                 )
 
@@ -144,7 +144,6 @@ class Evolver:
                 words = []
                 for query in new_queries:
                     word = query.get_query(self.cache)
-                    assert word is not None
                     words.append(word)
 
                 evolved_forms, trace_lines = self.evolve_words(
@@ -166,15 +165,15 @@ class Evolver:
 
         return result
 
-    def normalize_form(self, form: Evolvable) -> ArrangedForm:
+    def normalize_form(self, form: Evolvable) -> ResolvedForm:
         if isinstance(form, str):
             form = Morpheme(form)
         if isinstance(form, Morpheme):
-            form = ResolvedForm(form)
+            form = Component(form)
 
         return self.arranger.rearrange(form)
 
-    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ArrangedForm]:
+    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
         return [self.normalize_form(form) for form in forms]
 
     def evolve_words(

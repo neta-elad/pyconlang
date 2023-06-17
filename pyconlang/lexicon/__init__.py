@@ -13,11 +13,13 @@ from ..domain import (
     Describable,
     Entry,
     Fusion,
+    Joiner,
     Lexeme,
     Morpheme,
+    Prefix,
     Record,
-    ResolvedAffix,
     ResolvedForm,
+    Suffix,
     Template,
     TemplateName,
     Var,
@@ -80,39 +82,11 @@ class Lexicon:
         raise MissingLexeme(lexeme.name)
 
     def get_affix(self, affix: Affix) -> AffixDefinition:
-        for possible_affix in self.affixes:
+        for possible_affix in self.affixes:  # todo: add mapping
             if possible_affix.affix.name == affix.name:
                 return possible_affix
 
         raise MissingAffix(affix.name)
-
-    def resolve_affix(self, affix: Affix) -> list[ResolvedAffix]:
-        definition = self.get_affix(affix)
-        if definition.is_var():
-            return list(
-                chain(
-                    *[
-                        self.resolve_affix(sub_affix)
-                        for sub_affix in definition.get_var().prefixes
-                    ],
-                    *[
-                        self.resolve_affix(sub_affix)
-                        for sub_affix in definition.get_var().suffixes
-                    ],
-                )
-            )
-        else:
-            return [
-                ResolvedAffix(
-                    definition.stressed,
-                    definition.affix.type,
-                    definition.get_era(),
-                    self.resolve(definition.get_form()),
-                )
-            ]
-
-    def resolve_affixes(self, affixes: tuple[Affix, ...]) -> tuple[ResolvedAffix, ...]:
-        return tuple(chain(*[self.resolve_affix(affix) for affix in affixes]))
 
     def resolve(self, word: Word[Fusion]) -> ResolvedForm:
         match word:
@@ -128,36 +102,73 @@ class Lexicon:
             case Fusion():
                 return self.resolve_fusion(form)
             case Morpheme():
-                return ResolvedForm(form)
+                return Component(form)
             case Lexeme():
                 return self.resolve(self.get_entry(form).form)
             case _:
                 return self.resolve(form)
 
     def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
-        prefixes = self.resolve_affixes(fusion.prefixes)
-        suffixes = self.resolve_affixes(fusion.suffixes)
-        return self.resolve_any(fusion.stem).extend(prefixes, suffixes)
+        # prefixes = self.resolve_affixes(fusion.prefixes)
+        # suffixes = self.resolve_affixes(fusion.suffixes)
+        return self.extend_with_affixes(
+            self.resolve_any(fusion.stem), *(fusion.prefixes + fusion.suffixes)
+        )
 
     def resolve_compound(self, compound: Compound[Fusion]) -> ResolvedForm:
         head = self.resolve(compound.head)
         tail = self.resolve(compound.tail)
-        tail_as_affix = ResolvedAffix.from_compound(compound, tail)
-        return head.extend_any(tail_as_affix)
+        return Compound(
+            head,
+            compound.joiner,
+            tail,
+        )
 
-    def resolve_with_affixes(
-        self,
-        form: Word[Fusion],
-        prefixes: tuple[Affix, ...],
-        suffixes: tuple[Affix, ...],
-    ) -> ResolvedForm:
-        resolved_prefixes = self.resolve_affixes(prefixes)
-        resolved_suffixes = self.resolve_affixes(suffixes)
-        resolved = self.resolve(form)
-        return resolved.extend(resolved_prefixes, resolved_suffixes)
+    def extend_with_affixes(self, form: ResolvedForm, *affixes: Affix) -> ResolvedForm:
+        for affix in affixes:
+            form = self.extend_with_affix(form, affix)
+
+        return form
+
+    def extend_with_affix(self, form: ResolvedForm, affix: Affix) -> ResolvedForm:
+        definition = self.get_affix(affix)
+        if definition.is_var():
+            return self.extend_with_affixes(
+                form, *(definition.get_var().prefixes + definition.get_var().suffixes)
+            )
+        else:
+            match definition.affix:
+                case Prefix():
+                    if definition.stressed:
+                        return Compound(
+                            self.resolve(definition.get_form()),
+                            Joiner.head(definition.get_era()),
+                            form,
+                        )
+                    else:
+                        return Compound(
+                            self.resolve(definition.get_form()),
+                            Joiner.tail(definition.get_era()),
+                            form,
+                        )
+                case Suffix():
+                    if definition.stressed:
+                        return Compound(
+                            form,
+                            Joiner.tail(definition.get_era()),
+                            self.resolve(definition.get_form()),
+                        )
+                    else:
+                        return Compound(
+                            form,
+                            Joiner.head(definition.get_era()),
+                            self.resolve(definition.get_form()),
+                        )
 
     def substitute(self, var: Var, form: Word[Fusion]) -> ResolvedForm:
-        return self.resolve_with_affixes(form, var.prefixes, var.suffixes)
+        return self.extend_with_affixes(
+            self.resolve(form), *(var.prefixes + var.suffixes)
+        )
 
     def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:
         if name is None:
@@ -176,7 +187,7 @@ class Lexicon:
 
     def form(self, record: Definable) -> Word[Fusion]:
         match record:
-            case Affix():
+            case Prefix() | Suffix():
                 return self.get_affix(record).get_form()
 
             case Lexeme():
@@ -187,7 +198,7 @@ class Lexicon:
 
     def define(self, record: Definable) -> str:
         match record:
-            case Affix():
+            case Prefix() | Suffix():
                 return self.get_affix(record).description
 
             case Lexeme():
@@ -195,7 +206,7 @@ class Lexicon:
 
     def lookup(self, record: Record) -> list[tuple[Describable, str]]:
         match record:
-            case Affix():
+            case Prefix() | Suffix():
                 return self.singleton_lookup(record, self.get_affix(record).description)
             case Lexeme():
                 entry = self.get_entry(record)

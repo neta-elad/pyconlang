@@ -144,96 +144,90 @@ def test_comment() -> None:
 def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert isinstance(parsed_lexicon, Lexicon)
 
-    assert frozenset(parsed_lexicon.entries) == frozenset(
-        {
-            Entry(
-                None,
-                Lexeme("strong"),
-                Component(Fusion(Morpheme("kipu", Rule("era1")))),
-                PartOfSpeech("adj"),
-                "strong, stable",
-            ),
-            Entry(
-                None,
-                Lexeme("big"),
-                Component(Fusion(Morpheme("iki"))),
-                PartOfSpeech("adj"),
-                "big, great",
-            ),
-            Entry(
-                TemplateName("plural"),
-                Lexeme("stone"),
-                Component(Fusion(Morpheme("apak"))),
-                PartOfSpeech("n"),
-                "stone, pebble",
-            ),
-            Entry(
-                None,
-                Lexeme("gravel"),
-                Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
-                PartOfSpeech("n"),
-                "gravel",
-            ),
-        }
-    )
+    assert parsed_lexicon.entries == {
+        Entry(
+            None,
+            Lexeme("strong"),
+            Component(Fusion(Morpheme("kipu", Rule("era1")))),
+            PartOfSpeech("adj"),
+            "strong, stable",
+        ),
+        Entry(
+            None,
+            Lexeme("big"),
+            Component(Fusion(Morpheme("iki"))),
+            PartOfSpeech("adj"),
+            "big, great",
+        ),
+        Entry(
+            TemplateName("plural"),
+            Lexeme("stone"),
+            Component(Fusion(Morpheme("apak"))),
+            PartOfSpeech("n"),
+            "stone, pebble",
+        ),
+        Entry(
+            None,
+            Lexeme("gravel"),
+            Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
+            PartOfSpeech("n"),
+            "gravel",
+        ),
+    }
 
-    assert frozenset(parsed_lexicon.affixes) == frozenset(
-        {
-            AffixDefinition(
-                stressed=False,
-                affix=Suffix("PL"),
-                era=None,
-                form=Component(Fusion(Morpheme("iki", Rule("era1")))),
-                sources=(Lexeme("big"), Lexeme("pile")),
-                description="plural for inanimate",
+    assert parsed_lexicon.affixes == {
+        AffixDefinition(
+            stressed=False,
+            affix=Suffix("PL"),
+            era=None,
+            form=Component(Fusion(Morpheme("iki", Rule("era1")))),
+            sources=(Lexeme("big"), Lexeme("pile")),
+            description="plural for inanimate",
+        ),
+        AffixDefinition(
+            stressed=False,
+            affix=Suffix("COL"),
+            era=None,
+            form=Component(Fusion(Morpheme(form="ma", era=None))),
+            sources=(),
+            description="collective",
+        ),
+        AffixDefinition(
+            stressed=False,
+            affix=Suffix("LARGE"),
+            era=None,
+            form=Var(
+                prefixes=(),
+                suffixes=(
+                    Suffix("COL"),
+                    Suffix("PL"),
+                ),
             ),
-            AffixDefinition(
-                stressed=False,
-                affix=Suffix("COL"),
-                era=None,
-                form=Component(Fusion(Morpheme(form="ma", era=None))),
-                sources=(),
-                description="collective",
-            ),
-            AffixDefinition(
-                stressed=False,
-                affix=Suffix("LARGE"),
-                era=None,
-                form=Var(
+            sources=(),
+            description="large plural",
+        ),
+        AffixDefinition(
+            stressed=False,
+            affix=Prefix("STONE"),
+            era=None,
+            form=Component(
+                Fusion(
+                    stem=Lexeme(name="stone"),
                     prefixes=(),
-                    suffixes=(
-                        Suffix("COL"),
-                        Suffix("PL"),
-                    ),
-                ),
-                sources=(),
-                description="large plural",
+                    suffixes=(Suffix("COL"),),
+                )
             ),
-            AffixDefinition(
-                stressed=False,
-                affix=Prefix("STONE"),
-                era=None,
-                form=Component(
-                    Fusion(
-                        stem=Lexeme(name="stone"),
-                        prefixes=(),
-                        suffixes=(Suffix("COL"),),
-                    )
-                ),
-                sources=(),
-                description="made of stone",
-            ),
-        }
-    )
+            sources=(),
+            description="made of stone",
+        ),
+    }
 
-    assert frozenset(parsed_lexicon.templates) == frozenset(
-        {
-            Template(
-                TemplateName("plural"),
-                (Var((), ()), Var((), (Suffix("PL"),))),
-            )
-        }
-    )
+    assert parsed_lexicon.templates == {
+        Template(
+            TemplateName("plural"),
+            (Var((), ()), Var((), (Suffix("PL"),))),
+        )
+    }
 
 
 def test_var() -> None:

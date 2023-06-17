@@ -1,5 +1,4 @@
 from pyconlang.domain import (
-    AffixType,
     Component,
     Compound,
     Fusion,
@@ -7,8 +6,6 @@ from pyconlang.domain import (
     Lexeme,
     Morpheme,
     Prefix,
-    ResolvedAffix,
-    ResolvedForm,
     Rule,
     Suffix,
     TemplateName,
@@ -20,17 +17,10 @@ from pyconlang.lexicon import Lexicon
 def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),)))
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-        ),
+    ) == Compound(
+        Component(Morpheme("apak")),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
     assert parsed_lexicon.resolve(
@@ -46,147 +36,70 @@ def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
                 ),
             )
         )
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                None,
-                ResolvedForm(Morpheme("ma", None), ()),
-            ),
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-        ),
+    ) == Compound(
+        Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone"), (), (Suffix("LARGE"),)))
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                None,
-                ResolvedForm(Morpheme("ma", None), ()),
-            ),
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-        ),
+    ) == Compound(
+        Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
-
     assert parsed_lexicon.resolve(
         Compound(
             Component(Fusion(Lexeme("stone"))),
             Joiner.tail(),
             Component(Fusion(Morpheme("baka"))),
         )
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                True, AffixType.SUFFIX, None, ResolvedForm(Morpheme("baka"), ())
-            ),
-        ),
+    ) == Compound(
+        Component(Morpheme("apak")), Joiner.tail(), Component(Morpheme("baka"))
     )
 
     assert parsed_lexicon.resolve(
         Component(Fusion(Morpheme("mana"), (Prefix("STONE"),)))
-    ) == ResolvedForm(
-        stem=Morpheme(form="mana", era=None),
-        prefixes=(
-            ResolvedAffix(
-                stressed=False,
-                type=AffixType.PREFIX,
-                era=None,
-                form=ResolvedForm(
-                    stem=Morpheme(form="apak", era=None),
-                    prefixes=(),
-                    suffixes=(
-                        ResolvedAffix(
-                            stressed=False,
-                            type=AffixType.SUFFIX,
-                            era=None,
-                            form=ResolvedForm(stem=Morpheme(form="ma", era=None)),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-        suffixes=(),
+    ) == Compound(
+        Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
+        Joiner.tail(),
+        Component(Morpheme("mana")),
     )
 
 
 def test_substitute_var(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(
         Var((), ()), Component(Fusion(Morpheme("apak")))
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-    )
+    ) == Component(Morpheme("apak"))
 
     assert parsed_lexicon.substitute(
         Var((), (Suffix("PL"),)), Component(Fusion(Morpheme("apak")))
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-        ),
+    ) == Compound(
+        Component(Morpheme("apak")),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
     assert parsed_lexicon.substitute(
         Var((), ()), Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),)))
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-        ),
+    ) == Compound(
+        Component(Morpheme("apak")),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
     assert parsed_lexicon.substitute(
         Var((), (Suffix("PL"),)),
         Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
-    ) == ResolvedForm(
-        Morpheme("apak"),
-        (),
-        (
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
-            ResolvedAffix(
-                False,
-                AffixType.SUFFIX,
-                Rule("era1"),
-                ResolvedForm(Morpheme("iki", Rule("era1")), ()),
-            ),
+    ) == Compound(
+        Compound(
+            Component(Morpheme("apak")),
+            Joiner.head(Rule("era1")),
+            Component(Morpheme("iki", Rule("era1"))),
         ),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
 
@@ -220,23 +133,14 @@ def test_form(parsed_lexicon: Lexicon) -> None:
 
 
 def test_resolve_definable(parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.resolve_definable(Suffix("PL")) == ResolvedForm(
-        stem=Morpheme(form="iki", era=Rule(name="era1")), prefixes=(), suffixes=()
+    assert parsed_lexicon.resolve_definable(Suffix("PL")) == Component(
+        Morpheme("iki", Rule("era1"))
     )
 
-    assert parsed_lexicon.resolve_definable(Lexeme("gravel")) == ResolvedForm(
-        stem=Morpheme(form="apak", era=None),
-        prefixes=(),
-        suffixes=(
-            ResolvedAffix(
-                stressed=False,
-                type=AffixType.SUFFIX,
-                era=Rule(name="era1"),
-                form=ResolvedForm(
-                    stem=Morpheme(form="iki", era=Rule(name="era1")),
-                ),
-            ),
-        ),
+    assert parsed_lexicon.resolve_definable(Lexeme("gravel")) == Compound(
+        Component(Morpheme("apak")),
+        Joiner.head(Rule("era1")),
+        Component(Morpheme("iki", Rule("era1"))),
     )
 
 
