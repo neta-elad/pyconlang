@@ -1,5 +1,6 @@
 from pyconlang.domain import (
     AffixDefinition,
+    Component,
     Compound,
     Entry,
     Fusion,
@@ -38,7 +39,7 @@ def test_entry() -> None:
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Lexeme("strong"),
-        Fusion(Morpheme("kipu", Rule("era1"))),
+        Component(Fusion(Morpheme("kipu", Rule("era1")))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -48,7 +49,7 @@ def test_entry() -> None:
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),)),
+        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -58,7 +59,7 @@ def test_entry() -> None:
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
-        Fusion(Lexeme("heavy"), (), (Suffix("PL"),)),
+        Component(Fusion(Lexeme("heavy"), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -81,7 +82,7 @@ def test_affix_definition() -> None:
         True,
         Suffix("PL"),
         Rule("era"),
-        Fusion(Morpheme("proto")),
+        Component(Fusion(Morpheme("proto"))),
         (Lexeme("big"), Lexeme("pile")),
         "plural for inanimate",
     )
@@ -92,7 +93,7 @@ def test_affix_definition() -> None:
         False,
         Suffix("PL"),
         None,
-        Fusion(Morpheme("proto", Rule("era"))),
+        Component(Fusion(Morpheme("proto", Rule("era")))),
         (),
         "plural for inanimate",
     )
@@ -114,7 +115,7 @@ def test_affix_definition() -> None:
         False,
         Prefix("COL"),
         None,
-        Fusion(Lexeme("big"), (), (Suffix("PL"),)),
+        Component(Fusion(Lexeme("big"), (), (Suffix("PL"),))),
         (),
         description="collective form",
     )
@@ -126,9 +127,9 @@ def test_affix_definition() -> None:
         Prefix("COL"),
         None,
         Compound(
-            Fusion(Lexeme("big")),
+            Component(Fusion(Lexeme("big"))),
             Joiner.head(),
-            Fusion(Lexeme("pile"), (), (Suffix("PL"),)),
+            Component(Fusion(Lexeme("pile"), (), (Suffix("PL"),))),
         ),
         (),
         description="collective form",
@@ -148,28 +149,28 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             Entry(
                 None,
                 Lexeme("strong"),
-                Fusion(Morpheme("kipu", Rule("era1"))),
+                Component(Fusion(Morpheme("kipu", Rule("era1")))),
                 PartOfSpeech("adj"),
                 "strong, stable",
             ),
             Entry(
                 None,
                 Lexeme("big"),
-                Fusion(Morpheme("iki")),
+                Component(Fusion(Morpheme("iki"))),
                 PartOfSpeech("adj"),
                 "big, great",
             ),
             Entry(
                 TemplateName("plural"),
                 Lexeme("stone"),
-                Fusion(Morpheme("apak")),
+                Component(Fusion(Morpheme("apak"))),
                 PartOfSpeech("n"),
                 "stone, pebble",
             ),
             Entry(
                 None,
                 Lexeme("gravel"),
-                Fusion(Lexeme("stone"), (), (Suffix("PL"),)),
+                Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
                 PartOfSpeech("n"),
                 "gravel",
             ),
@@ -182,7 +183,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 stressed=False,
                 affix=Suffix("PL"),
                 era=None,
-                form=Fusion(Morpheme("iki", Rule("era1"))),
+                form=Component(Fusion(Morpheme("iki", Rule("era1")))),
                 sources=(Lexeme("big"), Lexeme("pile")),
                 description="plural for inanimate",
             ),
@@ -190,7 +191,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 stressed=False,
                 affix=Suffix("COL"),
                 era=None,
-                form=Fusion(Morpheme(form="ma", era=None)),
+                form=Component(Fusion(Morpheme(form="ma", era=None))),
                 sources=(),
                 description="collective",
             ),
@@ -212,10 +213,12 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 stressed=False,
                 affix=Prefix("STONE"),
                 era=None,
-                form=Fusion(
-                    stem=Lexeme(name="stone"),
-                    prefixes=(),
-                    suffixes=(Suffix("COL"),),
+                form=Component(
+                    Fusion(
+                        stem=Lexeme(name="stone"),
+                        prefixes=(),
+                        suffixes=(Suffix("COL"),),
+                    )
                 ),
                 sources=(),
                 description="made of stone",

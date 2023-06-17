@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from .domain import Definable, Describable, Entry, ResolvedForm, Unit
+from .domain import Definable, Describable, Entry, Fusion, ResolvedForm, Word
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
 from .lexicon import Lexicon
@@ -14,13 +14,13 @@ class Translator:
     lexicon: Lexicon = field(default_factory=Lexicon.from_path)
     evolver: Evolver = field(default_factory=Evolver.load)
 
-    def resolve_and_evolve(self, forms: Sequence[Unit]) -> list[Evolved]:
+    def resolve_and_evolve(self, forms: Sequence[Word[Fusion]]) -> list[Evolved]:
         return self.evolver.evolve([self.lexicon.resolve(form) for form in forms])
 
     def evolve_string(self, string: str) -> list[Evolved]:
         return self.resolve_and_evolve(self.parse_sentence(string))
 
-    def gloss_string(self, string: str) -> Sequence[tuple[Evolved, Unit]]:
+    def gloss_string(self, string: str) -> Sequence[tuple[Evolved, Word[Fusion]]]:
         forms = self.parse_sentence(string)
         return list(zip(self.resolve_and_evolve(forms), forms))
 
@@ -53,9 +53,9 @@ class Translator:
 
     def lookup_string(
         self, string: str
-    ) -> Sequence[tuple[Unit, list[tuple[Describable, str]]]]:
+    ) -> Sequence[tuple[Word[Fusion], list[tuple[Describable, str]]]]:
         lexicon = self.lexicon
-        return [(form, lexicon.lookup(form)) for form in self.parse_sentence(string)]
+        return [(word, lexicon.lookup(word)) for word in self.parse_sentence(string)]
 
     def trace_string(self, string: str) -> list[EvolvedWithTrace]:
         return self.evolver.trace(
@@ -76,7 +76,7 @@ class Translator:
         # self.lexicon.save()
 
     @staticmethod
-    def parse_sentence(string: str) -> Sequence[Unit]:
+    def parse_sentence(string: str) -> Sequence[Word[Fusion]]:
         return parse_sentence(string)
 
     @staticmethod

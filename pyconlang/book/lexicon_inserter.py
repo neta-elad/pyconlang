@@ -6,7 +6,16 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from ..domain import Affix, Definable, Entry, Lexeme, Morpheme, ResolvedForm, Unit
+from ..domain import (
+    Affix,
+    Definable,
+    Entry,
+    Fusion,
+    Lexeme,
+    Morpheme,
+    ResolvedForm,
+    Word,
+)
 from ..errors import show_exception
 from ..evolve.domain import Evolved
 from ..translate import Translator
@@ -347,7 +356,7 @@ class LexiconDictionaryProcessor(Preprocessor):
             ", ".join(forms) + f" [&ph{{{entry.form}}}] {sources} {entry.description()}"
         )
 
-    def form_to_morphemes(self, form: Unit) -> list[Morpheme]:
+    def form_to_morphemes(self, form: Word[Fusion]) -> list[Morpheme]:
         return self.inserter.translator.lexicon.resolve(form).to_morphemes()
 
 

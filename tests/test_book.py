@@ -136,6 +136,8 @@ def test_basic_inserter(simple_pyconlang: Path) -> None:
 
     html = read()
 
+    print(html)
+
     assert "abak" in html
     assert "shiga" in html
     assert "abagigi" in html

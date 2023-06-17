@@ -156,6 +156,17 @@ class Fusion:
         )
 
 
+Compoundable = TypeVar("Compoundable", Morpheme, Fusion)
+
+
+@dataclass(eq=True, frozen=True)
+class Component(Generic[Compoundable]):
+    form: Compoundable
+
+    def __str__(self) -> str:
+        return str(self.form)
+
+
 class JoinerStress(Enum):
     HEAD = auto()
     TAIL = auto()
@@ -186,10 +197,10 @@ class Joiner:
 
 
 @dataclass(eq=True, frozen=True)
-class Compound:
-    head: "Unit"
+class Compound(Generic[Compoundable]):
+    head: "Word[Compoundable]"
     joiner: Joiner
-    tail: "Unit"
+    tail: "Word[Compoundable]"
 
     @property
     def stress(self) -> JoinerStress:  # todo: remove
@@ -208,17 +219,21 @@ class Compound:
         return f"[{self.head} {self.joiner} {self.tail}]"
 
 
-Unit = Morpheme | Lexeme | Fusion | Compound
+Word = Component[Compoundable] | Compound[Compoundable]
 
 
-Describable = Unit | Affix
+Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
+
+
+Describable = Lexeme | Affix | Morpheme
+Record = Word[Fusion] | Fusion | Describable
 
 
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: TemplateName | None
     lexeme: Lexeme
-    form: Unit
+    form: Word[Fusion]
     part_of_speech: PartOfSpeech
     definition: str
 
@@ -231,26 +246,30 @@ class AffixDefinition:
     stressed: bool
     affix: Affix
     era: Rule | None
-    form: Unit | Var | None
+    form: Word[Fusion] | Var | None
     sources: tuple[Lexeme, ...]  # or Form - can bare Proto appear?
     description: str
 
     def get_era(self) -> Rule | None:
         if self.era is not None:
             return self.era
-        elif isinstance(self.form, Fusion) and isinstance(self.form.stem, Morpheme):
-            return self.form.stem.era
+        elif (
+            isinstance(self.form, Component)
+            and isinstance(self.form.form, Fusion)
+            and isinstance(self.form.form.stem, Morpheme)
+        ):
+            return self.form.form.stem.era
         else:
             return None
 
     def is_var(self) -> bool:
         return self.form is not None and isinstance(self.form, Var)
 
-    def get_form(self) -> Unit:
+    def get_form(self) -> Word[Fusion]:
         if self.form is not None and not isinstance(self.form, Var):
             return self.form
         elif len(self.sources) == 1:
-            return self.sources[0]
+            return Component(Fusion(self.sources[0]))
         else:
             raise AffixDefinitionMissingForm(self)
 
@@ -304,7 +323,9 @@ class ResolvedAffix:
     form: ResolvedForm
 
     @classmethod
-    def from_compound(cls, compound: Compound, tail: ResolvedForm) -> "ResolvedAffix":
+    def from_compound(
+        cls, compound: Compound[Fusion], tail: ResolvedForm
+    ) -> "ResolvedAffix":
         return cls(
             compound.stress == JoinerStress.TAIL, AffixType.SUFFIX, compound.era, tail
         )

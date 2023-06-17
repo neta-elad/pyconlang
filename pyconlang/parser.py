@@ -11,13 +11,12 @@ from pyparsing import (
     ParserElement,
     ParseResults,
     Suppress,
-    Word,
-    alphanums,
-    pyparsing_unicode,
-    token_map,
 )
+from pyparsing import Word as ParseWord
+from pyparsing import alphanums, pyparsing_unicode, token_map
 
 from .domain import (
+    Component,
     Compound,
     Definable,
     Fusion,
@@ -28,7 +27,7 @@ from .domain import (
     Prefix,
     Rule,
     Suffix,
-    Unit,
+    Word,
 )
 
 T = TypeVar("T")
@@ -57,8 +56,8 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> list[Unit]:
-    return cast(list[Unit], list(sentence.parse_string(string, parse_all=True)))
+def parse_sentence(string: str) -> list[Word[Fusion]]:
+    return cast(list[Word[Fusion]], list(sentence.parse_string(string, parse_all=True)))
 
 
 def parse_definables(string: str) -> list[Definable]:
@@ -86,7 +85,7 @@ ParserElement.set_default_whitespace_chars(" \t")
 lexeme = (
     (
         Suppress("<")
-        - Word(
+        - ParseWord(
             pyparsing_unicode.BasicMultilingualPlane.printables + whitespace,
             exclude_chars="<>",
         )
@@ -96,11 +95,11 @@ lexeme = (
     .set_name("lexeme")
 )
 
-ident = Word(alphanums + "-").set_name("ident")
+ident = ParseWord(alphanums + "-").set_name("ident")
 
 rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule")
 
-unicode_word = Word(
+unicode_word = ParseWord(
     pyparsing_unicode.BasicMultilingualPlane.printables,
     exclude_chars=whitespace + ".@[]",
 ).set_name("unicode_word")
@@ -143,7 +142,11 @@ bracketed_compound = (Suppress("[") - compound - Suppress("]")).set_name(
     "bracketed compound"
 )
 
-fusion_or_bracketed = (fusion ^ bracketed_compound).set_name("fusion or bracketed")
+fusion_component = Group(fusion).set_parse_action(token_map(tokens_map(Component)))
+
+fusion_or_bracketed = (fusion_component ^ bracketed_compound).set_name(
+    "fusion or bracketed"
+)
 
 joined_compound = (
     Group((fusion_or_bracketed + FollowedBy(joiner)) - joiner - fusion_or_bracketed)

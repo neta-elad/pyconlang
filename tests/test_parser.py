@@ -3,6 +3,7 @@ from typing import Any
 from pyparsing import ParserElement
 
 from pyconlang.domain import (
+    Component,
     Compound,
     Fusion,
     Joiner,
@@ -80,37 +81,39 @@ def test_joiner() -> None:
 
 
 def test_compound() -> None:
-    assert parse(compound, "*foo") == Fusion(Morpheme("foo"), ())
+    assert parse(compound, "*foo") == Component(Fusion(Morpheme("foo"), ()))
     assert parse(compound, "*foo +! *bar") == Compound(
-        Fusion(Morpheme("foo"), ()), Joiner.tail(), Fusion(Morpheme("bar"))
+        Component(Fusion(Morpheme("foo"), ())),
+        Joiner.tail(),
+        Component(Fusion(Morpheme("bar"))),
     )
     assert parse(compound, "*foo !+@era *bar") == Compound(
-        Fusion(Morpheme("foo"), ()),
+        Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
-        Fusion(Morpheme("bar")),
+        Component(Fusion(Morpheme("bar"))),
     )
     assert parse(compound, "[*foo !+@era *bar]") == Compound(
-        Fusion(Morpheme("foo"), ()),
+        Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
-        Fusion(Morpheme("bar")),
+        Component(Fusion(Morpheme("bar"))),
     )
     assert parse(compound, "[*foo +!@era *bar] !+ *baz") == Compound(
         Compound(
-            Fusion(Morpheme("foo"), ()),
+            Component(Fusion(Morpheme("foo"), ())),
             Joiner.tail(Rule("era")),
-            Fusion(Morpheme("bar")),
+            Component(Fusion(Morpheme("bar"))),
         ),
         Joiner.head(),
-        Fusion(Morpheme("baz")),
+        Component(Fusion(Morpheme("baz"))),
     )
 
 
 def test_sentence() -> None:
     assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
-        Fusion(Morpheme("aka")),
-        Fusion(Lexeme("strong"), ()),
-        Fusion(Lexeme("with space"), (Prefix("COL"),), ()),
-        Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),)),
+        Component(Fusion(Morpheme("aka"))),
+        Component(Fusion(Lexeme("strong"), ())),
+        Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+        Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
     )
 
 

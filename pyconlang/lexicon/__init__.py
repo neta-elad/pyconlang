@@ -7,6 +7,7 @@ from ..checksum import checksum
 from ..domain import (
     Affix,
     AffixDefinition,
+    Component,
     Compound,
     Definable,
     Describable,
@@ -14,12 +15,13 @@ from ..domain import (
     Fusion,
     Lexeme,
     Morpheme,
+    Record,
     ResolvedAffix,
     ResolvedForm,
     Template,
     TemplateName,
-    Unit,
     Var,
+    Word,
 )
 from ..parser import continue_lines
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
@@ -112,37 +114,49 @@ class Lexicon:
     def resolve_affixes(self, affixes: tuple[Affix, ...]) -> tuple[ResolvedAffix, ...]:
         return tuple(chain(*[self.resolve_affix(affix) for affix in affixes]))
 
-    def resolve(self, unit: Unit) -> ResolvedForm:
-        match unit:
-            case Morpheme():
-                return ResolvedForm(unit)
-            case Lexeme():
-                return self.resolve(self.get_entry(unit).form)
-            case Fusion():
-                return self.resolve_fusion(unit)
+    def resolve(self, word: Word[Fusion]) -> ResolvedForm:
+        match word:
+            case Component():
+                return self.resolve_fusion(word.form)
             case Compound():
-                return self.resolve_compound(unit)
+                return self.resolve_compound(word)
+
+    def resolve_any(
+        self, form: Word[Fusion] | Fusion | Morpheme | Lexeme
+    ) -> ResolvedForm:
+        match form:
+            case Fusion():
+                return self.resolve_fusion(form)
+            case Morpheme():
+                return ResolvedForm(form)
+            case Lexeme():
+                return self.resolve(self.get_entry(form).form)
+            case _:
+                return self.resolve(form)
 
     def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
         prefixes = self.resolve_affixes(fusion.prefixes)
         suffixes = self.resolve_affixes(fusion.suffixes)
-        return self.resolve(fusion.stem).extend(prefixes, suffixes)
+        return self.resolve_any(fusion.stem).extend(prefixes, suffixes)
 
-    def resolve_compound(self, compound: Compound) -> ResolvedForm:
+    def resolve_compound(self, compound: Compound[Fusion]) -> ResolvedForm:
         head = self.resolve(compound.head)
         tail = self.resolve(compound.tail)
         tail_as_affix = ResolvedAffix.from_compound(compound, tail)
         return head.extend_any(tail_as_affix)
 
     def resolve_with_affixes(
-        self, form: Unit, prefixes: tuple[Affix, ...], suffixes: tuple[Affix, ...]
+        self,
+        form: Word[Fusion],
+        prefixes: tuple[Affix, ...],
+        suffixes: tuple[Affix, ...],
     ) -> ResolvedForm:
         resolved_prefixes = self.resolve_affixes(prefixes)
         resolved_suffixes = self.resolve_affixes(suffixes)
         resolved = self.resolve(form)
         return resolved.extend(resolved_prefixes, resolved_suffixes)
 
-    def substitute(self, var: Var, form: Unit) -> ResolvedForm:
+    def substitute(self, var: Var, form: Word[Fusion]) -> ResolvedForm:
         return self.resolve_with_affixes(form, var.prefixes, var.suffixes)
 
     def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:
@@ -160,7 +174,7 @@ class Lexicon:
             self.substitute(var, entry.form) for var in self.get_vars(entry.template)
         ]
 
-    def form(self, record: Definable) -> Unit:
+    def form(self, record: Definable) -> Word[Fusion]:
         match record:
             case Affix():
                 return self.get_affix(record).get_form()
@@ -179,7 +193,7 @@ class Lexicon:
             case Lexeme():
                 return self.get_entry(record).description()
 
-    def lookup(self, record: Describable) -> list[tuple[Describable, str]]:
+    def lookup(self, record: Record) -> list[tuple[Describable, str]]:
         match record:
             case Affix():
                 return self.singleton_lookup(record, self.get_affix(record).description)
@@ -194,8 +208,10 @@ class Lexicon:
                 )
             case Compound():
                 return self.lookup(record.head) + self.lookup(record.tail)
+            case Component():
+                return self.lookup(record.form)
 
-    def lookup_records(self, *records: Describable) -> list[tuple[Describable, str]]:
+    def lookup_records(self, *records: Record) -> list[tuple[Describable, str]]:
         return list(chain(*map(self.lookup, records)))
 
     @staticmethod
