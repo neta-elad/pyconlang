@@ -1,7 +1,8 @@
 from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Generic, TypeVar
+from functools import reduce
+from typing import Generic, TypeVar, cast
 
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .unicode import combine
@@ -240,8 +241,14 @@ class AffixDefinition:
     def get_form(self) -> Word[Fusion]:
         if self.form is not None and not isinstance(self.form, Var):
             return self.form
-        elif len(self.sources) == 1:  # todo: should be done differently with compounds
-            return Component(Fusion(self.sources[0]))
+        elif self.sources:
+            return reduce(
+                lambda head, tail: Compound(head, Joiner.head(), tail),  # todo: era?
+                map(
+                    lambda source: cast(Word[Fusion], Component(Fusion(source))),
+                    self.sources,
+                ),
+            )
         else:
             raise AffixDefinitionMissingForm(self)
 

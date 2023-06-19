@@ -94,36 +94,3 @@ class AffixArranger:
 
     def rearrange(self, form: ResolvedForm) -> ResolvedForm:
         return rearrange(form, self.ranker)
-
-    #     prefixes = form.prefixes
-    #     suffixes = form.suffixes
-    #
-    #     affixes = []
-    #
-    #     i = j = 0
-    #     while i < len(prefixes) and j < len(suffixes):
-    #         prefix_era = prefixes[i].era_name()
-    #         suffix_era = suffixes[j].era_name()
-    #
-    #         if self.rules[prefix_era] <= self.rules[suffix_era]:
-    #             affixes.append(prefixes[i])
-    #             i += 1
-    #         else:
-    #             affixes.append(suffixes[j])
-    #             j += 1
-    #
-    #     while i < len(prefixes):
-    #         affixes.append(prefixes[i])
-    #         i += 1
-    #
-    #     while j < len(suffixes):
-    #         affixes.append(suffixes[j])
-    #         j += 1
-    #
-    #     return ArrangedForm(
-    #         form.stem, tuple(self.rearrange_affix(affix) for affix in affixes)
-    #     )
-    #
-    # def rearrange_affix(self, affix: ResolvedAffix) -> ArrangedAffix:
-    #     form = self.rearrange(affix.form)
-    #     return ArrangedAffix(affix.stressed, affix.type, affix.era, form)

@@ -16,6 +16,14 @@ from pyconlang.lexicon import Lexicon
 
 def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),)))
+    ) == Compound(
+        Component(Morpheme("apak")),
+        Joiner.head(),
+        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+    )
+
+    assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),)))
     ) == Compound(
         Component(Morpheme("apak")),

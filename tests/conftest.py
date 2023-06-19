@@ -40,6 +40,10 @@ def sample_lexicon() -> str:
         affix .LARGE $.COL.PL large plural
         affix STONE. <stone>.COL made of stone
         
+        entry <pile> *ma (n.) pile
+        
+        affix .DIST-PL (<big> <pile>) distributive plural 
+        
         entry <big> *iki (adj.) big, great
     
         entry 

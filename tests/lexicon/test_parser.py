@@ -173,6 +173,13 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             PartOfSpeech("n"),
             "gravel",
         ),
+        Entry(
+            None,
+            Lexeme("pile"),
+            Component(Fusion(Morpheme("ma"))),
+            PartOfSpeech("n"),
+            "pile",
+        ),
     }
 
     assert parsed_lexicon.affixes == {
@@ -219,6 +226,14 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             ),
             sources=(),
             description="made of stone",
+        ),
+        AffixDefinition(
+            stressed=False,
+            affix=Suffix("DIST-PL"),
+            era=None,
+            form=None,
+            sources=(Lexeme("big"), Lexeme("pile")),
+            description="distributive plural",
         ),
     }
 
