@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from unidecode import unidecode
 
-from ..domain import ResolvedForm
-
 
 @dataclass(eq=True, frozen=True)
 class Evolved:
@@ -14,6 +12,3 @@ class Evolved:
     @property
     def simple(self) -> str:
         return unidecode(self.modern)
-
-
-ArrangedForm = ResolvedForm

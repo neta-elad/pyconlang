@@ -1,10 +1,10 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from ..domain import Component, Compound, Joiner, JoinerStress
+from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
 from ..metadata import Metadata
 from ..unicode import remove_primary_stress
-from .domain import ArrangedForm, Evolved
+from .domain import Evolved
 from .errors import BadAffixation
 
 Cache = dict["Query", Evolved]
@@ -136,7 +136,7 @@ class QueryWalker:
 
 @dataclass
 class Batcher:
-    cache: dict[ArrangedForm, Query] = field(default_factory=dict)
+    cache: dict[ResolvedForm, Query] = field(default_factory=dict)
 
     @staticmethod
     def order_in_layers(queries: list[Query]) -> list[list[Query]]:
@@ -155,7 +155,7 @@ class Batcher:
 
         return segments
 
-    def build_query_uncached(self, form: ArrangedForm) -> Query:
+    def build_query_uncached(self, form: ResolvedForm) -> Query:
         match form:
             case Component():
                 return ComponentQuery(form.form.form, start=form.form.era_name())
@@ -174,7 +174,7 @@ class Batcher:
 
                 return CompoundQuery(head, form.joiner, tail)
 
-    def build_query(self, form: ArrangedForm) -> Query:
+    def build_query(self, form: ResolvedForm) -> Query:
         if form in self.cache:
             return self.cache[form]
 
@@ -185,9 +185,9 @@ class Batcher:
 
     def build_and_order(
         self,
-        forms: Sequence[ArrangedForm],
-    ) -> tuple[Mapping[ArrangedForm, Query], list[list[Query]]]:
-        mapping: dict[ArrangedForm, Query] = {}
+        forms: Sequence[ResolvedForm],
+    ) -> tuple[Mapping[ResolvedForm, Query], list[list[Query]]]:
+        mapping: dict[ResolvedForm, Query] = {}
         queries: list[Query] = []
 
         for form in forms:

@@ -243,7 +243,7 @@ class AffixDefinition:
             return self.form
         elif self.sources:
             return reduce(
-                lambda head, tail: Compound(head, Joiner.head(), tail),  # todo: era?
+                lambda head, tail: Compound(head, Joiner.head(), tail),
                 map(
                     lambda source: cast(Word[Fusion], Component(Fusion(source))),
                     self.sources,
