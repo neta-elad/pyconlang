@@ -270,6 +270,3 @@ class Template:
     @classmethod
     def from_args(cls, name: TemplateName, *var_args: Var) -> "Template":
         return cls(name, var_args)
-
-
-T = TypeVar("T")

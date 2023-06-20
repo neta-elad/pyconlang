@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from pathlib import Path
 from typing import cast
 
 from pyparsing import (
@@ -6,6 +7,7 @@ from pyparsing import (
     Group,
     Opt,
     ParserElement,
+    QuotedString,
     Regex,
     Suppress,
     Word,
@@ -33,11 +35,11 @@ def make_diagrams() -> None:
 
 def parse_lexicon(
     lines: Iterable[str],
-) -> Iterable[Entry | AffixDefinition | Template]:
+) -> Iterable[Entry | AffixDefinition | Template | Path]:
     return [
-        cast(Entry | AffixDefinition | Template, parsed_record[0])
+        cast(Entry | AffixDefinition | Template | Path, parsed_line[0])
         for line in lines
-        if (parsed_record := lexicon_line.parse_string(line, parse_all=True))
+        if (parsed_line := lexicon_line.parse_string(line, parse_all=True))
     ]
 
 
@@ -112,7 +114,19 @@ record = (entry ^ affix_definition ^ template).set_name("record")
 
 comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 
-lexicon_line = (Opt(record) + Opt(comment)).set_name("lexicon line")
+double_quoted_string = QuotedString(quote_char='"', esc_char="\\")
+single_quoted_string = QuotedString(quote_char="'", esc_char="\\")
+quoted_string = double_quoted_string ^ single_quoted_string
+
+include = (
+    (Suppress("include") - quoted_string)
+    .set_parse_action(token_map(Path))
+    .set_name("include")
+)
+
+meaningful_segment = record ^ include
+
+lexicon_line = (Opt(meaningful_segment) + Opt(comment)).set_name("lexicon line")
 
 lexicon = ((lexicon_line + Suppress("\n"))[...]).set_name(  # - Opt(Suppress("\n"))
     "lexicon"

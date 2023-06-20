@@ -44,15 +44,49 @@ class Lexicon:
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
-        return cls.from_string(path.read_text())
+        return cls.from_string(path.read_text(), path.parent)
 
     @classmethod
-    def from_string(cls, string: str) -> "Lexicon":
-        return cls.from_lines(string.splitlines())
+    def from_string(cls, string: str, parent: Path = Path()) -> "Lexicon":
+        return cls.from_lines(string.splitlines(), parent)
 
     @classmethod
-    def from_lines(cls, lines: Iterable[str]) -> "Lexicon":
-        return cls.from_iterable(parse_lexicon(continue_lines(lines)))
+    def from_lines(cls, lines: Iterable[str], parent: Path) -> "Lexicon":
+        return cls.from_iterable(
+            cls.resolve_paths(parse_lexicon(continue_lines(lines)), parent)
+        )
+
+    @classmethod
+    def resolve_paths(
+        cls, lines: Iterable[Entry | AffixDefinition | Template | Path], parent: Path
+    ) -> Iterable[Entry | AffixDefinition | Template]:
+        return (
+            definition
+            for line in lines
+            for definition in cls.resolve_line(line, parent)
+        )
+
+    @classmethod
+    def resolve_if_relative(cls, path: Path, parent: Path) -> Path:
+        if path.is_absolute():
+            return path
+
+        return parent / path
+
+    @classmethod
+    def resolve_line(
+        cls, line: Entry | AffixDefinition | Template | Path, parent: Path
+    ) -> Iterable[Entry | AffixDefinition | Template]:
+        match line:
+            case Path():
+                path = cls.resolve_if_relative(line, parent)
+                return cls.resolve_paths(
+                    parse_lexicon(continue_lines(path.read_text().splitlines())),
+                    path.parent,
+                )
+
+            case _:
+                return [line]
 
     @classmethod
     def from_iterable(

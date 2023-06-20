@@ -1,3 +1,6 @@
+from inspect import cleandoc
+from pathlib import Path
+
 from pyconlang.domain import (
     AffixDefinition,
     Component,
@@ -20,8 +23,10 @@ from pyconlang.lexicon.parser import (
     affix_definition,
     comment,
     entry,
+    include,
     lexical_sources,
     part_of_speech,
+    quoted_string,
     template_name,
     var,
 )
@@ -255,3 +260,45 @@ def test_var() -> None:
             Suffix("COL"),
         ),
     )
+
+
+def test_include() -> None:
+    assert parse(quoted_string, '"hello"') == "hello"
+    assert parse(quoted_string, "'world'") == "world"
+
+    assert parse(include, "include 'a/relative/path'") == Path("a/relative/path")
+    assert parse(include, "include '/an/relative/path'") == Path("/an/relative/path")
+
+
+def test_include_mechanism(
+    tmpdir: Path, sample_lexicon: str, parsed_lexicon: Lexicon
+) -> None:
+    main = tmpdir / "main.pycl"
+    subdir = tmpdir / "subdir"
+    subdir.mkdir(parents=True, exist_ok=True)
+    intermediate = subdir / "inter.pycl"
+    included = subdir / "included.pycl"
+
+    main.write_text(
+        cleandoc(
+            """
+    include "subdir/inter.pycl"
+    """
+        )
+    )
+
+    intermediate.write_text(
+        cleandoc(
+            """
+    include "./included.pycl"
+    """
+        )
+    )
+
+    included.write_text(sample_lexicon)
+
+    lexicon = Lexicon.from_path(main)
+
+    assert len(lexicon.entries) == len(parsed_lexicon.entries)
+    assert len(lexicon.affixes) == len(parsed_lexicon.affixes)
+    assert len(lexicon.templates) == len(parsed_lexicon.templates)
