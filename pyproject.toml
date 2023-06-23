@@ -47,7 +47,7 @@ include = ["pyconlang*"]
 version = { attr = "pyconlang.__version__" }
 
 [tool.setuptools.package-data]
-pyconlang = ["data/**/*"]
+pyconlang = ["assets/**/*"]
 
 [tool.mypy]
 mypy_path = "stubs"
