@@ -1,7 +1,7 @@
 from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.domain import Evolved
-from pyconlang.evolve.tracer import TraceLine
+from pyconlang.lexurgy.domain import TraceLine
 from pyconlang.metadata import Metadata
 
 

@@ -15,11 +15,12 @@ from .. import PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
+from ..lexurgy.domain import TraceLine
+from ..lexurgy.tracer import parse_trace_lines
 from .arrange import AffixArranger
 from .batch import Batcher, Cache, ComponentQuery, CompoundQuery, Query
 from .domain import Evolved
 from .errors import LexurgyError
-from .tracer import TraceLine, parse_trace_lines
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"

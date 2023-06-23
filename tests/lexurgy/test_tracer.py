@@ -1,6 +1,7 @@
 from inspect import cleandoc
 
-from pyconlang.evolve.tracer import TraceLine, group_trace_lines, parse_trace_lines
+from pyconlang.lexurgy.domain import TraceLine
+from pyconlang.lexurgy.tracer import group_trace_lines, parse_trace_lines
 
 
 def test_grouping() -> None:
