@@ -5,17 +5,21 @@ import string
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
-from itertools import chain
 from pathlib import Path
-from subprocess import run
-from time import time
 from unicodedata import normalize
 
 from .. import PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
-from ..lexurgy.domain import TraceLine
+from ..lexurgy import client
+from ..lexurgy.client import LexurgyClient
+from ..lexurgy.domain import (
+    LexurgyErrorResponse,
+    LexurgyRequest,
+    LexurgyResponse,
+    TraceLine,
+)
 from ..lexurgy.tracer import parse_trace_lines
 from .arrange import AffixArranger
 from .batch import Batcher, Cache, ComponentQuery, CompoundQuery, Query
@@ -58,6 +62,10 @@ class Evolver:
     @cached_property
     def arranger(self) -> AffixArranger:
         return AffixArranger.from_path(CHANGES_PATH)
+
+    @cached_property
+    def lexurgy(self) -> LexurgyClient:
+        return client()  # .value
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -188,67 +196,41 @@ class Evolver:
         if not words:
             return [], {}
 
-        base_name = f"words-{time():.0f}"
-
-        self.evolve_directory.mkdir(parents=True, exist_ok=True)
-
-        input_words = self.evolve_directory / f"{base_name}.wli"
-        input_words.write_text("\n".join(words))
-
-        output_words = self.evolve_directory / f"{base_name}_ev.wli"
-        output_words.unlink(missing_ok=True)
-
-        phonetic_words = self.evolve_directory / f"{base_name}_phonetic.wli"
-        phonetic_words.unlink(missing_ok=True)
-
-        trace_file = self.evolve_directory / f"{base_name}_trace.wli"
-        trace_file.unlink(missing_ok=True)
-
-        args = [
-            "sh",
-            str(LEXURGY_PATH),
-            "sc",
-            str(CHANGES_PATH),
-            str(input_words),
-            "-m",
-        ]
-
-        if start is not None:
-            args.append("-a")
-            args.append(start)
-
-        if end is not None:
-            args.append("-b")
-            args.append(end)
-
+        debug_words = []
         if trace:
-            args.extend(chain(*zip(["-t"] * len(words), words)))
+            debug_words = words
 
-        result = run(args, capture_output=True, text=True)
+        request = LexurgyRequest(words, start, end, debug_words)
 
-        if result.returncode != 0:
-            # todo too heuristic?
-            stdout = result.stdout.strip().splitlines()
-            if len(stdout) > 0:
-                raise LexurgyError(result.stdout.strip().splitlines()[-1])
-            else:
-                raise LexurgyError(result.stderr)
+        response = self.lexurgy.roundtrip(request)
 
-        moderns = normalize("NFD", output_words.read_text().strip()).split("\n")
+        match response:
+            case LexurgyErrorResponse():
+                raise LexurgyError(response.message)
 
-        if phonetic_words.exists():
-            phonetics = normalize("NFD", phonetic_words.read_text()).strip().split("\n")
-        else:
-            phonetics = moderns
+            case LexurgyResponse():
+                moderns = [normalize("NFD", word) for word in response.words]
 
-        trace_lines: Mapping[str, list[TraceLine]] = {}
-        if trace:
-            trace_lines = parse_trace_lines(trace_file.read_text(), words[0])
+                if "phonetic" in response.intermediates:
+                    phonetics = [
+                        normalize("NFD", word)
+                        for word in response.intermediates["phonetic"]
+                    ]
+                else:
+                    phonetics = moderns
 
-        return [
-            Evolved(proto, modern, phonetic)
-            for proto, modern, phonetic in zip(words, moderns, phonetics)
-        ], trace_lines
+                assert len(phonetics) == len(moderns)
+
+                trace_lines: Mapping[str, list[TraceLine]] = {}
+                if trace:
+                    trace_lines = parse_trace_lines(
+                        "\n".join(response.trace_lines), words[0]
+                    )
+
+                return [
+                    Evolved(proto, modern, phonetic)
+                    for proto, modern, phonetic in zip(words, moderns, phonetics)
+                ], trace_lines
 
     def cleanup(self) -> None:
         if self.evolve_directory.exists():

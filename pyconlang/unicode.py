@@ -1,5 +1,3 @@
-from typing import Optional
-
 from wcwidth import wcswidth
 
 from .metadata import Metadata
@@ -23,7 +21,7 @@ def center(string: str, width: int, fill_char: str = " ") -> str:
     return fill_char * add_left + string + fill_char * add_right
 
 
-def combine(head: str, tail: str, syllable_break: Optional[str] = None) -> str:
+def combine(head: str, tail: str, syllable_break: str | None = None) -> str:
     if syllable_break is None:
         syllable_break = default_syllable_break()
 
