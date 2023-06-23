@@ -1,8 +1,10 @@
 from collections.abc import Generator, Mapping, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Self
 
+from . import LEXICON_PATH
+from .cache import path_cached_property
 from .domain import Definable, Describable, Entry, Fusion, ResolvedForm, Word
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
@@ -13,14 +15,16 @@ from .parser import parse_definables, parse_sentence
 @dataclass
 class Translator:
     evolver: Evolver
-    lexicon_checksum: bytes = field(default_factory=Lexicon.checksum)
-    lexicon: Lexicon = field(default_factory=Lexicon.from_path)
 
     @classmethod
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
         with Evolver.new() as evolver:
             yield cls(evolver)
+
+    @path_cached_property(LEXICON_PATH)
+    def lexicon(self) -> Lexicon:
+        return Lexicon.from_path(LEXICON_PATH)
 
     def resolve_and_evolve(self, forms: Sequence[Word[Fusion]]) -> list[Evolved]:
         return self.evolver.evolve([self.lexicon.resolve(form) for form in forms])
@@ -69,16 +73,6 @@ class Translator:
         return self.evolver.trace(
             [self.lexicon.resolve(form) for form in self.parse_sentence(string)]
         )
-
-    def validate_cache(self) -> bool:
-        # evolver_cache = self.evolver.validate_cache()
-        # todo: cache
-
-        if Lexicon.checksum() != self.lexicon_checksum:
-            self.lexicon = Lexicon.from_path()
-            self.lexicon_checksum = Lexicon.checksum()
-            return False
-        return True
 
     def save(self) -> None:
         # todo: cache

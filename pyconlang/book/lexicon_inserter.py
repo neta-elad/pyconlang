@@ -9,6 +9,8 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from .. import CHANGES_PATH, LEXICON_PATH
+from ..cache import path_cached_property
 from ..domain import (
     Definable,
     Entry,
@@ -20,14 +22,12 @@ from ..domain import (
     Suffix,
     Word,
 )
-from ..errors import show_exception
 from ..evolve.domain import Evolved
 from ..translate import Translator
 
 
 class LexiconInserter(Extension):
     translator: Translator
-    valid_cache: bool
 
     @classmethod
     @contextmanager
@@ -81,13 +81,6 @@ class LexiconInserter(Extension):
         md.preprocessors.register(
             LexiconDictionaryProcessor(md, self), "lexicon-dictionary", 30
         )
-
-    def reset(self) -> None:
-        try:
-            self.valid_cache = self.translator.validate_cache()
-        except Exception as e:
-            print("Could not reload translator.")
-            print(show_exception(e))
 
     def save(self) -> None:
         self.translator.save()
@@ -336,18 +329,16 @@ class LexiconDictionaryProcessor(Preprocessor):
         for line in lines:
             if line.strip() == "!dictionary":
                 new_lines.append("!group")
-                new_lines.extend(self.dictionary())
+                new_lines.extend(self.dictionary)
                 new_lines.append("!group")
             else:
                 new_lines.append(line)
 
         return new_lines
 
+    @path_cached_property(CHANGES_PATH, LEXICON_PATH)
     def dictionary(self) -> list[str]:
-        if not self.inserter.valid_cache:
-            self.cache = self.build_cache()
-
-        return self.cache
+        return self.build_cache()
 
     def build_cache(self) -> list[str]:
         return list(map(self.show_entry, self.inserter.translator.lexicon.entries))

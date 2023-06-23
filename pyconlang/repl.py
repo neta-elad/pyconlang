@@ -81,7 +81,6 @@ class ReplSession(Cmd):
 
                 if self.watcher.changed:
                     self.watcher.changed = False
-                    self.translator.validate_cache()
 
                 if not line:
                     continue

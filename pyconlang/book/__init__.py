@@ -94,7 +94,7 @@ class Handler(PatternMatchingEventHandler):
     threads: list[Thread]
 
     def __init__(self, compiler: Compiler, silent: bool = False):
-        super().__init__(["*.md", "*.lsc", "template.html", "lexicon.pycl"])
+        super().__init__(["*.md", "*.lsc", "template.html", "*.pycl"])
         self.compiler = compiler
         self.silent = silent
         self.last_run = 0.0

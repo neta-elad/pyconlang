@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 
+from pyconlang import LEXICON_PATH
+
 from ..checksum import checksum
 from ..domain import (
     Affix,
@@ -28,8 +30,6 @@ from ..domain import (
 from ..parser import continue_lines
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
-
-LEXICON_PATH = Path("lexicon.pycl")
 
 
 @dataclass
