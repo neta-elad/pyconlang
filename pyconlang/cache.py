@@ -2,11 +2,12 @@ import pickle
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cached_property
+from itertools import chain
 from multiprocessing import RLock
 from multiprocessing.synchronize import RLock as RLockClass
 from pathlib import Path
 from types import GenericAlias, TracebackType
-from typing import Generic, Optional, ParamSpec, Self, Type, TypeVar, cast
+from typing import Generic, Iterable, Optional, ParamSpec, Self, Type, TypeVar, cast
 
 from . import PYCONLANG_PATH
 from .checksum import checksum
@@ -19,6 +20,21 @@ _K = TypeVar("_K")
 _V = TypeVar("_V")
 _P = ParamSpec("_P")
 
+Glob = tuple[Path, str]
+
+AnyPath = Path | Glob | str
+
+
+def resolve_any_path(path: AnyPath) -> Iterable[Path]:
+    match path:
+        case Path():
+            return (path,)
+        case str():
+            return Path().glob(path)
+        case _:
+            parent, pattern = path
+            return parent.glob(pattern)
+
 
 class _NotFound:
     pass
@@ -26,12 +42,15 @@ class _NotFound:
 
 @dataclass
 class PathCachedFunc(Generic[_P, _T]):
-    paths: list[Path]
+    paths: list[AnyPath]
     func: Callable[_P, _T]
-    st_mtimes: list[float] | None = field(default=None)
-    checksums: list[bytes] | None = field(default=None)
+    st_mtimes: dict[Path, float] | None = field(default=None)
+    checksums: dict[Path, bytes] | None = field(default=None)
     value: _T | type[_NotFound] = field(default=_NotFound)
     lock: RLockClass = field(default_factory=RLock, init=False)
+
+    def all_paths(self) -> list[Path]:
+        return list(chain(*(resolve_any_path(path) for path in self.paths)))
 
     def up_to_date(self) -> bool:
         if self.checksums is None or self.st_mtimes is None:
@@ -39,19 +58,20 @@ class PathCachedFunc(Generic[_P, _T]):
 
         modified = [
             path
-            for st_mtime, path in zip(self.st_mtimes, self.paths)
-            if st_mtime < path.stat().st_mtime
+            for path in self.all_paths()
+            if self.st_mtimes.get(path, 0) < path.stat().st_mtime
         ]
 
-        for cached_checksum, path in zip(self.checksums, modified):
-            if cached_checksum != checksum(path):
+        for path in modified:
+            if self.checksums.get(path) != checksum(path):
                 return False
 
         return True
 
     def update(self) -> None:
-        self.st_mtimes = [path.stat().st_mtime for path in self.paths]
-        self.checksums = [checksum(path) for path in self.paths]
+        paths = self.all_paths()
+        self.st_mtimes = {path: path.stat().st_mtime for path in paths}
+        self.checksums = {path: checksum(path) for path in paths}
 
     def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
         if not self.up_to_date():
@@ -69,7 +89,7 @@ class PathCachedFunc(Generic[_P, _T]):
 class PathCachedProperty(Generic[_C, _T]):
     func: PathCachedFunc[[_C], _T]
 
-    def __init__(self, paths: list[Path], func: Callable[[_C], _T]) -> None:
+    def __init__(self, paths: list[AnyPath], func: Callable[[_C], _T]) -> None:
         self.func = PathCachedFunc(paths, func)
         self.__doc__ = func.__doc__
 
@@ -81,7 +101,7 @@ class PathCachedProperty(Generic[_C, _T]):
 
 
 def path_cached_property(
-    *paths: Path,
+    *paths: AnyPath,
 ) -> Callable[[Callable[[_C], _T]], PathCachedProperty[_C, _T]]:
     def wrap(func: Callable[[_C], _T]) -> PathCachedProperty[_C, _T]:
         return PathCachedProperty(list(paths), func)
@@ -92,7 +112,7 @@ def path_cached_property(
 @dataclass
 class PersistentDict(Generic[_K, _V]):
     name: str
-    paths: list[Path]
+    paths: list[AnyPath]
 
     @cached_property
     def cache_path(self) -> Path:

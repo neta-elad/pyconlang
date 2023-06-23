@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Self, cast
 from unicodedata import normalize
 
-from .. import CHANGES_PATH, PYCONLANG_PATH
+from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
 from ..cache import PersistentDict, path_cached_property
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
@@ -69,7 +69,7 @@ class Evolver:
         ) as trace_cache:
             yield cls(query_cache, trace_cache)
 
-    @path_cached_property(CHANGES_PATH)
+    @path_cached_property(CHANGES_PATH, CHANGES_GLOB)
     def arranger(self) -> AffixArranger:
         return AffixArranger.from_path(CHANGES_PATH)
 

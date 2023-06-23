@@ -7,7 +7,7 @@ from pyconlang.cache import PersistentDict, path_cached_property
 
 
 def test_path_cached_property(tmpdir: Path) -> None:
-    path_a = tmpdir / "a.txt"
+    path_a = tmpdir / "a.md"
     path_a.write_text("hello")
     path_b = tmpdir / "b.txt"
     path_b.write_text("hi")
@@ -16,7 +16,7 @@ def test_path_cached_property(tmpdir: Path) -> None:
     class A:
         counter: int = field(default=0)
 
-        @path_cached_property(path_a, path_b)
+        @path_cached_property("*.txt", path_a)
         def test(self) -> int:
             self.counter += 1
             return self.counter
@@ -44,7 +44,7 @@ class SettableInt(Protocol):
 
 
 def run_test(name: str, paths: list[Path], run: int, return_value: SettableInt) -> None:
-    with cast(PersistentDict[str, int], PersistentDict(name, paths)) as my_dict:
+    with cast(PersistentDict[str, int], PersistentDict(name, list(paths))) as my_dict:
         assert return_value.value == 0
 
         if run == 0:

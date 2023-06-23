@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Self
 
-from . import LEXICON_PATH
+from . import LEXICON_GLOB, LEXICON_PATH
 from .cache import path_cached_property
 from .domain import Definable, Describable, Fusion, ResolvedForm, Word
 from .evolve import EvolvedWithTrace, Evolver
@@ -22,7 +22,7 @@ class Translator:
         with Evolver.new() as evolver:
             yield cls(evolver)
 
-    @path_cached_property(LEXICON_PATH)
+    @path_cached_property(LEXICON_PATH, LEXICON_GLOB)
     def lexicon(self) -> Lexicon:
         return Lexicon.from_path(LEXICON_PATH)
 

@@ -9,7 +9,7 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from .. import CHANGES_PATH, LEXICON_PATH
+from .. import CHANGES_GLOB, LEXICON_GLOB, LEXICON_PATH, CHANGES_PATH
 from ..cache import path_cached_property
 from ..domain import (
     Definable,
@@ -333,7 +333,7 @@ class LexiconDictionaryProcessor(Preprocessor):
 
         return new_lines
 
-    @path_cached_property(CHANGES_PATH, LEXICON_PATH)
+    @path_cached_property(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
     def dictionary(self) -> list[str]:
         return self.build_cache()
 

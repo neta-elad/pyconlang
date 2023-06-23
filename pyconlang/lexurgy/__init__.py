@@ -1,7 +1,7 @@
 from subprocess import PIPE, Popen
 from typing import IO
 
-from .. import CHANGES_PATH, PYCONLANG_PATH
+from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..cache import path_cached_property
 from .domain import (
@@ -15,7 +15,7 @@ LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 
 
 class LexurgyClient:
-    @path_cached_property(CHANGES_PATH)
+    @path_cached_property(CHANGES_PATH, CHANGES_GLOB)
     def popen(self) -> Popen[str]:
         args = [
             "sh",
