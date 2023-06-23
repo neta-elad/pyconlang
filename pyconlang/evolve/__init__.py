@@ -12,8 +12,7 @@ from .. import PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
-from ..lexurgy import client
-from ..lexurgy.client import LexurgyClient
+from ..lexurgy import LexurgyClient
 from ..lexurgy.domain import (
     LexurgyErrorResponse,
     LexurgyRequest,
@@ -65,7 +64,7 @@ class Evolver:
 
     @cached_property
     def lexurgy(self) -> LexurgyClient:
-        return client()  # .value
+        return LexurgyClient()
 
     @classmethod
     def load(cls) -> "Evolver":
@@ -223,9 +222,7 @@ class Evolver:
 
                 trace_lines: Mapping[str, list[TraceLine]] = {}
                 if trace:
-                    trace_lines = parse_trace_lines(
-                        "\n".join(response.trace_lines), words[0]
-                    )
+                    trace_lines = parse_trace_lines(response.trace_lines, words[0])
 
                 return [
                     Evolved(proto, modern, phonetic)

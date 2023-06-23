@@ -1,7 +1,10 @@
 from inspect import cleandoc
 
 from pyconlang.lexurgy.domain import TraceLine
+from pyconlang.lexurgy.parser import any_trace_line, trace_line, trace_line_heading
 from pyconlang.lexurgy.tracer import group_trace_lines, parse_trace_lines
+
+from ..test_parser import parse
 
 
 def test_grouping() -> None:
@@ -36,6 +39,17 @@ def test_grouping() -> None:
 
 
 def test_parser() -> None:
+    assert parse(trace_line_heading, "Tracing word1, word2") is None
+    assert parse(trace_line, "Applied rule1 to word1: a -> b") == TraceLine(
+        "rule1", "word1", "a", "b"
+    )
+    assert parse(any_trace_line, "Tracing word1, word2") is None
+    assert parse(any_trace_line, "Applied rule1 to word1: a -> b") == TraceLine(
+        "rule1", "word1", "a", "b"
+    )
+
+
+def test_parse_and_grouping() -> None:
     assert (
         parse_trace_lines(
             cleandoc(
@@ -46,7 +60,7 @@ def test_parser() -> None:
                 Applied rule2 to word2: d -> e
                 Applied rule3 to word1: b -> f
                 """
-            )
+            ).splitlines()
         )
         == {
             "word1": [
