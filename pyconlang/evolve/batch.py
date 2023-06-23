@@ -1,12 +1,19 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import Protocol
 
 from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
 from ..unicode import combine, remove_primary_stress
 from .domain import Evolved
 from .errors import BadAffixation
 
-Cache = dict["Query", Evolved]
+
+class QueryCache(Protocol):
+    def __getitem__(self, query: "Query") -> Evolved:
+        ...
+
+    def __contains__(self, item: "Query") -> bool:
+        ...
 
 
 @dataclass(eq=True, frozen=True)
@@ -15,7 +22,7 @@ class ComponentQuery:
     start: str | None = field(default=None, kw_only=True)
     end: str | None = field(default=None, kw_only=True)
 
-    def get_query(self, cache: Cache) -> str:
+    def get_query(self, cache: QueryCache) -> str:
         return self.query
 
     def set_end(self, end: str | None) -> "ComponentQuery":
@@ -33,7 +40,7 @@ class CompoundQuery:
     def start(self) -> str | None:
         return self.joiner.era_name()
 
-    def get_query(self, cache: Cache) -> str:
+    def get_query(self, cache: QueryCache) -> str:
         assert self.head.end == self.start
         assert self.tail.end == self.start
 

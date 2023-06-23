@@ -1,15 +1,16 @@
-import pickle
 import random
 import shutil
 import string
-from collections.abc import Mapping, Sequence
+from collections.abc import Generator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
+from typing import Self, cast
 from unicodedata import normalize
 
 from .. import CHANGES_PATH, PYCONLANG_PATH
-from ..cache import path_cached_property
+from ..cache import PersistentDict, path_cached_property
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
 from ..lexurgy import LexurgyClient
@@ -21,7 +22,7 @@ from ..lexurgy.domain import (
 )
 from ..lexurgy.tracer import parse_trace_lines
 from .arrange import AffixArranger
-from .batch import Batcher, Cache, ComponentQuery, CompoundQuery, Query
+from .batch import Batcher, ComponentQuery, CompoundQuery, Query
 from .domain import Evolved
 from .errors import LexurgyError
 
@@ -51,11 +52,22 @@ def random_directory() -> Path:
 
 @dataclass
 class Evolver:
-    checksum: bytes = field(default_factory=get_checksum)
-    cache: Cache = field(default_factory=dict)
-    trace_cache: dict[Query, list[TraceLine]] = field(default_factory=dict)
+    query_cache: PersistentDict[Query, Evolved]
+    trace_cache: PersistentDict[Query, list[TraceLine]]
     batcher: Batcher = field(default_factory=Batcher)
     evolve_directory: Path = field(default_factory=random_directory)
+
+    @classmethod
+    @contextmanager
+    def new(cls) -> Generator[Self, None, None]:
+        with cast(
+            PersistentDict[Query, Evolved],
+            PersistentDict("evolve-cache", [CHANGES_PATH]),
+        ) as query_cache, cast(
+            PersistentDict[Query, list[TraceLine]],
+            PersistentDict("trace-cache", [CHANGES_PATH]),
+        ) as trace_cache:
+            yield cls(query_cache, trace_cache)
 
     @path_cached_property(CHANGES_PATH)
     def arranger(self) -> AffixArranger:
@@ -65,46 +77,6 @@ class Evolver:
     def lexurgy(self) -> LexurgyClient:
         return LexurgyClient()
 
-    @classmethod
-    def load(cls) -> "Evolver":
-        if not all(
-            [
-                path.exists()
-                for path in [SIMPLE_CACHE_PATH, TRACE_CACHE_PATH, CHECKSUM_PATH]
-            ]
-        ):
-            return cls()
-
-        cached_checksum = pickle.loads(CHECKSUM_PATH.read_bytes())
-        cache = pickle.loads(SIMPLE_CACHE_PATH.read_bytes())
-        trace_cache = pickle.loads(TRACE_CACHE_PATH.read_bytes())
-
-        evolver = cls(cached_checksum, cache, trace_cache)
-
-        evolver.validate_cache()
-
-        return evolver
-
-    def __post_init__(self) -> None:
-        self.validate_cache()
-
-    def validate_cache(self) -> bool:
-        current_checksum = get_checksum()
-        if self.checksum != current_checksum:
-            self.cache = {}
-            self.trace_cache = {}
-            self.checksum = current_checksum
-            return False
-        return True
-
-    def save(self) -> int:
-        self.cleanup()
-        CACHE_PATH.mkdir(parents=True, exist_ok=True)
-        bytes_written = TRACE_CACHE_PATH.write_bytes(pickle.dumps(self.trace_cache))
-        bytes_written += SIMPLE_CACHE_PATH.write_bytes(pickle.dumps(self.cache))
-        bytes_written += CHECKSUM_PATH.write_bytes(pickle.dumps(self.checksum))
-        return bytes_written
-
     def trace(self, forms: Sequence[Evolvable]) -> list[EvolvedWithTrace]:
         self.evolve(forms, trace=True)
 
@@ -112,14 +84,14 @@ class Evolver:
 
         for form in self.normalize_forms(forms):
             query = self.batcher.build_query(form)
-            result.append((self.cache[query], self.get_trace(query)))
+            result.append((self.query_cache[query], self.get_trace(query)))
 
         return result
 
     def get_trace(self, query: Query) -> Trace:
         if query not in self.trace_cache:
             return []
-        query_trace = (query.get_query(self.cache), self.trace_cache[query])
+        query_trace = (query.get_query(self.query_cache), self.trace_cache[query])
         match query:
             case ComponentQuery():
                 return [query_trace]
@@ -144,13 +116,13 @@ class Evolver:
                 new_queries = [
                     query
                     for query in queries
-                    if query not in self.cache
+                    if query not in self.query_cache
                     or (trace and query not in self.trace_cache)
                 ]
 
                 words = []
                 for query in new_queries:
-                    word = query.get_query(self.cache)
+                    word = query.get_query(self.query_cache)
                     words.append(word)
 
                 evolved_forms, trace_lines = self.evolve_words(
@@ -158,7 +130,7 @@ class Evolver:
                 )
 
                 for query, evolved in zip(new_queries, evolved_forms):
-                    self.cache[query] = evolved
+                    self.query_cache[query] = evolved
                     if trace:
                         if evolved.proto in trace_lines:
                             self.trace_cache[query] = trace_lines[evolved.proto]
@@ -166,7 +138,7 @@ class Evolver:
         result: list[Evolved] = []
 
         for form in resolved_forms:
-            evolved_result = self.cache[mapping[form]]
+            evolved_result = self.query_cache[mapping[form]]
             assert evolved_result is not None
             result.append(evolved_result)
 

@@ -10,6 +10,7 @@ from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 
 from . import PYCONLANG_PATH
+from .book import Compiler
 from .book import Handler as BookHandler
 from .domain import Describable
 from .errors import show_exception
@@ -37,8 +38,8 @@ def _show_lookup_record(record: Describable, description: str) -> str:
 class Handler(BookHandler):
     changed: bool
 
-    def __init__(self) -> None:
-        super().__init__(True)
+    def __init__(self, compiler: Compiler) -> None:
+        super().__init__(compiler, True)
         self.changed = False
 
     def on_any_event(self, event: FileSystemEvent) -> None:
@@ -53,9 +54,9 @@ class Handler(BookHandler):
 
 @dataclass
 class ReplSession(Cmd):
-    translator: Translator = field(default_factory=Translator)
+    translator: Translator
+    watcher: Handler
     session: PromptSession[str] = field(default_factory=_default_prompt_session)
-    watcher: Handler = field(default_factory=Handler)
     last_line: str = field(default="")
     counter: int = field(default=0)
 
@@ -227,9 +228,10 @@ class ReplSession(Cmd):
 
 @contextlib.contextmanager
 def create_session() -> Generator[ReplSession, None, None]:
-    session = ReplSession()
-    yield session
-    session.watcher.join()
+    with Translator.new() as translator:
+        session = ReplSession(translator, Handler(Compiler(translator)))
+        yield session
+        session.watcher.join()
 
 
 def run(command: str = "") -> None:

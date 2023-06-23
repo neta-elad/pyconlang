@@ -1,6 +1,9 @@
 import re
 from abc import ABCMeta, abstractmethod
+from collections.abc import Generator
+from contextlib import contextmanager
 from itertools import chain
+from typing import Self
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -26,10 +29,16 @@ class LexiconInserter(Extension):
     translator: Translator
     valid_cache: bool
 
-    def __init__(self) -> None:
+    @classmethod
+    @contextmanager
+    def new(cls) -> Generator[Self, None, None]:
+        with Translator.new() as translator:
+            yield cls(translator)
+
+    def __init__(self, translator: Translator) -> None:
         super().__init__()
 
-        self.translator = Translator()
+        self.translator = translator
         self.valid_cache = False
 
     def extendMarkdown(self, md: Markdown) -> None:

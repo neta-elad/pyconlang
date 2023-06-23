@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
@@ -8,8 +9,9 @@ from pyconlang.evolve.batch import Batcher
 
 
 @pytest.fixture
-def simple_evolver(simple_pyconlang: Path) -> Evolver:
-    return Evolver()
+def simple_evolver(simple_pyconlang: Path) -> Generator[Evolver, None, None]:
+    with Evolver.new() as evolver:
+        yield evolver
 
 
 @pytest.fixture(scope="session")

@@ -5,8 +5,8 @@ from functools import cached_property
 from multiprocessing import RLock
 from multiprocessing.synchronize import RLock as RLockClass
 from pathlib import Path
-from types import GenericAlias
-from typing import Generic, ParamSpec, TypeVar, cast
+from types import GenericAlias, TracebackType
+from typing import Generic, Optional, ParamSpec, Self, Type, TypeVar, cast
 
 from . import PYCONLANG_PATH
 from .checksum import checksum
@@ -120,8 +120,17 @@ class PersistentDict(Generic[_K, _V]):
     def __contains__(self, item: _K) -> bool:
         return item in self.value
 
-    def __del__(self) -> None:
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         self.cache_path.write_bytes(
             pickle.dumps((self.value, self.func.st_mtimes, self.func.checksums))
         )
+        return True

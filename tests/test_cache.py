@@ -44,18 +44,17 @@ class SettableInt(Protocol):
 
 
 def run_test(name: str, paths: list[Path], run: int, return_value: SettableInt) -> None:
-    my_dict: PersistentDict[str, int] = PersistentDict(name, paths)
+    with cast(PersistentDict[str, int], PersistentDict(name, paths)) as my_dict:
+        assert return_value.value == 0
 
-    assert return_value.value == 0
+        if run == 0:
+            my_dict["hello"] = 5
+        elif run == 1:
+            assert my_dict["hello"] == 5
+        else:
+            assert "hello" not in my_dict
 
-    if run == 0:
-        my_dict["hello"] = 5
-    elif run == 1:
-        assert my_dict["hello"] == 5
-    else:
-        assert "hello" not in my_dict
-
-    return_value.value = 1
+        return_value.value = 1
 
 
 def test_persistent_dict(tmp_pyconlang: Path) -> None:
