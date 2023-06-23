@@ -82,9 +82,6 @@ class LexiconInserter(Extension):
             LexiconDictionaryProcessor(md, self), "lexicon-dictionary", 30
         )
 
-    def save(self) -> None:
-        self.translator.save()
-
 
 class LexiconGroupingProcessor(Preprocessor):
     def run(self, lines: list[str]) -> list[str]:

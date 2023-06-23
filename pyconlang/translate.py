@@ -1,11 +1,11 @@
-from collections.abc import Generator, Mapping, Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Self
 
 from . import LEXICON_PATH
 from .cache import path_cached_property
-from .domain import Definable, Describable, Entry, Fusion, ResolvedForm, Word
+from .domain import Definable, Describable, Fusion, ResolvedForm, Word
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
 from .lexicon import Lexicon
@@ -36,21 +36,6 @@ class Translator:
         forms = self.parse_sentence(string)
         return list(zip(self.resolve_and_evolve(forms), forms))
 
-    def batch_evolve(self) -> Mapping[Entry, list[Evolved]]:
-        forms = []
-        entries = {}
-        for entry in self.lexicon.entries:
-            entry_forms = self.lexicon.resolve_entry(entry)
-            entries[entry] = entry_forms
-            forms.extend(entry_forms)
-
-        self.evolver.evolve(forms)  # todo cache
-
-        return {
-            entry: self.evolver.evolve(entry_forms)
-            for entry, entry_forms in entries.items()
-        }
-
     def define_string(self, string: str) -> list[str]:
         return [self.lexicon.define(record) for record in self.parse_definables(string)]
 
@@ -73,12 +58,6 @@ class Translator:
         return self.evolver.trace(
             [self.lexicon.resolve(form) for form in self.parse_sentence(string)]
         )
-
-    def save(self) -> None:
-        # todo: cache
-        pass
-        # self.evolver.save()
-        # self.lexicon.save()
 
     @staticmethod
     def parse_sentence(string: str) -> Sequence[Word[Fusion]]:

@@ -1,11 +1,11 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import cached_property
 from itertools import chain
 from pathlib import Path
 
 from pyconlang import LEXICON_PATH
 
-from ..checksum import checksum
 from ..domain import (
     Affix,
     AffixDefinition,
@@ -37,10 +37,6 @@ class Lexicon:
     entries: set[Entry]
     affixes: set[AffixDefinition]
     templates: set[Template]
-
-    @staticmethod
-    def checksum() -> bytes:
-        return checksum(LEXICON_PATH)
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
@@ -115,10 +111,13 @@ class Lexicon:
 
         raise MissingLexeme(lexeme.name)
 
+    @cached_property
+    def affix_mapping(self) -> dict[Affix, AffixDefinition]:
+        return {definition.affix: definition for definition in self.affixes}
+
     def get_affix(self, affix: Affix) -> AffixDefinition:
-        for possible_affix in self.affixes:  # todo: add mapping
-            if possible_affix.affix.name == affix.name:
-                return possible_affix
+        if affix in self.affix_mapping:
+            return self.affix_mapping[affix]
 
         raise MissingAffix(affix.name)
 

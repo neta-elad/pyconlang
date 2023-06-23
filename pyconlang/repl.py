@@ -90,7 +90,6 @@ class ReplSession(Cmd):
             print("Goodbye.")
             return
         finally:
-            self.translator.save()
             observer.stop()
             observer.join()
 

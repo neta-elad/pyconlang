@@ -82,8 +82,6 @@ class Compiler:
             template.safe_substitute(**metadata)
         )
 
-        self.lexicon.save()
-
 
 class Handler(PatternMatchingEventHandler):
     silent: bool
