@@ -90,6 +90,7 @@ class Handler(PatternMatchingEventHandler):
     last_request: float
     running: bool
     threads: list[Thread]
+    last_error: Exception | None
 
     def __init__(self, compiler: Compiler, silent: bool = False):
         super().__init__(["*.md", "*.lsc", "template.html", "*.pycl"])
@@ -99,6 +100,7 @@ class Handler(PatternMatchingEventHandler):
         self.last_request = time.time()
         self.running = False
         self.threads = []
+        self.last_error = None
         self.compile()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
@@ -119,7 +121,12 @@ class Handler(PatternMatchingEventHandler):
             print("Compiling book... ", end="")
             sys.stdout.flush()
 
-        self.compiler.compile()
+        try:
+            self.compiler.compile()
+            self.last_error = None
+        except Exception as e:
+            self.last_error = e
+
         self.last_run = time.time()
         self.running = False
 

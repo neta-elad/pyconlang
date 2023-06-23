@@ -64,10 +64,12 @@ class ReplSession(Cmd):
         super().__init__()
 
     def bottom_toolbar(self) -> str:
-        if self.watcher.running:
-            return "Status: updating..."
+        if self.watcher.last_error is not None:
+            return f"Error: {self.watcher.last_error!r}"
+        elif self.watcher.running:
+            return "Updating..."
         else:
-            return "Status: up-to-date"
+            return "Up-to-date!"
 
     def run(self) -> None:
         observer = Observer()
