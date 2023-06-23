@@ -61,55 +61,68 @@ def sample_lexicon() -> str:
 
 
 @pytest.fixture
-def simple_pyconlang(
-    tmp_pyconlang: Path, sample_lexicon: str
-) -> Generator[Path, None, None]:
-    (tmp_pyconlang / "changes.lsc").write_text(
+def sample_changes() -> str:
+    return cleandoc(
         """
         Feature type (*consonant, vowel)
         Feature height (*low, mid, high)
-        
+
         Feature +stressed
-        
+
         Diacritic ˈ (before) [+stressed] (floating)
-        
+
         Symbol a [low vowel]
         Symbol u [mid vowel]
         Symbol i [high vowel]
-    
-    syllables:
-        explicit
 
-    palatalization:
-        k => ʃ / _ i
+        syllables:
+            explicit
     
-    era1:
-        unchanged
+        palatalization:
+            k => ʃ / _ i
     
-    intervocalic-voicing:
-        {p, t, k, s} => {b, d, g, z} / [vowel] _ [vowel]
-        
-    vowel-raising:
-        [+stressed vowel] => [high]
-        
-    era2:
-        unchanged
-        
-    romanizer-phonetic:
-        unchanged
-        
-    syllables:
-        clear
+        era1:
+            unchanged
     
-    romanizer:
-        [+stressed vowel] => [*stressed]
-        ʃ => sh
-        """
+        intervocalic-voicing:
+            {p, t, k, s} => {b, d, g, z} / [vowel] _ [vowel]
+    
+        vowel-raising:
+            [+stressed vowel] => [high]
+    
+        era2:
+            unchanged
+    
+        romanizer-phonetic:
+            unchanged
+    
+        syllables:
+            clear
+    
+        romanizer:
+            [+stressed vowel] => [*stressed]
+            ʃ => sh
+    """
     )
 
-    (tmp_pyconlang / "lexicon.pycl").write_text(sample_lexicon)
 
-    yield tmp_pyconlang
+@pytest.fixture
+def simple_changes(
+    sample_changes: str, tmp_pyconlang: Path
+) -> Generator[Path, None, None]:
+    changes_path = tmp_pyconlang / "changes.lsc"
+    changes_path.write_text(sample_changes)
+
+    yield changes_path
+
+
+@pytest.fixture
+def simple_pyconlang(
+    simple_changes: Path, sample_lexicon: str
+) -> Generator[Path, None, None]:
+    (simple_changes.parent / "lexicon.pycl").write_text(sample_lexicon)
+
+    yield simple_changes.parent
 
 
 @pytest.fixture(autouse=True, scope="function")

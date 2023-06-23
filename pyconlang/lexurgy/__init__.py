@@ -1,4 +1,3 @@
-from functools import cached_property
 from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import IO
@@ -28,12 +27,12 @@ class LexurgyClient:
         ]
         return Popen(args, stdin=PIPE, stdout=PIPE, text=True, bufsize=1)
 
-    @cached_property
+    @property
     def stdin(self) -> IO[str]:
         assert self.popen.stdin is not None
         return self.popen.stdin
 
-    @cached_property
+    @property
     def stdout(self) -> IO[str]:
         assert self.popen.stdout is not None
         return self.popen.stdout

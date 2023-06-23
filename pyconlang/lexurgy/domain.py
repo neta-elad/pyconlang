@@ -34,8 +34,8 @@ class LexurgyRequest(CamelCaseJsonMixin):
 @dataclass
 class LexurgyResponse(CamelCaseJsonMixin):
     words: list[str]
-    intermediates: dict[str, list[str]]
-    trace_lines: list[str]
+    intermediates: dict[str, list[str]] = field(default_factory=dict)
+    trace_lines: list[str] = field(default_factory=list)
 
 
 @dataclass
