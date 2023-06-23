@@ -8,8 +8,8 @@ from functools import cached_property
 from pathlib import Path
 from unicodedata import normalize
 
-from .. import PYCONLANG_PATH
-from ..assets import LEXURGY_VERSION
+from .. import CHANGES_PATH, PYCONLANG_PATH
+from ..cache import path_cached_property
 from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
 from ..lexurgy import LexurgyClient
@@ -25,9 +25,8 @@ from .batch import Batcher, Cache, ComponentQuery, CompoundQuery, Query
 from .domain import Evolved
 from .errors import LexurgyError
 
-LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 EVOLVE_PATH = PYCONLANG_PATH / "evolve"
-CHANGES_PATH = Path("changes.lsc")
+
 CACHE_PATH = EVOLVE_PATH / "cache"
 SIMPLE_CACHE_PATH = CACHE_PATH / "cache.pickle"
 TRACE_CACHE_PATH = CACHE_PATH / "trace_cache.pickle"
@@ -58,7 +57,7 @@ class Evolver:
     batcher: Batcher = field(default_factory=Batcher)
     evolve_directory: Path = field(default_factory=random_directory)
 
-    @cached_property
+    @path_cached_property(CHANGES_PATH)
     def arranger(self) -> AffixArranger:
         return AffixArranger.from_path(CHANGES_PATH)
 

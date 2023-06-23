@@ -1,8 +1,7 @@
-from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import IO
 
-from .. import PYCONLANG_PATH
+from .. import CHANGES_PATH, PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..cache import path_cached_property
 from .domain import (
@@ -13,7 +12,6 @@ from .domain import (
 )
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
-CHANGES_PATH = Path("changes.lsc")
 
 
 class LexurgyClient:

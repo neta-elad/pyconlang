@@ -4,3 +4,4 @@ __version__ = "0.0.1"
 
 PYCONLANG_DIRECTORY = ".pyconlang"
 PYCONLANG_PATH = Path(PYCONLANG_DIRECTORY)
+CHANGES_PATH = Path("changes.lsc")
