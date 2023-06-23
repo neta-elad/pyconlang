@@ -2,8 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
-from ..metadata import Metadata
-from ..unicode import remove_primary_stress
+from ..unicode import combine, remove_primary_stress
 from .domain import Evolved
 from .errors import BadAffixation
 
@@ -55,11 +54,7 @@ class CompoundQuery:
         else:
             head = remove_primary_stress(head)
 
-        syllable_break = ""
-        if Metadata.default().syllables:  # todo: differently
-            syllable_break = "."
-
-        return head + syllable_break + tail
+        return combine(head, tail)
 
     def set_end(self, end: str | None) -> "CompoundQuery":
         return CompoundQuery(
