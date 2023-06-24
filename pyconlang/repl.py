@@ -65,10 +65,13 @@ class ReplSession(Cmd):
 
     def bottom_toolbar(self) -> str:
         if self.watcher.last_error is not None:
+            self.counter = 0
             return f"Error: {self.watcher.last_error!r}"
         elif self.watcher.running:
-            return "Updating..."
+            self.counter = (self.counter + 1) % 4
+            return "Updating" + ("." * self.counter)
         else:
+            self.counter = 0
             return "Up-to-date!"
 
     def run(self) -> None:
@@ -78,7 +81,7 @@ class ReplSession(Cmd):
         try:
             while True:
                 line = self.session.prompt(
-                    "> ", bottom_toolbar=self.bottom_toolbar, refresh_interval=1
+                    "> ", bottom_toolbar=self.bottom_toolbar, refresh_interval=0.25
                 )
 
                 if self.watcher.changed:
