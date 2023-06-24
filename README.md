@@ -218,19 +218,20 @@ will turn out as
 - [ ] Complete example project
 - [x] Custom error types?
 - [ ] ? Combined, general repl
-  - [ ] Working with proto-forms
+  - [x] Working with proto-forms
   - [ ] Working with lexicon
     - [ ] Defining words, affixes and templates in session
     - [ ] Saving session
-    - [ ] Search for a word
+    - [x] Search for a word
+    - [ ] Var in lookup `$.PL`
   - [ ] Working with book
     - [ ] Compile
 - [ ] More powerful affixes:
   - [ ] Branched affixes (depending on stem phonology / metadata)
-  - [ ] Frozen affixes (i.e. affixes defined in the modern language)
+  - [x] Frozen affixes (i.e. affixes defined in the modern language)
   - [ ] Affixes with sound changes (e.g. voice initial consonant)
   - [x] Standalone affixes
-  - [ ] Correct order of affixes
+  - [x] Correct order of affixes
 - [ ] `repl`: Interactive session with Lexurgy
   - [x] Enter proto form, get romanized modern form
   - [x] Get phonetic modern form
@@ -253,19 +254,19 @@ will turn out as
   - [ ] Evolve affixes with empty stem
   - [ ] Evolve up to a point
 - [ ] `lexicon`: Interactive lexicon
-  - [x] Define word by canonical
-  - [ ] Find by canonical, proto, affix, or definition
+  - [x] Define word by lexeme
+  - [ ] Find by lexeme, proto, affix, or definition
   - [x] Protos to take affixes as well
   - [x] Batch evolve, using dependency graph?
-  - [ ] Better cache
+  - [x] Better cache
   - [x] On-the-fly affixes? Syntax for compounding two words without an explicit affix
-  - [ ] ? Change the order of canonical and template name, and make record declarations optional
+  - [ ] ? Change the order of lexeme and template name, and make record declarations optional
   - [ ] Affixes with empty stem
   - [ ] Vars/forms with rules `$.PL@proto`
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
   - [x] Match-up forms and glosses
-  - [ ] Better cache
+  - [x] Better cache
   - [ ] Full-text search over everything
   (proto, modern, phonetic, definitions, etc.) 
   [whoosh](https://whoosh.readthedocs.io/en/latest/parsing.html)
@@ -281,4 +282,4 @@ will turn out as
   - [x] Block translation
   - [ ] Options for block/inline translation
     - [ ] Show before/after
-    - [ ] Phonetic/modern/gloss
+    - [x] Phonetic/modern/gloss
