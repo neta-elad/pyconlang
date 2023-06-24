@@ -166,11 +166,11 @@ class Evolver:
         if not words:
             return [], {}
 
-        debug_words = []
+        trace_words = []
         if trace:
-            debug_words = words
+            trace_words = words
 
-        request = LexurgyRequest(words, start, end, debug_words)
+        request = LexurgyRequest(words, start, end, trace_words)
 
         response = self.lexurgy.roundtrip(request)
 

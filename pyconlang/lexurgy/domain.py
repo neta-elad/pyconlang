@@ -27,7 +27,7 @@ class LexurgyRequest(CamelCaseJsonMixin):
     words: list[str]
     start_at: str | None = field(default=None)
     stop_before: str | None = field(default=None)
-    debug_words: list[str] = field(default_factory=list)
+    trace_words: list[str] = field(default_factory=list)
     romanize: bool = field(default=True)
 
 
