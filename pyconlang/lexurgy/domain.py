@@ -4,6 +4,8 @@ from typing import Any, Mapping, Protocol, TypeVar, cast
 
 from dataclasses_json import DataClassJsonMixin, LetterCase, config
 
+from ..errors import LexurgyResponseBadType, LexurgyResponseMissingType
+
 
 @dataclass(eq=True, frozen=True)
 class TraceLine:
@@ -65,12 +67,12 @@ def from_json(raw_payload: str, mapping: Mapping[str, DictConstructable[_T]]) ->
     payload = json.loads(raw_payload)
 
     if "type" not in payload:
-        raise RuntimeError("MISSING TYPE IN PAYLOAD")  # todo: better errors
+        raise LexurgyResponseMissingType()
 
     payload_type = payload["type"]
 
     if payload_type not in mapping:
-        raise RuntimeError("MISSING TYPE IN MAPPING")  # todo: better errors
+        raise LexurgyResponseBadType()
 
     target_type = mapping[payload_type]
 

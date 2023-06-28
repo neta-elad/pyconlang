@@ -13,6 +13,18 @@ class AffixDefinitionMissingVar(PyconlangError):
     ...
 
 
+class LexurgyClientError(PyconlangError):
+    ...
+
+
+class LexurgyResponseMissingType(LexurgyClientError):
+    ...
+
+
+class LexurgyResponseBadType(LexurgyClientError):
+    ...
+
+
 def show_exception(exception: Exception) -> str:
     match exception:
         case ParseBaseException():
