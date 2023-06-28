@@ -2,16 +2,25 @@ import pytest
 
 from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve.arrange import AffixArranger
-from pyconlang.evolve.batch import Batcher, ComponentQuery, CompoundQuery
+from pyconlang.evolve.batch import (
+    Batcher,
+    ComponentQuery,
+    CompoundQuery,
+    order_in_layers,
+)
 from pyconlang.evolve.errors import BadAffixation
 
 
 def test_one_node(batcher: Batcher, arranger: AffixArranger) -> None:
     a = Component(Morpheme("a"))
-    assert batcher.build_query(arranger.rearrange(a)) == ComponentQuery("a")
+    assert batcher.builder(arranger).build_query(
+        arranger.rearrange(a)
+    ) == ComponentQuery("a")
 
     a = Component(Morpheme("a", Rule("1")))
-    assert batcher.build_query(arranger.rearrange(a)) == ComponentQuery("a", start="1")
+    assert batcher.builder(arranger).build_query(
+        arranger.rearrange(a)
+    ) == ComponentQuery("a", start="1")
 
 
 def test_two_nodes_same(batcher: Batcher, arranger: AffixArranger) -> None:
@@ -20,7 +29,7 @@ def test_two_nodes_same(batcher: Batcher, arranger: AffixArranger) -> None:
 
     form = arranger.rearrange(Compound(a, Joiner.head(), b))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a"), Joiner.head(), ComponentQuery("b")
     )
 
@@ -29,7 +38,7 @@ def test_two_nodes_same(batcher: Batcher, arranger: AffixArranger) -> None:
 
     form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a", start="1", end="1"),
         Joiner.head(Rule("1")),
         ComponentQuery("b", start="1", end="1"),
@@ -42,7 +51,7 @@ def test_two_nodes_different(batcher: Batcher, arranger: AffixArranger) -> None:
 
     form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a", end="1"),
         Joiner.head(Rule("1")),
         ComponentQuery("b", start="1", end="1"),
@@ -52,14 +61,14 @@ def test_two_nodes_different(batcher: Batcher, arranger: AffixArranger) -> None:
         a = Component(Morpheme("a", Rule("1")))
         b = Component(Morpheme("b"))
         form = Compound(a, Joiner.head(), b)
-        batcher.build_query(form)
+        batcher.builder(arranger).build_query(form)
 
     a = Component(Morpheme("a", Rule("1")))
     b = Component(Morpheme("b", Rule("2")))
 
     form = arranger.rearrange(Compound(a, Joiner.head(Rule("2")), b))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a", start="1", end="2"),
         Joiner.head(Rule("2")),
         ComponentQuery("b", start="2", end="2"),
@@ -74,7 +83,7 @@ def test_two_nodes_different_era_inside_affix(
 
     form = arranger.rearrange(Compound(a, Joiner.head(Rule("1")), b))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a", end="1"),
         Joiner.head(Rule("1")),
         ComponentQuery("b", end="1"),
@@ -88,7 +97,7 @@ def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) 
 
     form = arranger.rearrange(Compound(Compound(a, Joiner.head(), b), Joiner.head(), c))
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b")),
         Joiner.head(),
         ComponentQuery("c"),
@@ -102,7 +111,7 @@ def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) 
         Compound(a, Joiner.head(), Compound(b, Joiner.head(Rule("1")), c))
     )
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         CompoundQuery(ComponentQuery("a"), Joiner.head(), ComponentQuery("b"), end="1"),
         Joiner.head(Rule("1")),
         ComponentQuery("c", start="1", end="1"),
@@ -116,7 +125,7 @@ def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) 
         Compound(Compound(a, Joiner.head(Rule("1")), b), Joiner.head(Rule("1")), c)
     )
 
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         CompoundQuery(
             ComponentQuery("a", end="1"),
             Joiner.head(Rule("1")),
@@ -134,7 +143,7 @@ def test_three_nodes_at_most_one_era(batcher: Batcher, arranger: AffixArranger) 
     form = arranger.rearrange(
         Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("1")), c))
     )
-    assert batcher.build_query(form) == CompoundQuery(
+    assert batcher.builder(arranger).build_query(form) == CompoundQuery(
         ComponentQuery("a", start="1", end="1"),
         Joiner.head(Rule("1")),
         CompoundQuery(
@@ -151,7 +160,7 @@ def test_three_nodes_two_eras(batcher: Batcher, arranger: AffixArranger) -> None
     b = Component(Morpheme("b", Rule("1")))
     c = Component(Morpheme("c", Rule("2")))
 
-    assert batcher.build_query(
+    assert batcher.builder(arranger).build_query(
         arranger.rearrange(
             Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
         )
@@ -170,7 +179,7 @@ def test_three_nodes_two_eras(batcher: Batcher, arranger: AffixArranger) -> None
     b = Component(Morpheme("b", Rule("1")))
     c = Component(Morpheme("c", Rule("2")))
 
-    assert batcher.build_query(
+    assert batcher.builder(arranger).build_query(
         arranger.rearrange(
             Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
         )
@@ -218,7 +227,7 @@ def test_single_layer(batcher: Batcher) -> None:
 
     assert query.get_query({}) == "abc"
 
-    assert batcher.order_in_layers([query]) == [[query]]
+    assert order_in_layers([query]) == [[query]]
 
 
 def test_two_layers(batcher: Batcher) -> None:
@@ -228,7 +237,7 @@ def test_two_layers(batcher: Batcher) -> None:
         ComponentQuery("c", start="1", end="1"),
     )
 
-    assert batcher.order_in_layers([query]) == [
+    assert order_in_layers([query]) == [
         [
             CompoundQuery(
                 ComponentQuery("a"), Joiner.head(), ComponentQuery("b"), end="1"
@@ -247,7 +256,7 @@ def test_build_and_order(batcher: Batcher, arranger: AffixArranger) -> None:
         Compound(a, Joiner.head(Rule("1")), Compound(b, Joiner.head(Rule("2")), c))
     )
 
-    mapping, layered_queries = batcher.build_and_order([form])
+    mapping, layered_queries = batcher.builder(arranger).build_and_order([form])
 
     assert len(mapping) == 1
     assert form in mapping

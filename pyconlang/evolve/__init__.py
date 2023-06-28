@@ -22,7 +22,7 @@ from ..lexurgy.domain import (
 )
 from ..lexurgy.tracer import parse_trace_lines
 from .arrange import AffixArranger
-from .batch import Batcher, ComponentQuery, CompoundQuery, Query
+from .batch import Batcher, ComponentQuery, CompoundQuery, Query, segment_by_start_end
 from .domain import Evolved
 from .errors import LexurgyError
 
@@ -83,7 +83,7 @@ class Evolver:
         result = []
 
         for form in self.normalize_forms(forms):
-            query = self.batcher.build_query(form)
+            query = self.batcher.builder(self.arranger).build_query(form)
             result.append((self.query_cache[query], self.get_trace(query)))
 
         return result
@@ -107,10 +107,12 @@ class Evolver:
     ) -> list[Evolved]:
         resolved_forms = self.normalize_forms(forms)
 
-        mapping, layers = self.batcher.build_and_order(resolved_forms)
+        mapping, layers = self.batcher.builder(self.arranger).build_and_order(
+            resolved_forms
+        )
 
         for layer in layers:
-            segments = Batcher.segment_by_start_end(layer)
+            segments = segment_by_start_end(layer)
 
             for (start, end), queries in segments.items():
                 new_queries = [

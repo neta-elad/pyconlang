@@ -4,6 +4,7 @@ from typing import Protocol
 
 from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
 from ..unicode import combine, remove_primary_stress
+from .arrange import AffixArranger
 from .domain import Evolved
 from .errors import BadAffixation
 
@@ -136,26 +137,30 @@ class QueryWalker:
         return result
 
 
+BatcherCache = dict[ResolvedForm, Query]
+
+
+def order_in_layers(queries: list[Query]) -> list[list[Query]]:
+    return QueryWalker().walk_queries(queries)
+
+
+def segment_by_start_end(
+    queries: list[Query],
+) -> Mapping[tuple[str | None, str | None], list[Query]]:
+    segments: dict[tuple[str | None, str | None], list[Query]] = {}
+
+    for query in queries:
+        start_end = query.start, query.end
+        segments.setdefault(start_end, [])
+        segments[start_end].append(query)
+
+    return segments
+
+
 @dataclass
-class Batcher:
-    cache: dict[ResolvedForm, Query] = field(default_factory=dict)
-
-    @staticmethod
-    def order_in_layers(queries: list[Query]) -> list[list[Query]]:
-        return QueryWalker().walk_queries(queries)
-
-    @staticmethod
-    def segment_by_start_end(
-        queries: list[Query],
-    ) -> Mapping[tuple[str | None, str | None], list[Query]]:
-        segments: dict[tuple[str | None, str | None], list[Query]] = {}
-
-        for query in queries:
-            start_end = query.start, query.end
-            segments.setdefault(start_end, [])
-            segments[start_end].append(query)
-
-        return segments
+class Builder:
+    cache: BatcherCache
+    arranger: AffixArranger
 
     def build_query_uncached(self, form: ResolvedForm) -> Query:
         match form:
@@ -166,10 +171,9 @@ class Batcher:
                 head = self.build_query(form.head).set_end(joiner.era_name())
                 tail = self.build_query(form.tail).set_end(joiner.era_name())
 
-                if joiner.era_name() is None and (
-                    head.start is not None or tail.start is not None
-                ):
-                    # todo: this is just a heuristic
+                if self.arranger.is_before(
+                    joiner.era_name(), head.start
+                ) or self.arranger.is_before(joiner.era_name(), tail.start):
                     raise BadAffixation(
                         "Affix time must always be later than stem's time"
                     )
@@ -197,4 +201,12 @@ class Batcher:
             mapping[form] = query
             queries.append(query)
 
-        return mapping, self.order_in_layers(queries)
+        return mapping, order_in_layers(queries)
+
+
+@dataclass
+class Batcher:
+    cache: BatcherCache = field(default_factory=dict)
+
+    def builder(self, arranger: AffixArranger) -> Builder:
+        return Builder(self.cache, arranger)

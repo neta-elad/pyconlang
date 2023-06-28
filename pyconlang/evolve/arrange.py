@@ -92,5 +92,8 @@ class AffixArranger:
     def ranker(self, joiner: Joiner) -> int:
         return self.rules[joiner.era_name()]
 
+    def is_before(self, era1: str | None, era2: str | None) -> bool:
+        return self.rules[era1] < self.rules[era2]
+
     def rearrange(self, form: ResolvedForm) -> ResolvedForm:
         return rearrange(form, self.ranker)
