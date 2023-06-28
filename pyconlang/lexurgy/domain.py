@@ -1,5 +1,6 @@
+import json
 from dataclasses import dataclass, field
-from typing import cast
+from typing import Any, Mapping, Protocol, TypeVar, cast
 
 from dataclasses_json import DataClassJsonMixin, LetterCase, config
 
@@ -21,7 +22,6 @@ class CamelCaseJsonMixin(DataClassJsonMixin):
     )
 
 
-# @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class LexurgyRequest(CamelCaseJsonMixin):
     words: list[str]
@@ -45,3 +45,37 @@ class LexurgyErrorResponse(CamelCaseJsonMixin):
 
 
 AnyLexurgyResponse = LexurgyResponse | LexurgyErrorResponse
+
+_T = TypeVar("_T", covariant=True)
+
+
+class DictConstructable(Protocol[_T]):
+    @classmethod
+    def from_dict(cls, a_dict: dict[Any, Any]) -> _T:
+        ...
+
+
+_LEXURGY_RESPONSE: Mapping[str, DictConstructable[AnyLexurgyResponse]] = {
+    "changed": LexurgyResponse,
+    "error": LexurgyErrorResponse,
+}
+
+
+def from_json(raw_payload: str, mapping: Mapping[str, DictConstructable[_T]]) -> _T:
+    payload = json.loads(raw_payload)
+
+    if "type" not in payload:
+        raise RuntimeError("MISSING TYPE IN PAYLOAD")  # todo: better errors
+
+    payload_type = payload["type"]
+
+    if payload_type not in mapping:
+        raise RuntimeError("MISSING TYPE IN MAPPING")  # todo: better errors
+
+    target_type = mapping[payload_type]
+
+    return target_type.from_dict(payload)
+
+
+def parse_response(payload: str) -> AnyLexurgyResponse:
+    return from_json(payload, _LEXURGY_RESPONSE)

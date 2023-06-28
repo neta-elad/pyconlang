@@ -9,7 +9,7 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from .. import CHANGES_GLOB, LEXICON_GLOB, LEXICON_PATH, CHANGES_PATH
+from .. import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ..cache import path_cached_property
 from ..domain import (
     Definable,

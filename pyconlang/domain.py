@@ -59,6 +59,9 @@ class AffixBase(ABC):
     def combine(self, stem: str, name: str) -> str:
         ...
 
+    def to_lexeme(self) -> Lexeme:
+        return Lexeme(str(self))
+
     def __str__(self) -> str:
         return self.combine("", self.name)
 
@@ -257,6 +260,15 @@ class AffixDefinition:
             return self.form
         else:
             raise AffixDefinitionMissingVar(self)
+
+    def to_entry(self) -> Entry:
+        return Entry(
+            None,
+            self.affix.to_lexeme(),
+            self.get_form(),
+            PartOfSpeech("afx"),
+            self.description,
+        )
 
 
 ResolvedForm = Word[Morpheme]

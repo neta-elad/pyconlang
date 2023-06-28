@@ -104,10 +104,17 @@ class Lexicon:
 
         return cls(entries, affixes, templates)
 
+    @cached_property
+    def entry_mapping(self) -> dict[Lexeme, Entry]:
+        return {entry.lexeme: entry for entry in self.entries} | {
+            definition.affix.to_lexeme(): definition.to_entry()
+            for definition in self.affixes
+            if not definition.is_var()
+        }
+
     def get_entry(self, lexeme: Lexeme) -> Entry:
-        for entry in self.entries:
-            if entry.lexeme == lexeme:
-                return entry
+        if lexeme in self.entry_mapping:
+            return self.entry_mapping[lexeme]
 
         raise MissingLexeme(lexeme.name)
 
@@ -142,7 +149,7 @@ class Lexicon:
                 return self.resolve(form)
 
     def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
-        # prefixes = self.resolve_affixes(fusion.prefixes)
+        # prefixes = self.resolve_affixes(fusion.prefixes)  # todo: remove?
         # suffixes = self.resolve_affixes(fusion.suffixes)
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem), *(fusion.prefixes + fusion.suffixes)

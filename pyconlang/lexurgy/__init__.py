@@ -4,12 +4,7 @@ from typing import IO
 from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
 from ..cache import path_cached_property
-from .domain import (
-    AnyLexurgyResponse,
-    LexurgyErrorResponse,
-    LexurgyRequest,
-    LexurgyResponse,
-)
+from .domain import AnyLexurgyResponse, LexurgyRequest, parse_response
 
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 
@@ -45,11 +40,7 @@ class LexurgyClient:
         self.write_line(request.to_json())
 
     def receive(self) -> AnyLexurgyResponse:
-        line = self.read_line()
-        try:
-            return LexurgyResponse.from_json(line)
-        except:
-            return LexurgyErrorResponse.from_json(line)
+        return parse_response(self.read_line())
 
     def roundtrip(self, request: LexurgyRequest) -> AnyLexurgyResponse:
         self.send(request)
