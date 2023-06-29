@@ -251,7 +251,7 @@ will turn out as
   - [x] Traces
   - [x] Better cache
   - [ ] Working with deromanizer and custom romanizers
-  - [ ] Evolve affixes with empty stem
+  - [x] Evolve affixes with empty stem
   - [ ] Evolve up to a point
 - [ ] `lexicon`: Interactive lexicon
   - [x] Define word by lexeme
@@ -261,7 +261,7 @@ will turn out as
   - [x] Better cache
   - [x] On-the-fly affixes? Syntax for compounding two words without an explicit affix
   - [ ] ? Change the order of lexeme and template name, and make record declarations optional
-  - [ ] Affixes with empty stem
+  - [x] Affixes with empty stem
   - [ ] Vars/forms with rules `$.PL@proto`
 - [ ] `translator`: Automatic translation according to gloss
   - [x] Evolve each form (with affixes)
@@ -270,7 +270,7 @@ will turn out as
   - [ ] Full-text search over everything
   (proto, modern, phonetic, definitions, etc.) 
   [whoosh](https://whoosh.readthedocs.io/en/latest/parsing.html)
-  - [ ] Affixes with empty stem
+  - [x] Affixes with empty stem
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
   - [x] Only rebuild lexicon when changed

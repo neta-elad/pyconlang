@@ -14,7 +14,7 @@ from pyconlang.domain import (
 from pyconlang.lexicon import Lexicon
 
 
-def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
+def test_resolve(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),)))
     ) == Compound(
@@ -74,6 +74,9 @@ def test_parsed_lexicon(parsed_lexicon: Lexicon) -> None:
         Joiner.tail(),
         Component(Morpheme("mana")),
     )
+    assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme(str(Prefix("STONE")))))
+    ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma")))
 
 
 def test_substitute_var(parsed_lexicon: Lexicon) -> None:
