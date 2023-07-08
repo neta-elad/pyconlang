@@ -77,7 +77,7 @@ class GlossTableMacro(AdvancedMacro):
             + "|".join(f"d[{word}]" for word in words)
         )
 
-        return result
+        return f"&{{\n\n{result}\n\n}}{{:.gloss-table}}"
 
 
 class AdvancedProtoMacro(AdvancedMacro):

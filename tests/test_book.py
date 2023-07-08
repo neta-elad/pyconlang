@@ -157,6 +157,8 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
 
     html = read()
 
+    print(html)
+
     assert (
         "<th><ruby>abagigi <rt>[abagigi]</rt></ruby></th>\n"
         + "<th><ruby>abagigiigi <rt>[abagigiigi]</rt></ruby></th>"
