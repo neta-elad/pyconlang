@@ -111,7 +111,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
         """
 
           r[<stone>] r[*kika] 
-          [[<gravel> <stone> *kika]]
+          r[<gravel> <stone> *kika]
 
           ph[*kika]
 
@@ -131,7 +131,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
     assert "<strong>abak</strong>" in html
     assert "<strong>shiga</strong>" in html
     assert "<strong>abagigi abak shiga</strong>" in html
-    assert "<ruby>shiga <rt>[ʃiga]</rt></ruby>" in html
+    assert "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>" in html
     assert "<em>*apak</em>" in html
     assert "<em>*kika</em>" in html
     assert "<em>*iki</em>" in html
@@ -160,8 +160,8 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     print(html)
 
     assert (
-        "<th><ruby>abagigi <rt>[abagigi]</rt></ruby></th>\n"
-        + "<th><ruby>abagigiigi <rt>[abagigiigi]</rt></ruby></th>"
+        "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"
+        + "<th><ruby><strong>abagigiigi</strong> <rt>[abagigiigi]</rt></ruby></th>"
         in html
     )
 

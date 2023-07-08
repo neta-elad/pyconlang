@@ -10,7 +10,6 @@ from .advanced_macros import (
     AdvancedDefinitionMacro,
     AdvancedProtoMacro,
     GlossTableMacro,
-    ShortcutRomanizedMacro,
 )
 from .batching_macros import BatchingPhoneticMacro, BatchingRomanizedMacro
 from .dictionary import ConlangDictionary, ConlangGrouper
@@ -65,10 +64,6 @@ class Conlang(Extension):
         )
 
         md.preprocessors.register(
-            BatchingPhoneticMacro(md, self.translator), "conlang-batching-phonetic", 25
-        )
-
-        md.preprocessors.register(
             AdvancedProtoMacro(md, self.translator), "conlang-advanced-proto", 25
         )
 
@@ -79,9 +74,7 @@ class Conlang(Extension):
         )
 
         md.preprocessors.register(
-            ShortcutRomanizedMacro(md, self.translator),
-            "conlang-shortcut-romanized",
-            30,
+            BatchingPhoneticMacro(md, self.translator), "conlang-batching-phonetic", 30
         )
 
         md.preprocessors.register(

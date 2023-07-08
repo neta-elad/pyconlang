@@ -36,4 +36,4 @@ class BatchingPhoneticMacro(BatchingMacro):
         return "ph"
 
     def map_inner_text(self, text: str) -> str:
-        return rf"<ruby>r{{{text}}} <rt>\[{super().map_inner_text(text)}\]</rt></ruby>"
+        return rf"<ruby>r[{text}] <rt>\[{super().map_inner_text(text)}\]</rt></ruby>"
