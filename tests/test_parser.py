@@ -92,12 +92,12 @@ def test_compound() -> None:
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(compound, "[*foo !+@era *bar]") == Compound(
+    assert parse(compound, '"*foo !+@era *bar"') == Compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(compound, "[*foo +!@era *bar] !+ *baz") == Compound(
+    assert parse(compound, '"*foo +!@era *bar" !+ *baz') == Compound(
         Compound(
             Component(Fusion(Morpheme("foo"), ())),
             Joiner.tail(Rule("era")),

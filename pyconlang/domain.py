@@ -189,7 +189,7 @@ class Compound(Tree[Compoundable]):
     tail: "Word[Compoundable]"
 
     def __str__(self) -> str:
-        return f"[{self.head} {self.joiner} {self.tail}]"
+        return f'"{self.head} {self.joiner} {self.tail}"'
 
     def leaves(self) -> list[Compoundable]:
         return self.head.leaves() + self.tail.leaves()

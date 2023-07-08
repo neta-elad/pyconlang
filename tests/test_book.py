@@ -128,6 +128,8 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
+    print(html)
+
     assert "<strong>abak</strong>" in html
     assert "<strong>shiga</strong>" in html
     assert "<strong>abagigi abak shiga</strong>" in html
@@ -156,8 +158,6 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     )
 
     html = read()
-
-    print(html)
 
     assert (
         "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"

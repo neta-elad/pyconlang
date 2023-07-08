@@ -101,7 +101,7 @@ rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule"
 
 unicode_word = ParseWord(
     pyparsing_unicode.BasicMultilingualPlane.printables,
-    exclude_chars=whitespace + ".@[]",
+    exclude_chars=whitespace + '.@"',
 ).set_name("unicode_word")
 morpheme = (
     (Suppress("*") - unicode_word - Opt(rule))
@@ -138,7 +138,7 @@ joiner = (
 compound = Forward()
 compound.set_name("compound")
 
-bracketed_compound = (Suppress("[") - compound - Suppress("]")).set_name(
+bracketed_compound = (Suppress('"') - compound - Suppress('"')).set_name(
     "bracketed compound"
 )
 
