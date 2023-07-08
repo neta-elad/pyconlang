@@ -14,7 +14,7 @@ class SkipLinePreprocessor(Preprocessor):
         kept_lines = []
         skipped_lines = []
         for line in lines:
-            if line.strip().startswith("!skip"):
+            if line.strip().startswith("!!"):
                 skipped_lines.append(line)
             else:
                 kept_lines.append(line)

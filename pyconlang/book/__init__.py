@@ -14,20 +14,18 @@ from watchdog.observers import Observer
 from .. import PYCONLANG_PATH
 from ..metadata import Metadata
 from ..translate import Translator
-from .abbreviation import Abbreviation
 from .any_table_header import AnyTableHeader
 from .block import Boxed, Details
-from .lexicon_inserter import LexiconInserter
+from .conlang import Conlang
 from .multi import MultiExtension
-from .preprocess import SkipLine
-from .ruby import Ruby
+from .skipline import SkipLine
 from .span_table import SpanTable
 from .unicode import UnicodeEscape
 
 
 class Compiler:
     converter: Markdown
-    lexicon: LexiconInserter
+    lexicon: Conlang
 
     @classmethod
     @contextmanager
@@ -36,7 +34,7 @@ class Compiler:
             yield cls(translator)
 
     def __init__(self, translator: Translator) -> None:
-        self.lexicon = LexiconInserter(translator)
+        self.lexicon = Conlang(translator)
         self.converter = Markdown(
             extensions=[
                 "extra",
@@ -53,8 +51,6 @@ class Compiler:
                 MultiExtension(""),
                 SpanTable(),
                 AnyTableHeader(),
-                Abbreviation(),
-                Ruby(),
                 self.lexicon,
                 UnicodeEscape(),
             ],
@@ -159,4 +155,7 @@ def watch() -> None:
 
 def compile_book() -> None:
     with Compiler.new() as compiler:
-        compiler.compile()
+        try:
+            compiler.compile()
+        except Exception as e:
+            print(e)

@@ -78,97 +78,64 @@ def test_container(simple_pyconlang: Path) -> None:
     assert "<div>\n<p>test div clean</p>\n</div>" in html
 
 
-def test_abbr(simple_pyconlang: Path) -> None:
-    write(
-        simple_pyconlang / "book.md",
-        """
-
-    +html+hypertext markup language+
-    
-    **+css+cascading style sheets+**
-    
-    +a \\+ b+alice and bob+
-
-    """,
-    )
-
-    html = read()
-
-    assert '<abbr title="hypertext markup language">html</abbr>' in html
-    assert '<strong><abbr title="cascading style sheets">css</abbr>' in html
-    assert '<abbr title="alice and bob">a + b</abbr>' in html
-
-
-def test_ruby(simple_pyconlang: Path) -> None:
-    write(
-        simple_pyconlang / "book.md",
-        """
-
-    %ruby%[ˈɹuː.bi]%
-
-    """,
-    )
-
-    html = read()
-
-    assert "<ruby>ruby <rt>[ˈɹuː.bi]</rt></ruby>" in html
-
-
-def test_basic_inserter(simple_pyconlang: Path) -> None:
+def test_raw_macros(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
           
-          &r{<stone>} &r{*kika} #<gravel>#
+          r{<stone>} r{*kika} 
           
-          &ph{*kika} 
+          ph{*kika} 
           
-          &pr{<stone>} &pr{*kika}
+          pr{<stone>} pr{*kika}
           
-          &d{<stone>} &d{.PL}
-          
-          &df{.PL}
-          
-          &df{<gravel>}
+          d{<stone>} d{.PL}
           
           """,
     )
 
     html = read()
-
-    print(html)
 
     assert "abak" in html
     assert "shiga" in html
-    assert "abagigi" in html
     assert "ʃiga" in html
-    assert "*apak" in html
-    assert "*kika" in html
+    assert "apak" in html
+    assert "kika" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
-    assert "<em>*iki</em>" in html
-    assert "<em>*apak</em> + <em>*iki</em>" in html
 
 
-def test_auto_inserter(simple_pyconlang: Path) -> None:
+def test_advanced_macros(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
 
-          ++<stone>++
-          
-          ++.PL++
-          
-          ++<gravel>.COL++
-          
-          %%<stone>%%
-          
-          %%*kika%%
+          r[<stone>] r[*kika] 
+          [[<gravel> <stone> *kika]]
 
+          ph[*kika]
+
+          pr[<stone>] pr[*kika]
+          pr[<gravel> <.PL>]
+          
+          d[<stone>]
+          
+          d[.PL]
+          
+          d[<gravel>.COL]
           """,
     )
 
     html = read()
+
+    assert "<strong>abak</strong>" in html
+    assert "<strong>shiga</strong>" in html
+    assert "<strong>abagigi abak shiga</strong>" in html
+    assert "<ruby>shiga <rt>[ʃiga]</rt></ruby>" in html
+    assert "<em>*apak</em>" in html
+    assert "<em>*kika</em>" in html
+    assert "<em>*iki</em>" in html
+    assert "<em>*apak</em> + <em>*iki</em>" in html
 
     assert '<abbr title="(n.) stone, pebble">stone</abbr>' in html
     assert '.<abbr title="plural for inanimate">PL</abbr>' in html
@@ -177,17 +144,13 @@ def test_auto_inserter(simple_pyconlang: Path) -> None:
         in html
     )
 
-    assert "<ruby>abak <rt>[abak]</rt></ruby>" in html
-
-    assert "<ruby>shiga <rt>[ʃiga]</rt></ruby>" in html
-
 
 def test_gloss_table(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
           
-          ##<stone>.PL <gravel>.PL##
+          g[<stone>.PL <gravel>.PL]
           
           """,
     )
@@ -296,6 +259,23 @@ def test_unicode_escape(simple_pyconlang: Path) -> None:
 
     assert "ACE" in html
     assert "&amp;ph{<stone>}"
+
+
+def test_skip(simple_pyconlang: Path) -> None:
+    write(
+        simple_pyconlang / "book.md",
+        """
+        ! this line appears
+        !! this one doesn't
+        !!! and this one also doesn't
+        """,
+    )
+
+    html = read()
+
+    assert "! this line appears" in html
+    assert "this one doesn't" not in html
+    assert "and this one also doesn't" not in html
 
 
 def write(path: Path, text: str) -> None:
