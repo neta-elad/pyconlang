@@ -128,8 +128,6 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    print(html)
-
     assert "<strong>abak</strong>" in html
     assert "<strong>shiga</strong>" in html
     assert "<strong>abagigi abak shiga</strong>" in html
@@ -143,6 +141,34 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
     assert '.<abbr title="plural for inanimate">PL</abbr>' in html
     assert (
         '<abbr title="(n.) gravel">gravel</abbr>.<abbr title="collective">COL</abbr>'
+        in html
+    )
+
+
+def test_before_after(simple_pyconlang: Path) -> None:
+    write(
+        simple_pyconlang / "book.md",
+        """
+          >r[<stone>]
+          >ph[*kika]
+          
+          r<[<stone>]
+          ph<[*kika]
+        """,
+    )
+
+    html = read()
+
+    print(html)
+
+    assert "<em>*apak</em> &gt; <strong>abak</strong>" in html
+    assert "<strong>abak</strong> &lt; <em>*apak</em>" in html
+    assert (
+        "<em>*kika</em> &gt; <ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>"
+        in html
+    )
+    assert (
+        "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby> &lt; <em>*kika</em>"
         in html
     )
 

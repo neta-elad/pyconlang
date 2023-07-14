@@ -12,6 +12,12 @@ from .advanced_macros import (
     GlossTableMacro,
 )
 from .batching_macros import BatchingPhoneticMacro, BatchingRomanizedMacro
+from .before_after_macros import (
+    AfterBeforePhoneticMacro,
+    AfterBeforeRomanizedMacro,
+    BeforeAfterPhoneticMacro,
+    BeforeAfterRomanizedMacro,
+)
 from .dictionary import ConlangDictionary, ConlangGrouper
 from .raw_macros import (
     RawDefinitionMacro,
@@ -75,6 +81,30 @@ class Conlang(Extension):
 
         md.preprocessors.register(
             BatchingPhoneticMacro(md, self.translator), "conlang-batching-phonetic", 30
+        )
+
+        md.preprocessors.register(
+            BeforeAfterRomanizedMacro(md, self.translator),
+            "conlang-before-after-romanized",
+            35,
+        )
+
+        md.preprocessors.register(
+            BeforeAfterPhoneticMacro(md, self.translator),
+            "conlang-before-after-phonetic",
+            35,
+        )
+
+        md.preprocessors.register(
+            AfterBeforeRomanizedMacro(md, self.translator),
+            "conlang-after-before-romanized",
+            35,
+        )
+
+        md.preprocessors.register(
+            AfterBeforePhoneticMacro(md, self.translator),
+            "conlang-after-before-phonetic",
+            35,
         )
 
         md.preprocessors.register(

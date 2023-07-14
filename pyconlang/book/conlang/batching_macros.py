@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from itertools import chain
 
 from .advanced_macros import AdvancedMacro
@@ -18,7 +18,11 @@ class BatchingMacro(AdvancedMacro, metaclass=ABCMeta):
 
     def map_inner_text(self, text: str) -> str:
         self.batch.append(text.strip())
-        return f"{self.token()}{{{text}}}"
+        return self.map_batched_text(text)
+
+    @abstractmethod
+    def map_batched_text(self, text: str) -> str:
+        ...
 
 
 class BatchingRomanizedMacro(BatchingMacro):
@@ -26,8 +30,8 @@ class BatchingRomanizedMacro(BatchingMacro):
     def token(cls) -> str:
         return "r"
 
-    def map_inner_text(self, text: str) -> str:
-        return f"**{super().map_inner_text(text)}**"
+    def map_batched_text(self, text: str) -> str:
+        return f"**r{{{text}}}**"
 
 
 class BatchingPhoneticMacro(BatchingMacro):
@@ -35,5 +39,5 @@ class BatchingPhoneticMacro(BatchingMacro):
     def token(cls) -> str:
         return "ph"
 
-    def map_inner_text(self, text: str) -> str:
-        return rf"<ruby>r[{text}] <rt>\[{super().map_inner_text(text)}\]</rt></ruby>"
+    def map_batched_text(self, text: str) -> str:
+        return rf"<ruby>r[{text}] <rt>\[ph{{{text}}}\]</rt></ruby>"
