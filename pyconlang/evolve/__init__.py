@@ -62,10 +62,10 @@ class Evolver:
     def new(cls) -> Generator[Self, None, None]:
         with cast(
             PersistentDict[Query, Evolved],
-            PersistentDict("evolve-cache", [CHANGES_PATH]),
+            PersistentDict("evolve-cache", [CHANGES_PATH, CHANGES_GLOB]),
         ) as query_cache, cast(
             PersistentDict[Query, list[TraceLine]],
-            PersistentDict("trace-cache", [CHANGES_PATH]),
+            PersistentDict("trace-cache", [CHANGES_PATH, CHANGES_GLOB]),
         ) as trace_cache:
             yield cls(query_cache, trace_cache)
 
