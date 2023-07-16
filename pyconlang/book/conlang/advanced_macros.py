@@ -59,10 +59,7 @@ class AdvancedDefinitionMacro(AdvancedMacro):
 
     @staticmethod
     def build_definition_abbr(lang: Lang, text: str, title: str) -> str:
-        lang_string = ""  # todo: ugly
-        if lang is not None:
-            lang_string = f"%{lang} "
-        return f'<abbr title="d{{{lang_string}{title}}}">{text}</abbr>'
+        return f'<abbr title="d{{{lang} {title}}}">{text}</abbr>'
 
 
 class GlossTableMacro(AdvancedMacro):
@@ -73,14 +70,10 @@ class GlossTableMacro(AdvancedMacro):
     def map_inner_text(self, text: str) -> str:
         sentence = self.translator.parse_sentence(text.strip())
         words = sentence.words
-        lang = ""
-        if sentence.lang is not None:
-            lang = f"%{sentence.lang} "
-        # todo: should also put lang
 
         result = (
             "|"
-            + "|".join(f"ph[{lang}{word}]" for word in words)
+            + "|".join(f"ph[{sentence.lang} {word}]" for word in words)
             + "|"
             + "\n"
             + "|"
@@ -88,8 +81,8 @@ class GlossTableMacro(AdvancedMacro):
             + "|"
             + "\n"
             + "|"
-            + "|".join(f"d[{lang}{word}]" for word in words)
-            + "|"  # todo: lang in definable
+            + "|".join(f"d[{sentence.lang} {word}]" for word in words)
+            + "|"
         )
 
         return f"&{{\n\n{result}\n\n}}{{:.gloss-table}}"

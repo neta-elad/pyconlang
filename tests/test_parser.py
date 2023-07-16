@@ -7,6 +7,7 @@ from pyconlang.domain import (
     Compound,
     Fusion,
     Joiner,
+    Lang,
     Lexeme,
     Morpheme,
     Prefix,
@@ -111,7 +112,7 @@ def test_compound() -> None:
 
 def test_sentence() -> None:
     assert parse_sentence("*aka <strong> COL.<with space> *taka@start.PL") == Sentence(
-        None,
+        Lang(),
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong"), ())),
@@ -123,7 +124,7 @@ def test_sentence() -> None:
     assert parse_sentence(
         "%test *aka <strong> COL.<with space> *taka@start.PL"
     ) == Sentence(
-        "test",
+        Lang("test"),
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong"), ())),
@@ -140,7 +141,7 @@ def test_definables() -> None:
         Suffix("PL"),
     ]
 
-    assert parse_definables("%modern <strong> COL. .PL").lang == "modern"
+    assert parse_definables("%modern <strong> COL. .PL").lang == Lang("modern")
 
 
 def parse(parser: ParserElement, string: str) -> Any:

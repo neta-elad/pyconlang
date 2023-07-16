@@ -51,7 +51,7 @@ class Tags:
 
     @cached_property
     def lang(self) -> Lang:
-        return self.map.get("lang")
+        return Lang(self.map.get("lang"))
 
 
 @dataclass(eq=True, frozen=True)
@@ -166,5 +166,5 @@ class AffixDefinition:
 
 @dataclass(eq=True, frozen=True)
 class LangParent:
-    lang: str
-    parent: str
+    lang: Lang
+    parent: Lang

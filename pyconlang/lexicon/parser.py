@@ -21,6 +21,7 @@ from ..parser import (
     compound,
     explicit_opt,
     ident,
+    lang,
     lexeme,
     prefix,
     rule,
@@ -128,7 +129,7 @@ entry = (
 )
 
 lang_parent = (
-    (Suppress("lang") - ident - Suppress("<") - ident)
+    (Suppress("lang") - lang - Suppress("<") - lang)
     .set_parse_action(tokens_map(LangParent))
     .set_name("lang_parent")
 )

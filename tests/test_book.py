@@ -128,9 +128,8 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
           d[<gravel>.COL]
           
           ph[%ultra-modern <gravel>]
-          !! d[%ultra-modern <gravel>]
+          d[%ultra-modern <gravel>]
           """,
-        # todo: definable with lang
     )
 
     html = read()
@@ -151,6 +150,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
         '<abbr title="(n.) gravel">gravel</abbr>.<abbr title="collective">COL</abbr>'
         in html
     )
+    assert '<abbr title="(n.) gravel (ultra-modern)">gravel</abbr>' in html
 
 
 def test_before_after(simple_pyconlang: Path) -> None:
@@ -194,8 +194,6 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     )
 
     html = read()
-
-    print(html)  # todo: delete
 
     assert (
         "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"

@@ -3,6 +3,7 @@ from pyconlang.domain import (
     Compound,
     Fusion,
     Joiner,
+    Lang,
     Lexeme,
     Morpheme,
     Prefix,
@@ -23,14 +24,14 @@ def test_resolve(parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),))), "modern"
+        Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),))), Lang("modern")
     ) == Compound(
         Component(Morpheme("kapa")),
         Joiner.head(),
         Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
     )
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("gravel"), (), ())), "ultra-modern"
+        Component(Fusion(Lexeme("gravel"), (), ())), Lang("ultra-modern")
     ) == Compound(
         Component(Morpheme("kapa")),
         Joiner.head(),

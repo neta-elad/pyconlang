@@ -176,7 +176,17 @@ Record = Word[Fusion] | Fusion | Describable
 
 ResolvedForm = Word[Morpheme]
 
-Lang = str | None
+
+@dataclass(eq=True, frozen=True)
+class Lang:
+    lang: str | None = field(default=None)
+
+    def __str__(self) -> str:
+        if self.lang is None:
+            return ""
+
+        return f"%{self.lang}"
+
 
 AnyWord = TypeVar("AnyWord", Word[Fusion], Definable)
 

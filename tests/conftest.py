@@ -59,7 +59,7 @@ def sample_lexicon() -> str:
         
         entry <gravel> <stone>.PL (n.) gravel
         
-        lang ultra-modern < modern
+        lang %ultra-modern < %modern
         
         entry <gravel> {ultra-modern} <stone>.DIST-PL (n.) gravel (ultra-modern)
         """

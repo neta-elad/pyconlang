@@ -31,7 +31,10 @@ class Compiler:
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
         with Translator.new() as translator:
-            yield cls(translator)
+            try:
+                yield cls(translator)
+            except Exception as e:
+                print(e)  # todo: delete
 
     def __init__(self, translator: Translator) -> None:
         self.lexicon = Conlang(translator)
