@@ -4,16 +4,13 @@ from functools import cached_property
 from itertools import chain
 from pathlib import Path
 
-from pyconlang import LEXICON_PATH
-
+from .. import LEXICON_PATH
 from ..domain import (
     Affix,
-    AffixDefinition,
     Component,
     Compound,
     Definable,
     Describable,
-    Entry,
     Fusion,
     Joiner,
     Lexeme,
@@ -22,12 +19,10 @@ from ..domain import (
     Record,
     ResolvedForm,
     Suffix,
-    Template,
-    TemplateName,
-    Var,
     Word,
 )
 from ..parser import continue_lines
+from .domain import AffixDefinition, Entry, Template, TemplateName, Var
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
 

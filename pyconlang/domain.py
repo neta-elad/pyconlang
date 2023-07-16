@@ -1,10 +1,8 @@
 from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from functools import reduce
-from typing import Generic, TypeVar, cast
+from typing import Generic, TypeVar
 
-from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 from .unicode import combine
 
 
@@ -36,11 +34,6 @@ class Morpheme:
 
     def __str__(self) -> str:
         return f"*{self.form}{self.era or ''}"
-
-
-@dataclass(eq=True, frozen=True)
-class TemplateName:
-    name: str
 
 
 @dataclass(eq=True, frozen=True)
@@ -81,29 +74,6 @@ class Suffix(AffixBase):
 Affix = Prefix | Suffix
 
 Definable = Lexeme | Affix
-
-
-@dataclass(eq=True, frozen=True)
-class Var:
-    prefixes: tuple[Prefix, ...]
-    """prefixes are stored in reversed order"""
-
-    suffixes: tuple[Suffix, ...]
-
-    @classmethod
-    def from_prefixes_and_suffixes(
-        cls, prefixes: list[Prefix], suffixes: list[Suffix]
-    ) -> "Var":
-        return cls(tuple(reversed(prefixes)), tuple(suffixes))
-
-    def show(self, stem: str) -> str:
-        for affix in self.prefixes + self.suffixes:
-            stem = affix.combine(stem, affix.name)
-
-        return stem
-
-    def __str__(self) -> str:
-        return self.show("$")
 
 
 @dataclass(eq=True, frozen=True)
@@ -204,81 +174,4 @@ Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
 Describable = Lexeme | Affix | Morpheme
 Record = Word[Fusion] | Fusion | Describable
 
-
-@dataclass(eq=True, frozen=True)
-class Entry:
-    template: TemplateName | None
-    lexeme: Lexeme
-    form: Word[Fusion]
-    part_of_speech: PartOfSpeech
-    definition: str
-
-    def description(self) -> str:
-        return f"{self.part_of_speech} {self.definition}"
-
-
-@dataclass(eq=True, frozen=True)
-class AffixDefinition:
-    stressed: bool
-    affix: Affix
-    era: Rule | None
-    form: Word[Fusion] | Var | None
-    sources: tuple[Lexeme, ...]  # or Form - can bare Proto appear?
-    description: str
-
-    def get_era(self) -> Rule | None:
-        if self.era is not None:
-            return self.era
-        elif (
-            isinstance(self.form, Component)
-            and isinstance(self.form.form, Fusion)
-            and isinstance(self.form.form.stem, Morpheme)
-        ):
-            return self.form.form.stem.era
-        else:
-            return None
-
-    def is_var(self) -> bool:
-        return self.form is not None and isinstance(self.form, Var)
-
-    def get_form(self) -> Word[Fusion]:
-        if self.form is not None and not isinstance(self.form, Var):
-            return self.form
-        elif self.sources:
-            return reduce(
-                lambda head, tail: Compound(head, Joiner.head(), tail),
-                map(
-                    lambda source: cast(Word[Fusion], Component(Fusion(source))),
-                    self.sources,
-                ),
-            )
-        else:
-            raise AffixDefinitionMissingForm(self)
-
-    def get_var(self) -> Var:
-        if self.form is not None and isinstance(self.form, Var):
-            return self.form
-        else:
-            raise AffixDefinitionMissingVar(self)
-
-    def to_entry(self) -> Entry:
-        return Entry(
-            None,
-            self.affix.to_lexeme(),
-            self.get_form(),
-            PartOfSpeech("afx"),
-            self.description,
-        )
-
-
 ResolvedForm = Word[Morpheme]
-
-
-@dataclass(eq=True, frozen=True)
-class Template:
-    name: TemplateName
-    vars: tuple[Var, ...]
-
-    @classmethod
-    def from_args(cls, name: TemplateName, *var_args: Var) -> "Template":
-        return cls(name, var_args)

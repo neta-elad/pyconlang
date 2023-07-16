@@ -15,7 +15,7 @@ from pyparsing import (
     token_map,
 )
 
-from ..domain import AffixDefinition, Entry, PartOfSpeech, Template, TemplateName, Var
+from ..domain import PartOfSpeech
 from ..parser import (
     affix,
     compound,
@@ -27,6 +27,7 @@ from ..parser import (
     suffix,
     tokens_map,
 )
+from .domain import AffixDefinition, Entry, Tag, Template, TemplateName, Var
 
 
 def make_diagrams() -> None:
@@ -45,6 +46,12 @@ def parse_lexicon(
 
 ParserElement.set_default_whitespace_chars(" \t")
 
+tag_key = ident.copy().set_parse_action(token_map(Tag))
+tag_key_value = (ident - Suppress(":") - ident).set_parse_action(tokens_map(Tag))
+tag = tag_key_value ^ tag_key
+
+tags = (Suppress("{") - tag[...] - Suppress("}")).set_parse_action(frozenset)
+optional_tags = explicit_opt(tags, frozenset())
 
 var = (
     (
@@ -61,7 +68,7 @@ template_name = (
     .set_name("template_name")
 )
 template = (
-    (Suppress("template") - template_name - var[1, ...])
+    (Suppress("template") - template_name - optional_tags - var[1, ...])
     .set_parse_action(tokens_map(Template.from_args))
     .set_name("template")
 )
@@ -71,7 +78,6 @@ rest_of_line = Regex(r"(?:\\\n|[^#\n])*").leave_whitespace().set_name("rest of l
 rest = rest_of_line.set_parse_action(token_map(str.strip)).set_name("rest")
 
 lexical_sources = Suppress("(") - lexeme[1, ...].set_parse_action(tuple) - Suppress(")")
-
 
 affix_form = (compound ^ var).set_name("affix form")
 
@@ -131,7 +137,6 @@ lexicon_line = (Opt(meaningful_segment) + Opt(comment)).set_name("lexicon line")
 lexicon = ((lexicon_line + Suppress("\n"))[...]).set_name(  # - Opt(Suppress("\n"))
     "lexicon"
 )
-
 
 if __name__ == "__main__":
     make_diagrams()

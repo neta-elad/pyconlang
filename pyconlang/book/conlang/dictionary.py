@@ -5,7 +5,8 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
-from ...domain import Entry, Fusion, Morpheme, Word
+from ...domain import Fusion, Morpheme, Word
+from ...lexicon.domain import Entry
 from ...translate import Translator
 
 

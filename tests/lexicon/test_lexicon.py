@@ -8,10 +8,9 @@ from pyconlang.domain import (
     Prefix,
     Rule,
     Suffix,
-    TemplateName,
-    Var,
 )
 from pyconlang.lexicon import Lexicon
+from pyconlang.lexicon.domain import TemplateName, Var
 
 
 def test_resolve(parsed_lexicon: Lexicon) -> None:

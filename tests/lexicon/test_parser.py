@@ -2,10 +2,8 @@ from inspect import cleandoc
 from pathlib import Path
 
 from pyconlang.domain import (
-    AffixDefinition,
     Component,
     Compound,
-    Entry,
     Fusion,
     Joiner,
     Lexeme,
@@ -14,19 +12,28 @@ from pyconlang.domain import (
     Prefix,
     Rule,
     Suffix,
+)
+from pyconlang.lexicon import Lexicon
+from pyconlang.lexicon.domain import (
+    AffixDefinition,
+    Entry,
+    Tag,
     Template,
     TemplateName,
     Var,
 )
-from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.parser import (
     affix_definition,
     comment,
     entry,
     include,
     lexical_sources,
+    optional_tags,
     part_of_speech,
     quoted_string,
+    tag,
+    tags,
+    template,
     template_name,
     var,
 )
@@ -245,6 +252,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.templates == {
         Template(
             TemplateName("plural"),
+            frozenset(),
             (Var((), ()), Var((), (Suffix("PL"),))),
         )
     }
@@ -302,3 +310,28 @@ def test_include_mechanism(
     assert len(lexicon.entries) == len(parsed_lexicon.entries)
     assert len(lexicon.affixes) == len(parsed_lexicon.affixes)
     assert len(lexicon.templates) == len(parsed_lexicon.templates)
+
+
+def test_tag() -> None:
+    assert parse(tag, "foo") == Tag("foo")
+    assert parse(tag, "foo:bar") == Tag("foo", "bar")
+    assert parse(tags, "{ foo:bar baz qux:quux }") == {
+        Tag("foo", "bar"),
+        Tag("baz"),
+        Tag("qux", "quux"),
+    }
+    assert parse(optional_tags, "{ foo:bar baz qux:quux }") == {
+        Tag("foo", "bar"),
+        Tag("baz"),
+        Tag("qux", "quux"),
+    }
+    assert parse(optional_tags, "") == frozenset()
+
+
+def test_template() -> None:
+    assert parse(template, "template &name $") == Template(
+        TemplateName("name"), frozenset(), (Var(),)
+    )
+    assert parse(template, "template &name { foo bar:baz } $") == Template(
+        TemplateName("name"), frozenset({Tag("foo"), Tag("bar", "baz")}), (Var(),)
+    )
