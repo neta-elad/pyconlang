@@ -13,6 +13,7 @@ from ..domain import (
     Describable,
     Fusion,
     Joiner,
+    Lang,
     Lexeme,
     Morpheme,
     Prefix,
@@ -22,7 +23,7 @@ from ..domain import (
     Word,
 )
 from ..parser import continue_lines
-from .domain import AffixDefinition, Entry, Template, TemplateName, Var
+from .domain import AffixDefinition, Entry, LangParent, Template, TemplateName, Var
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
 
@@ -32,6 +33,7 @@ class Lexicon:
     entries: set[Entry]
     affixes: set[AffixDefinition]
     templates: set[Template]
+    lang_parents: set[LangParent]
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
@@ -49,8 +51,10 @@ class Lexicon:
 
     @classmethod
     def resolve_paths(
-        cls, lines: Iterable[Entry | AffixDefinition | Template | Path], parent: Path
-    ) -> Iterable[Entry | AffixDefinition | Template]:
+        cls,
+        lines: Iterable[Entry | AffixDefinition | Template | LangParent | Path],
+        parent: Path,
+    ) -> Iterable[Entry | AffixDefinition | LangParent | Template]:
         return (
             definition
             for line in lines
@@ -66,8 +70,8 @@ class Lexicon:
 
     @classmethod
     def resolve_line(
-        cls, line: Entry | AffixDefinition | Template | Path, parent: Path
-    ) -> Iterable[Entry | AffixDefinition | Template]:
+        cls, line: Entry | AffixDefinition | Template | LangParent | Path, parent: Path
+    ) -> Iterable[Entry | AffixDefinition | Template | LangParent]:
         match line:
             case Path():
                 path = cls.resolve_if_relative(line, parent)
@@ -81,11 +85,12 @@ class Lexicon:
 
     @classmethod
     def from_iterable(
-        cls, iterable: Iterable[Entry | AffixDefinition | Template]
+        cls, iterable: Iterable[Entry | AffixDefinition | Template | LangParent]
     ) -> "Lexicon":
         entries = set()
         affixes = set()
         templates = set()
+        lang_parents = set()
         for record in iterable:
             match record:
                 case Entry():
@@ -94,82 +99,105 @@ class Lexicon:
                     affixes.add(record)
                 case Template():
                     templates.add(record)
+                case LangParent():
+                    lang_parents.add(record)
                 case _:
                     raise UnexpectedRecord(record)
 
-        return cls(entries, affixes, templates)
+        return cls(entries, affixes, templates, lang_parents)
 
     @cached_property
-    def entry_mapping(self) -> dict[Lexeme, Entry]:
-        return {entry.lexeme: entry for entry in self.entries} | {
-            definition.affix.to_lexeme(): definition.to_entry()
+    def entry_mapping(self) -> dict[tuple[Lang, Lexeme], Entry]:
+        return {(entry.tags.lang, entry.lexeme): entry for entry in self.entries} | {
+            (definition.tags.lang, definition.affix.to_lexeme()): definition.to_entry()
             for definition in self.affixes
             if not definition.is_var()
         }
 
-    def get_entry(self, lexeme: Lexeme) -> Entry:
-        if lexeme in self.entry_mapping:
-            return self.entry_mapping[lexeme]
+    def get_entry(self, lexeme: Lexeme, lang: Lang = None) -> Entry:
+        if (lang, lexeme) in self.entry_mapping:
+            return self.entry_mapping[(lang, lexeme)]
 
-        raise MissingLexeme(lexeme.name)
+        parent = self.parent(lang)
+        if lang == parent:
+            raise MissingLexeme(f"{lexeme.name} in {lang}")
+        else:
+            return self.get_entry(lexeme, parent)
 
     @cached_property
-    def affix_mapping(self) -> dict[Affix, AffixDefinition]:
-        return {definition.affix: definition for definition in self.affixes}
+    def affix_mapping(self) -> dict[tuple[Lang, Affix], AffixDefinition]:
+        return {
+            (definition.tags.lang, definition.affix): definition
+            for definition in self.affixes
+        }
 
-    def get_affix(self, affix: Affix) -> AffixDefinition:
-        if affix in self.affix_mapping:
-            return self.affix_mapping[affix]
+    def get_affix(self, affix: Affix, lang: Lang = None) -> AffixDefinition:
+        if (lang, affix) in self.affix_mapping:
+            return self.affix_mapping[(lang, affix)]
 
-        raise MissingAffix(affix.name)
+        parent = self.parent(lang)
+        if lang == parent:
+            raise MissingAffix(f"{affix.name} in {lang}")
+        else:
+            return self.get_affix(affix, parent)
 
-    def resolve(self, word: Word[Fusion]) -> ResolvedForm:
+    def resolve(self, word: Word[Fusion], lang: Lang = None) -> ResolvedForm:
         match word:
             case Component():
-                return self.resolve_fusion(word.form)
+                return self.resolve_fusion(word.form, lang)
             case Compound():
-                return self.resolve_compound(word)
+                return self.resolve_compound(word, lang)
 
     def resolve_any(
-        self, form: Word[Fusion] | Fusion | Morpheme | Lexeme
+        self, form: Word[Fusion] | Fusion | Morpheme | Lexeme, lang: Lang = None
     ) -> ResolvedForm:
         match form:
             case Fusion():
-                return self.resolve_fusion(form)
+                return self.resolve_fusion(form, lang)
             case Morpheme():
                 return Component(form)
             case Lexeme():
-                return self.resolve(self.get_entry(form).form)
+                return self.resolve(self.get_entry(form, lang).form, lang)
             case _:
-                return self.resolve(form)
+                return self.resolve(form, lang)
 
-    def resolve_fusion(self, fusion: Fusion) -> ResolvedForm:
+    def resolve_fusion(self, fusion: Fusion, lang: Lang = None) -> ResolvedForm:
         # prefixes = self.resolve_affixes(fusion.prefixes)  # todo: remove?
         # suffixes = self.resolve_affixes(fusion.suffixes)
         return self.extend_with_affixes(
-            self.resolve_any(fusion.stem), *(fusion.prefixes + fusion.suffixes)
+            self.resolve_any(fusion.stem, lang),
+            lang,
+            *(fusion.prefixes + fusion.suffixes),
         )
 
-    def resolve_compound(self, compound: Compound[Fusion]) -> ResolvedForm:
-        head = self.resolve(compound.head)
-        tail = self.resolve(compound.tail)
+    def resolve_compound(
+        self, compound: Compound[Fusion], lang: Lang = None
+    ) -> ResolvedForm:
+        head = self.resolve(compound.head, lang)
+        tail = self.resolve(compound.tail, lang)
         return Compound(
             head,
             compound.joiner,
             tail,
         )
 
-    def extend_with_affixes(self, form: ResolvedForm, *affixes: Affix) -> ResolvedForm:
+    def extend_with_affixes(
+        self, form: ResolvedForm, lang: Lang, *affixes: Affix
+    ) -> ResolvedForm:
         for affix in affixes:
-            form = self.extend_with_affix(form, affix)
+            form = self.extend_with_affix(form, affix, lang)
 
         return form
 
-    def extend_with_affix(self, form: ResolvedForm, affix: Affix) -> ResolvedForm:
-        definition = self.get_affix(affix)
+    def extend_with_affix(
+        self, form: ResolvedForm, affix: Affix, lang: Lang = None
+    ) -> ResolvedForm:
+        definition = self.get_affix(affix, lang)
         if definition.is_var():
             return self.extend_with_affixes(
-                form, *(definition.get_var().prefixes + definition.get_var().suffixes)
+                form,
+                lang,
+                *(definition.get_var().prefixes + definition.get_var().suffixes),
             )
         else:
             match definition.affix:
@@ -200,9 +228,11 @@ class Lexicon:
                             self.resolve(definition.get_form()),
                         )
 
-    def substitute(self, var: Var, form: Word[Fusion]) -> ResolvedForm:
+    def substitute(
+        self, var: Var, form: Word[Fusion], lang: Lang = None
+    ) -> ResolvedForm:
         return self.extend_with_affixes(
-            self.resolve(form), *(var.prefixes + var.suffixes)
+            self.resolve(form, lang), lang, *(var.prefixes + var.suffixes)
         )
 
     def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:
@@ -217,51 +247,67 @@ class Lexicon:
 
     def resolve_entry(self, entry: Entry) -> list[ResolvedForm]:
         return [
-            self.substitute(var, entry.form) for var in self.get_vars(entry.template)
+            self.substitute(var, entry.form, entry.tags.lang)
+            for var in self.get_vars(entry.template)
         ]
 
-    def form(self, record: Definable) -> Word[Fusion]:
+    def form(self, record: Definable, lang: Lang = None) -> Word[Fusion]:
         match record:
             case Prefix() | Suffix():
-                return self.get_affix(record).get_form()
+                return self.get_affix(record, lang).get_form()
 
             case Lexeme():
-                return self.get_entry(record).form
+                return self.get_entry(record, lang).form
 
-    def resolve_definable(self, record: Definable) -> ResolvedForm:
-        return self.resolve(self.form(record))
+    def resolve_definable(self, record: Definable, lang: Lang = None) -> ResolvedForm:
+        return self.resolve(self.form(record, lang), lang)
 
-    def define(self, record: Definable) -> str:
+    def define(self, record: Definable, lang: Lang = None) -> str:
         match record:
             case Prefix() | Suffix():
-                return self.get_affix(record).description
+                return self.get_affix(record, lang).description
 
             case Lexeme():
-                return self.get_entry(record).description()
+                return self.get_entry(record, lang).description()
 
-    def lookup(self, record: Record) -> list[tuple[Describable, str]]:
+    def lookup(
+        self, record: Record, lang: Lang = None
+    ) -> list[tuple[Describable, str]]:
         match record:
             case Prefix() | Suffix():
-                return self.singleton_lookup(record, self.get_affix(record).description)
+                return self.singleton_lookup(
+                    record, self.get_affix(record, lang).description
+                )
             case Lexeme():
-                entry = self.get_entry(record)
+                entry = self.get_entry(record, lang)
                 return self.singleton_lookup(record, entry.description())
             case Morpheme():
                 return self.singleton_lookup(record, str(record))
             case Fusion():
                 return self.lookup_records(
-                    record.stem, *record.prefixes, *record.suffixes
+                    lang, record.stem, *record.prefixes, *record.suffixes
                 )
             case Compound():
-                return self.lookup(record.head) + self.lookup(record.tail)
+                return self.lookup(record.head, lang) + self.lookup(record.tail, lang)
             case Component():
-                return self.lookup(record.form)
+                return self.lookup(record.form, lang)
 
-    def lookup_records(self, *records: Record) -> list[tuple[Describable, str]]:
-        return list(chain(*map(self.lookup, records)))
+    def lookup_records(
+        self, lang: Lang, *records: Record
+    ) -> list[tuple[Describable, str]]:
+        return list(chain(*map(lambda record: self.lookup(record, lang), records)))
 
     @staticmethod
     def singleton_lookup(
         record: Describable, description: str
     ) -> list[tuple[Describable, str]]:
         return [(record, description)]
+
+    @cached_property
+    def parents(self) -> dict[Lang, Lang]:
+        return {
+            lang_parent.lang: lang_parent.parent for lang_parent in self.lang_parents
+        }
+
+    def parent(self, lang: Lang) -> Lang:
+        return self.parents.get(lang)

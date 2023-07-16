@@ -55,7 +55,13 @@ def sample_lexicon() -> str:
         # here is how to use a template
         entry &plural <stone> *apak (n.) stone, pebble
         
+        entry <stone> {modern} *kapa (n.) stone, pebble (modern)
+        
         entry <gravel> <stone>.PL (n.) gravel
+        
+        lang ultra-modern < modern
+        
+        entry <gravel> {ultra-modern} <stone>.DIST-PL (n.) gravel (ultra-modern)
         """
     )
 

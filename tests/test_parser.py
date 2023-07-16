@@ -11,6 +11,7 @@ from pyconlang.domain import (
     Morpheme,
     Prefix,
     Rule,
+    Sentence,
     Suffix,
 )
 from pyconlang.parser import (
@@ -109,20 +110,37 @@ def test_compound() -> None:
 
 
 def test_sentence() -> None:
-    assert tuple(parse_sentence("*aka <strong> COL.<with space> *taka@start.PL")) == (
-        Component(Fusion(Morpheme("aka"))),
-        Component(Fusion(Lexeme("strong"), ())),
-        Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
-        Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+    assert parse_sentence("*aka <strong> COL.<with space> *taka@start.PL") == Sentence(
+        None,
+        [
+            Component(Fusion(Morpheme("aka"))),
+            Component(Fusion(Lexeme("strong"), ())),
+            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+        ],
+    )
+
+    assert parse_sentence(
+        "%test *aka <strong> COL.<with space> *taka@start.PL"
+    ) == Sentence(
+        "test",
+        [
+            Component(Fusion(Morpheme("aka"))),
+            Component(Fusion(Lexeme("strong"), ())),
+            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+        ],
     )
 
 
 def test_definables() -> None:
-    assert tuple(parse_definables("<strong> COL. .PL")) == (
+    assert parse_definables("<strong> COL. .PL").words == [
         Lexeme("strong"),
         Prefix("COL"),
         Suffix("PL"),
-    )
+    ]
+
+    assert parse_definables("%modern <strong> COL. .PL").lang == "modern"
 
 
 def parse(parser: ParserElement, string: str) -> Any:

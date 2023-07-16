@@ -18,6 +18,7 @@ from pyconlang.lexicon.domain import (
     AffixDefinition,
     Entry,
     Tag,
+    Tags,
     Template,
     TemplateName,
     Var,
@@ -51,6 +52,7 @@ def test_entry() -> None:
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
         Lexeme("strong"),
+        Tags(),
         Component(Fusion(Morpheme("kipu", Rule("era1")))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -61,6 +63,7 @@ def test_entry() -> None:
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
+        Tags(),
         Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -71,6 +74,7 @@ def test_entry() -> None:
     ) == Entry(
         TemplateName("plural"),
         Lexeme("strong"),
+        Tags(),
         Component(Fusion(Lexeme("heavy"), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -91,59 +95,59 @@ def test_affix_definition() -> None:
     assert parse(
         affix_definition, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
-        True,
-        Suffix("PL"),
-        Rule("era"),
-        Component(Fusion(Morpheme("proto"))),
-        (Lexeme("big"), Lexeme("pile")),
-        "plural for inanimate",
+        stressed=True,
+        affix=Suffix("PL"),
+        era=Rule("era"),
+        form=Component(Fusion(Morpheme("proto"))),
+        sources=(Lexeme("big"), Lexeme("pile")),
+        description="plural for inanimate",
     )
 
     assert parse(
         affix_definition, "affix .PL *proto@era plural for inanimate"
     ) == AffixDefinition(
-        False,
-        Suffix("PL"),
-        None,
-        Component(Fusion(Morpheme("proto", Rule("era")))),
-        (),
-        "plural for inanimate",
+        stressed=False,
+        affix=Suffix("PL"),
+        form=Component(Fusion(Morpheme("proto", Rule("era")))),
+        description="plural for inanimate",
     )
 
     assert parse(
-        affix_definition, "affix .PL (<big> <pile>) plural for inanimate"
+        affix_definition,
+        "affix .PL { foo bar:baz } (<big> <pile>) plural for inanimate",
     ) == AffixDefinition(
-        False,
-        Suffix("PL"),
-        None,
-        None,
-        (Lexeme("big"), Lexeme("pile")),
-        "plural for inanimate",
+        stressed=False,
+        affix=Suffix("PL"),
+        tags=Tags.from_iterable({Tag.lang("foo"), Tag("bar", "baz")}),
+        era=None,
+        form=None,
+        sources=(Lexeme("big"), Lexeme("pile")),
+        description="plural for inanimate",
     )
 
     assert parse(
         affix_definition, "affix COL. <big>.PL collective form"
     ) == AffixDefinition(
-        False,
-        Prefix("COL"),
-        None,
-        Component(Fusion(Lexeme("big"), (), (Suffix("PL"),))),
-        (),
+        stressed=False,
+        affix=Prefix("COL"),
+        era=None,
+        form=Component(Fusion(Lexeme("big"), (), (Suffix("PL"),))),
+        sources=(),
         description="collective form",
     )
 
     assert parse(
         affix_definition, 'affix COL. "<big> !+ <pile>.PL" collective form'
     ) == AffixDefinition(
-        False,
-        Prefix("COL"),
-        None,
-        Compound(
+        stressed=False,
+        affix=Prefix("COL"),
+        era=None,
+        form=Compound(
             Component(Fusion(Lexeme("big"))),
             Joiner.head(),
             Component(Fusion(Lexeme("pile"), (), (Suffix("PL"),))),
         ),
-        (),
+        sources=(),
         description="collective form",
     )
 
@@ -160,6 +164,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             None,
             Lexeme("strong"),
+            Tags(),
             Component(Fusion(Morpheme("kipu", Rule("era1")))),
             PartOfSpeech("adj"),
             "strong, stable",
@@ -167,6 +172,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             None,
             Lexeme("big"),
+            Tags(),
             Component(Fusion(Morpheme("iki"))),
             PartOfSpeech("adj"),
             "big, great",
@@ -174,20 +180,39 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             TemplateName("plural"),
             Lexeme("stone"),
+            Tags(),
             Component(Fusion(Morpheme("apak"))),
             PartOfSpeech("n"),
             "stone, pebble",
         ),
         Entry(
             None,
+            Lexeme("stone"),
+            Tags.from_iterable({Tag.lang("modern")}),
+            Component(Fusion(Morpheme("kapa"))),
+            PartOfSpeech("n"),
+            "stone, pebble (modern)",
+        ),
+        Entry(
+            None,
             Lexeme("gravel"),
+            Tags(),
             Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
             PartOfSpeech("n"),
             "gravel",
         ),
         Entry(
             None,
+            Lexeme("gravel"),
+            Tags.from_iterable({Tag.lang("ultra-modern")}),
+            Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),))),
+            PartOfSpeech("n"),
+            "gravel (ultra-modern)",
+        ),
+        Entry(
+            None,
             Lexeme("pile"),
+            Tags(),
             Component(Fusion(Morpheme("ma"))),
             PartOfSpeech("n"),
             "pile",
@@ -252,7 +277,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.templates == {
         Template(
             TemplateName("plural"),
-            frozenset(),
+            Tags(),
             (Var((), ()), Var((), (Suffix("PL"),))),
         )
     }
@@ -313,25 +338,31 @@ def test_include_mechanism(
 
 
 def test_tag() -> None:
-    assert parse(tag, "foo") == Tag("foo")
+    assert parse(tag, "foo") == Tag.lang("foo")
     assert parse(tag, "foo:bar") == Tag("foo", "bar")
-    assert parse(tags, "{ foo:bar baz qux:quux }") == {
-        Tag("foo", "bar"),
-        Tag("baz"),
-        Tag("qux", "quux"),
-    }
-    assert parse(optional_tags, "{ foo:bar baz qux:quux }") == {
-        Tag("foo", "bar"),
-        Tag("baz"),
-        Tag("qux", "quux"),
-    }
-    assert parse(optional_tags, "") == frozenset()
+    assert parse(tags, "{ foo:bar baz qux:quux }") == Tags.from_iterable(
+        {
+            Tag("foo", "bar"),
+            Tag.lang("baz"),
+            Tag("qux", "quux"),
+        }
+    )
+    assert parse(optional_tags, "{ foo:bar baz qux:quux }") == Tags.from_iterable(
+        {
+            Tag("foo", "bar"),
+            Tag.lang("baz"),
+            Tag("qux", "quux"),
+        }
+    )
+    assert parse(optional_tags, "") == Tags()
 
 
 def test_template() -> None:
     assert parse(template, "template &name $") == Template(
-        TemplateName("name"), frozenset(), (Var(),)
+        TemplateName("name"), Tags(), (Var(),)
     )
     assert parse(template, "template &name { foo bar:baz } $") == Template(
-        TemplateName("name"), frozenset({Tag("foo"), Tag("bar", "baz")}), (Var(),)
+        TemplateName("name"),
+        Tags.from_iterable({Tag("lang", "foo"), Tag("bar", "baz")}),
+        (Var(),),
     )

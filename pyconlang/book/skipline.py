@@ -31,7 +31,7 @@ class SkipLine(Extension):
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.registerExtension(self)
-        md.preprocessors.register(SkipLinePreprocessor(md, self), "skipline", 0)
+        md.preprocessors.register(SkipLinePreprocessor(md, self), "skipline", 1000)
 
     def reset(self) -> None:
         self.skipped = []

@@ -91,6 +91,8 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
           
           d{<stone>} d{.PL}
           
+          r{%modern <stone>}
+          
           """,
     )
 
@@ -101,6 +103,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
     assert "ʃiga" in html
     assert "apak" in html
     assert "kika" in html
+    assert "kaba" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
 
@@ -123,7 +126,11 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
           d[.PL]
           
           d[<gravel>.COL]
+          
+          ph[%ultra-modern <gravel>]
+          !! d[%ultra-modern <gravel>]
           """,
+        # todo: definable with lang
     )
 
     html = read()
@@ -132,6 +139,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
     assert "<strong>shiga</strong>" in html
     assert "<strong>abagigi abak shiga</strong>" in html
     assert "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>" in html
+    assert "<ruby><strong>kabaishima</strong> <rt>[kabaiʃima]</rt></ruby>" in html
     assert "<em>*apak</em>" in html
     assert "<em>*kika</em>" in html
     assert "<em>*iki</em>" in html
@@ -159,8 +167,6 @@ def test_before_after(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    print(html)
-
     assert "<em>*apak</em> &gt; <strong>abak</strong>" in html
     assert "<strong>abak</strong> &lt; <em>*apak</em>" in html
     assert (
@@ -180,22 +186,34 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
           
           g[<stone>.PL <gravel>.PL]
           
+          
+          g[%ultra-modern <gravel>]
+          
+          
           """,
     )
 
     html = read()
 
+    print(html)  # todo: delete
+
     assert (
         "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"
-        + "<th><ruby><strong>abagigiigi</strong> <rt>[abagigiigi]</rt></ruby></th>"
+        "<th><ruby><strong>abagigiigi</strong> <rt>[abagigiigi]</rt></ruby></th>"
         in html
     )
 
     assert (
         '<td><abbr title="(n.) stone, pebble">stone</abbr>.<abbr title="plural for inanimate">PL</abbr></td>\n'
-        + '<td><abbr title="(n.) gravel">gravel</abbr>.<abbr title="plural for inanimate">PL</abbr></td>'
+        '<td><abbr title="(n.) gravel">gravel</abbr>.<abbr title="plural for inanimate">PL</abbr></td>'
         in html
     )
+
+    assert (
+        "<th><ruby><strong>kabaishima</strong> <rt>[kabaiʃima]</rt></ruby></th>" in html
+    )
+
+    assert '<td><abbr title="(n.) gravel (ultra-modern)">gravel</abbr></td>' in html
 
 
 def test_metadata(simple_pyconlang: Path) -> None:

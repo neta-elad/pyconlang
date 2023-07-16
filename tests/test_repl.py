@@ -45,6 +45,7 @@ def test_phonetic(simple_repl: Evaluator) -> None:
     assert simple_repl("p") == "abaʃi"
     assert simple_repl("phonetic *apaki") == "abaʃi"
     assert simple_repl("phonetic <big>.PL") == "iʃiigi"
+    # todo: lang tests
 
 
 def test_simple(simple_repl: Evaluator) -> None:

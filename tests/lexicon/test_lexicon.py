@@ -23,6 +23,21 @@ def test_resolve(parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),))), "modern"
+    ) == Compound(
+        Component(Morpheme("kapa")),
+        Joiner.head(),
+        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+    )
+    assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("gravel"), (), ())), "ultra-modern"
+    ) == Compound(
+        Component(Morpheme("kapa")),
+        Joiner.head(),
+        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+    )
+
+    assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),)))
     ) == Compound(
         Component(Morpheme("apak")),

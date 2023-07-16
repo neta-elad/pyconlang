@@ -175,3 +175,13 @@ Describable = Lexeme | Affix | Morpheme
 Record = Word[Fusion] | Fusion | Describable
 
 ResolvedForm = Word[Morpheme]
+
+Lang = str | None
+
+AnyWord = TypeVar("AnyWord", Word[Fusion], Definable)
+
+
+@dataclass
+class Sentence(Generic[AnyWord]):
+    lang: Lang
+    words: list[AnyWord]

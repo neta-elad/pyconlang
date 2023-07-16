@@ -27,7 +27,16 @@ from ..parser import (
     suffix,
     tokens_map,
 )
-from .domain import AffixDefinition, Entry, Tag, Template, TemplateName, Var
+from .domain import (
+    AffixDefinition,
+    Entry,
+    LangParent,
+    Tag,
+    Tags,
+    Template,
+    TemplateName,
+    Var,
+)
 
 
 def make_diagrams() -> None:
@@ -36,9 +45,9 @@ def make_diagrams() -> None:
 
 def parse_lexicon(
     lines: Iterable[str],
-) -> Iterable[Entry | AffixDefinition | Template | Path]:
+) -> Iterable[Entry | AffixDefinition | Template | LangParent | Path]:
     return [
-        cast(Entry | AffixDefinition | Template | Path, parsed_line[0])
+        cast(Entry | AffixDefinition | Template | LangParent | Path, parsed_line[0])
         for line in lines
         if (parsed_line := lexicon_line.parse_string(line, parse_all=True))
     ]
@@ -46,12 +55,12 @@ def parse_lexicon(
 
 ParserElement.set_default_whitespace_chars(" \t")
 
-tag_key = ident.copy().set_parse_action(token_map(Tag))
+tag_key = ident.copy().set_parse_action(token_map(Tag.lang))
 tag_key_value = (ident - Suppress(":") - ident).set_parse_action(tokens_map(Tag))
 tag = tag_key_value ^ tag_key
 
-tags = (Suppress("{") - tag[...] - Suppress("}")).set_parse_action(frozenset)
-optional_tags = explicit_opt(tags, frozenset())
+tags = (Suppress("{") - tag[...] - Suppress("}")).set_parse_action(Tags.from_iterable)
+optional_tags = explicit_opt(tags, Tags())
 
 var = (
     (
@@ -88,6 +97,7 @@ affix_definition = (
         .set_parse_action(lambda tokens: len(tokens) > 0)
         .set_results_name("stressed")
         - affix
+        - optional_tags
         - explicit_opt(rule)
         - explicit_opt(affix_form)
         - explicit_opt(lexical_sources, ())
@@ -108,6 +118,7 @@ entry = (
         Suppress("entry")
         - explicit_opt(template_name)
         - lexeme
+        - optional_tags
         - compound
         - part_of_speech
         - rest
@@ -116,7 +127,13 @@ entry = (
     .set_name("entry")
 )
 
-record = (entry ^ affix_definition ^ template).set_name("record")
+lang_parent = (
+    (Suppress("lang") - ident - Suppress("<") - ident)
+    .set_parse_action(tokens_map(LangParent))
+    .set_name("lang_parent")
+)
+
+record = (entry ^ affix_definition ^ template ^ lang_parent).set_name("record")
 
 comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 

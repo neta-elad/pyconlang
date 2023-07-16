@@ -1,7 +1,7 @@
 import re
 from abc import ABCMeta, abstractmethod
 
-from ...domain import Definable, Lexeme, Prefix, ResolvedForm, Suffix
+from ...domain import Definable, Lang, Lexeme, Prefix, ResolvedForm, Suffix
 from .conlang_macro import ConlangMacro
 
 
@@ -40,16 +40,17 @@ class AdvancedDefinitionMacro(AdvancedMacro):
         return "d"
 
     def map_inner_text(self, text: str) -> str:
+        sentence = self.translator.parse_definables(text)
         return "".join(
             map(
-                self.map_definable,
-                self.translator.parse_definables(text),
+                lambda word: self.map_definable(word, sentence.lang),
+                sentence.words,
             )
         )
 
     @classmethod
-    def map_definable(cls, definable: Definable) -> str:
-        abbr = cls.build_definition_abbr(definable.name, str(definable))
+    def map_definable(cls, definable: Definable, lang: Lang) -> str:
+        abbr = cls.build_definition_abbr(lang, definable.name, str(definable))
         match definable:
             case Lexeme():
                 return abbr
@@ -57,8 +58,11 @@ class AdvancedDefinitionMacro(AdvancedMacro):
                 return definable.combine("", abbr)
 
     @staticmethod
-    def build_definition_abbr(text: str, title: str) -> str:
-        return f'<abbr title="d{{{title}}}">{text}</abbr>'
+    def build_definition_abbr(lang: Lang, text: str, title: str) -> str:
+        lang_string = ""  # todo: ugly
+        if lang is not None:
+            lang_string = f"%{lang} "
+        return f'<abbr title="d{{{lang_string}{title}}}">{text}</abbr>'
 
 
 class GlossTableMacro(AdvancedMacro):
@@ -67,14 +71,25 @@ class GlossTableMacro(AdvancedMacro):
         return "g"
 
     def map_inner_text(self, text: str) -> str:
-        words = self.translator.parse_sentence(text.strip())
+        sentence = self.translator.parse_sentence(text.strip())
+        words = sentence.words
+        lang = ""
+        if sentence.lang is not None:
+            lang = f"%{sentence.lang} "
+        # todo: should also put lang
 
         result = (
-            "|".join(f"ph[{word}]" for word in words)
+            "|"
+            + "|".join(f"ph[{lang}{word}]" for word in words)
+            + "|"
             + "\n"
+            + "|"
             + "|".join("-" for _word in words)
+            + "|"
             + "\n"
-            + "|".join(f"d[{word}]" for word in words)
+            + "|"
+            + "|".join(f"d[{lang}{word}]" for word in words)
+            + "|"  # todo: lang in definable
         )
 
         return f"&{{\n\n{result}\n\n}}{{:.gloss-table}}"
@@ -86,8 +101,11 @@ class AdvancedProtoMacro(AdvancedMacro):
         return "pr"
 
     def map_inner_text(self, text: str) -> str:
-        words = self.translator.parse_sentence(text.strip())
-        forms = [self.translator.lexicon.resolve(word) for word in words]
+        sentence = self.translator.parse_sentence(text.strip())
+        forms = [
+            self.translator.lexicon.resolve(word, sentence.lang)
+            for word in sentence.words
+        ]
         return " ".join(_join_morphemes(form) for form in forms)
 
 

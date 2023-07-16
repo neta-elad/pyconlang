@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from functools import reduce
-from typing import cast
+from functools import cached_property, reduce
+from typing import Self, cast
 
 from ..domain import (
     Affix,
@@ -8,6 +9,7 @@ from ..domain import (
     Compound,
     Fusion,
     Joiner,
+    Lang,
     Lexeme,
     Morpheme,
     PartOfSpeech,
@@ -22,10 +24,34 @@ from ..errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 @dataclass(eq=True, frozen=True)
 class Tag:
     key: str
-    value: str | None = field(default=None)
+    value: str
+
+    @cached_property
+    def is_lang(self) -> bool:
+        return self.key == "lang"
+
+    @classmethod
+    def lang(cls, lang: str) -> Self:
+        return cls("lang", lang)
 
 
-Tags = frozenset[Tag]
+@dataclass(eq=True, frozen=True)
+class Tags:
+    tags: frozenset[Tag] = field(default_factory=frozenset)
+
+    @classmethod
+    def from_iterable(cls, iterable: Iterable[Tag]) -> Self:
+        return cls(frozenset(iterable))
+
+    # todo: check no tag is defined twice?
+
+    @cached_property
+    def map(self) -> dict[str, str]:
+        return {tag.key: tag.value for tag in self.tags}
+
+    @cached_property
+    def lang(self) -> Lang:
+        return self.map.get("lang")
 
 
 @dataclass(eq=True, frozen=True)
@@ -71,6 +97,7 @@ class Template:
 class Entry:
     template: TemplateName | None
     lexeme: Lexeme
+    tags: Tags
     form: Word[Fusion]
     part_of_speech: PartOfSpeech
     definition: str
@@ -83,10 +110,13 @@ class Entry:
 class AffixDefinition:
     stressed: bool
     affix: Affix
-    era: Rule | None
-    form: Word[Fusion] | Var | None
-    sources: tuple[Lexeme, ...]  # or Form - can bare Proto appear?
-    description: str
+    tags: Tags = field(default_factory=Tags)
+    era: Rule | None = field(default=None)
+    form: Word[Fusion] | Var | None = field(default=None)
+    sources: tuple[Lexeme, ...] = field(
+        default_factory=tuple
+    )  # or Form - can bare Proto appear?
+    description: str = field(default="")
 
     def get_era(self) -> Rule | None:
         if self.era is not None:
@@ -127,7 +157,14 @@ class AffixDefinition:
         return Entry(
             None,
             self.affix.to_lexeme(),
+            self.tags,
             self.get_form(),
             PartOfSpeech("afx"),
             self.description,
         )
+
+
+@dataclass(eq=True, frozen=True)
+class LangParent:
+    lang: str
+    parent: str

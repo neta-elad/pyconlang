@@ -26,6 +26,7 @@ from .domain import (
     Morpheme,
     Prefix,
     Rule,
+    Sentence,
     Suffix,
     Word,
 )
@@ -56,13 +57,15 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> list[Word[Fusion]]:
-    return cast(list[Word[Fusion]], list(sentence.parse_string(string, parse_all=True)))
-
-
-def parse_definables(string: str) -> list[Definable]:
+def parse_sentence(string: str) -> Sentence[Word[Fusion]]:
     return cast(
-        list[Definable], list(definable[...].parse_string(string, parse_all=True))
+        Sentence[Word[Fusion]], sentence.parse_string(string, parse_all=True)[0]
+    )
+
+
+def parse_definables(string: str) -> Sentence[Definable]:
+    return cast(
+        Sentence[Definable], definable_sentence.parse_string(string, parse_all=True)[0]
     )
 
 
@@ -154,10 +157,16 @@ joined_compound = (
     .set_name("joined compound")
 )
 
-
 compound <<= fusion_or_bracketed ^ joined_compound
 
+words = Group(compound[...]).set_parse_action(token_map(list))
 
-sentence = compound[...]
+lang = explicit_opt(Suppress("%") - ident)
+
+sentence = (lang - words).set_parse_action(tokens_map(Sentence))
 
 definable = (lexeme ^ affix).set_name("definable")
+
+definables = Group(definable[...]).set_parse_action(token_map(list))
+
+definable_sentence = (lang - definables).set_parse_action(tokens_map(Sentence))
