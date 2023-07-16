@@ -7,6 +7,7 @@ import pytest
 from prompt_toolkit.input import PipeInput
 from pytest import CaptureFixture
 
+from pyconlang.metadata import Metadata
 from pyconlang.repl import create_session
 from pyconlang.repl import run as run_repl
 
@@ -29,6 +30,24 @@ def simple_repl(
         yield evaluate
 
 
+@pytest.fixture
+def repl_with_modern_default(
+    capsys: CaptureFixture[str], simple_pyconlang: Path
+) -> Generator[Evaluator, None, None]:
+    metadata = Metadata.default()
+    metadata.lang = "modern"
+    metadata.save()
+    with create_session() as session:
+
+        def evaluate(line: str) -> str:
+            session.onecmd(line)
+            return capsys.readouterr().out.strip()
+
+        yield evaluate
+    metadata.lang = None
+    metadata.save()
+
+
 def test_basic(simple_repl: Evaluator) -> None:
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("<big>") == "ishi"
@@ -39,12 +58,20 @@ def test_basic(simple_repl: Evaluator) -> None:
     assert simple_repl("*apak +!@era1 *i") == "abagi"
 
 
+def test_default_lang(repl_with_modern_default: Evaluator) -> None:
+    assert repl_with_modern_default("p <stone>") == "kaba"
+    assert repl_with_modern_default("p %% <stone>") == "abak"
+    assert repl_with_modern_default("p %% STONE.<stone>") == "abakmaabak"
+    assert repl_with_modern_default("p STONE.<stone>") == "abakmagaba"
+
+
 def test_phonetic(simple_repl: Evaluator) -> None:
     assert simple_repl("p *apaki") == "abaʃi"
     assert simple_repl("*apaki") == "abashi"
     assert simple_repl("p") == "abaʃi"
     assert simple_repl("phonetic *apaki") == "abaʃi"
     assert simple_repl("phonetic <big>.PL") == "iʃiigi"
+    assert simple_repl("p <stone>") == "abak"
     assert simple_repl("p %modern <stone>") == "kaba"
 
 

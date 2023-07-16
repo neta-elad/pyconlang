@@ -112,7 +112,7 @@ def test_compound() -> None:
 
 def test_sentence() -> None:
     assert parse_sentence("*aka <strong> COL.<with space> *taka@start.PL") == Sentence(
-        Lang(),
+        None,
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong"), ())),

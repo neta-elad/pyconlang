@@ -161,8 +161,10 @@ joined_compound = (
 compound <<= fusion_or_bracketed ^ joined_compound
 
 words = Group(compound[...]).set_parse_action(token_map(list))
-lang = (Suppress("%") - ident).set_parse_action(token_map(Lang))
-opt_lang = explicit_opt(lang, Lang())
+default_lang = Literal("%%").set_parse_action(token_map(lambda _: Lang()))
+any_lang = (Suppress("%") - ident).set_parse_action(token_map(Lang))
+lang = default_lang ^ any_lang
+opt_lang = explicit_opt(lang)
 
 sentence = (opt_lang - words).set_parse_action(tokens_map(Sentence))
 

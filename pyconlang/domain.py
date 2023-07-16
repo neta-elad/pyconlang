@@ -1,8 +1,10 @@
 from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from functools import cached_property
 from typing import Generic, TypeVar
 
+from .metadata import Metadata
 from .unicode import combine
 
 
@@ -193,5 +195,12 @@ AnyWord = TypeVar("AnyWord", Word[Fusion], Definable)
 
 @dataclass
 class Sentence(Generic[AnyWord]):
-    lang: Lang
+    raw_lang: Lang | None
     words: list[AnyWord]
+
+    @cached_property
+    def lang(self) -> Lang:
+        if self.raw_lang is not None:
+            return self.raw_lang
+
+        return Lang(Metadata.default().lang)
