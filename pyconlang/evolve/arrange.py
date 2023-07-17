@@ -3,12 +3,11 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Callable, Generic, TypeVar
+from typing import Callable, Generic, Self, TypeVar
 
 from ..domain import Component, Compound, Joiner, Morpheme, ResolvedForm
 
 RULE_PATTERN = r"^\s*([A-Za-z0-9-]+)\s*:"
-
 
 T = TypeVar("T")
 
@@ -77,7 +76,7 @@ class AffixArranger:
     raw_rules: list[str]
 
     @classmethod
-    def from_path(cls, path: Path) -> "AffixArranger":
+    def from_path(cls, path: Path) -> Self:
         rules = []
         for line in path.read_text().splitlines():
             if (match := re.match(RULE_PATTERN, line.strip())) is not None:

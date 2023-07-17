@@ -1,17 +1,12 @@
-import random
-import shutil
-import string
 from collections.abc import Generator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import cached_property
-from pathlib import Path
 from typing import Self, cast
 from unicodedata import normalize
 
-from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
+from .. import CHANGES_GLOB, CHANGES_PATH
 from ..cache import PersistentDict, path_cached_property
-from ..checksum import checksum
 from ..domain import Component, Morpheme, ResolvedForm
 from ..lexurgy import LexurgyClient
 from ..lexurgy.domain import (
@@ -26,13 +21,6 @@ from .batch import Batcher, ComponentQuery, CompoundQuery, Query, segment_by_sta
 from .domain import Evolved
 from .errors import LexurgyError
 
-EVOLVE_PATH = PYCONLANG_PATH / "evolve"
-
-CACHE_PATH = EVOLVE_PATH / "cache"
-SIMPLE_CACHE_PATH = CACHE_PATH / "cache.pickle"
-TRACE_CACHE_PATH = CACHE_PATH / "trace_cache.pickle"
-CHECKSUM_PATH = CACHE_PATH / "checksum.txt"
-
 Evolvable = str | Morpheme | ResolvedForm
 
 QueryTrace = tuple[str, list[TraceLine]]
@@ -40,22 +28,11 @@ Trace = list[QueryTrace]
 EvolvedWithTrace = tuple[Evolved, Trace]
 
 
-def get_checksum() -> bytes:
-    return checksum(CHANGES_PATH)
-
-
-def random_directory() -> Path:
-    return EVOLVE_PATH / Path(
-        "".join(random.sample(string.ascii_lowercase + string.digits, 5))
-    )
-
-
 @dataclass
 class Evolver:
     query_cache: PersistentDict[Query, Evolved]
     trace_cache: PersistentDict[Query, list[TraceLine]]
     batcher: Batcher = field(default_factory=Batcher)
-    evolve_directory: Path = field(default_factory=random_directory)
 
     @classmethod
     @contextmanager
@@ -201,7 +178,3 @@ class Evolver:
                     Evolved(proto, modern, phonetic)
                     for proto, modern, phonetic in zip(words, moderns, phonetics)
                 ], trace_lines
-
-    def cleanup(self) -> None:
-        if self.evolve_directory.exists():
-            shutil.rmtree(self.evolve_directory)
