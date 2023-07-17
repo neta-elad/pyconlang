@@ -5,7 +5,7 @@ from typing import Self
 
 from . import LEXICON_GLOB, LEXICON_PATH
 from .cache import path_cached_property
-from .domain import Definable, Describable, Fusion, ResolvedForm, Sentence, Word
+from .domain import Definable, Describable, Fusion, Lang, ResolvedForm, Sentence, Word
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
 from .lexicon import Lexicon
@@ -30,9 +30,14 @@ class Translator:
     def lexicon(self) -> Lexicon:  # todo: hack for PyCharm
         return self.cached_lexicon
 
+    def resolve_sentence(
+        self, sentence: Sentence[Word[Fusion]]
+    ) -> Sequence[ResolvedForm]:
+        return [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
+
     def resolve_and_evolve(self, sentence: Sentence[Word[Fusion]]) -> list[Evolved]:
         return self.evolver.evolve(
-            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words],
+            self.resolve_sentence(sentence),
             changes=self.lexicon.changes_for(sentence.lang),
         )
 
@@ -54,11 +59,15 @@ class Translator:
             for record in sentence.words
         ]
 
-    def resolve_string(
-        self, string: str
-    ) -> list[ResolvedForm]:  # todo: remove, do differently for batching
-        sentence = self.parse_sentence(string)
-        return [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
+    def resolve_and_evolve_all(self, strings: list[str]) -> None:
+        per_lang_sentences: dict[Lang, list[ResolvedForm]] = {}
+        for string in strings:
+            sentence = self.parse_sentence(string)
+            per_lang_sentences.setdefault(sentence.lang, [])
+            per_lang_sentences[sentence.lang].extend(self.resolve_sentence(sentence))
+
+        for lang, forms in per_lang_sentences.items():
+            self.evolver.evolve(forms, changes=self.lexicon.changes_for(lang))
 
     def lookup_string(
         self, string: str

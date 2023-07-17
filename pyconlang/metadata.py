@@ -7,6 +7,8 @@ import toml
 
 METADATA_PATH = Path("metadata.toml")
 
+# todo: rename metadata and implement better
+
 
 @dataclass
 class Metadata:
@@ -14,7 +16,6 @@ class Metadata:
     author: str = field(default="")
     syllables: bool = field(default=False)
     lang: str | None = field(default=None)
-    # todo: default language
 
     @classmethod
     def from_file(cls, path: Path = METADATA_PATH) -> "Metadata":

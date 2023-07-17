@@ -1,9 +1,11 @@
 from abc import ABC, ABCMeta, abstractmethod
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cached_property
 from typing import Generic, Self, TypeVar
 
+from .errors import DoubleTagDefinition
 from .metadata import Metadata
 from .unicode import combine
 
@@ -211,7 +213,15 @@ class Tags:
             tags.add(lang_tag)
         return cls(frozenset(tags))
 
-    # todo: check no tag is defined twice?
+    def __post_init__(self) -> None:
+        counter: Counter[str] = Counter()
+
+        for tag in self.tags:
+            counter[tag.key] += 1
+
+        for key, value in counter.items():
+            if value > 1:
+                raise DoubleTagDefinition(key)
 
     @cached_property
     def map(self) -> dict[str, str | None]:

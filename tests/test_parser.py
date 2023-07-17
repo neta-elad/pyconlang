@@ -1,5 +1,6 @@
 from typing import Any
 
+import pytest
 from pyparsing import ParserElement
 
 from pyconlang.domain import (
@@ -17,6 +18,7 @@ from pyconlang.domain import (
     Tag,
     Tags,
 )
+from pyconlang.errors import DoubleTagDefinition
 from pyconlang.parser import (
     base_unit,
     compound,
@@ -161,6 +163,7 @@ def test_definables() -> None:
 
 def test_tags() -> None:
     assert parse(optional_tags, "") == Tags()
+
     assert parse(optional_tags, "{foo}") == Tags.from_set_and_lang({Tag("foo")})
     assert parse(optional_tags, "{foo bar:baz}") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}
@@ -174,6 +177,12 @@ def test_tags() -> None:
     assert parse(optional_tags, "{foo bar:baz} %%") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}, Lang()
     )
+
+    with pytest.raises(DoubleTagDefinition):
+        assert parse(optional_tags, "{foo foo:bar}")
+
+    with pytest.raises(DoubleTagDefinition):
+        assert parse(optional_tags, "{lang:bar} %foo")
 
 
 def parse(parser: ParserElement, string: str) -> Any:

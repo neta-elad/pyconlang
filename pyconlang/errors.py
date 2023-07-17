@@ -5,11 +5,19 @@ class PyconlangError(Exception):
     ...
 
 
-class AffixDefinitionMissingForm(PyconlangError):
+class LexiconError(PyconlangError):
     ...
 
 
-class AffixDefinitionMissingVar(PyconlangError):
+class AffixDefinitionMissingForm(LexiconError):
+    ...
+
+
+class AffixDefinitionMissingVar(LexiconError):
+    ...
+
+
+class DoubleTagDefinition(LexiconError):
     ...
 
 

@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from itertools import chain
 
 from .advanced_macros import AdvancedMacro
 
@@ -11,8 +10,7 @@ class BatchingMacro(AdvancedMacro, metaclass=ABCMeta):
         self.batch = []
         lines = super().run(lines)
 
-        all_resolved = list(chain(*map(self.translator.resolve_string, self.batch)))
-        self.translator.evolver.evolve(all_resolved)  # todo: change
+        self.translator.resolve_and_evolve_all(self.batch)
 
         return lines
 
