@@ -29,7 +29,7 @@ from ..parser import (
     suffix,
     tokens_map,
 )
-from .domain import AffixDefinition, Entry, LangParent, Template, TemplateName, Var
+from .domain import AffixDefinition, Entry, LangDefinition, Template, TemplateName, Var
 
 
 def make_diagrams() -> None:
@@ -38,9 +38,9 @@ def make_diagrams() -> None:
 
 def parse_lexicon(
     lines: Iterable[str],
-) -> Iterable[Entry | AffixDefinition | Template | LangParent | Path]:
+) -> Iterable[Entry | AffixDefinition | Template | LangDefinition | Path]:
     return [
-        cast(Entry | AffixDefinition | Template | LangParent | Path, parsed_line[0])
+        cast(Entry | AffixDefinition | Template | LangDefinition | Path, parsed_line[0])
         for line in lines
         if (parsed_line := lexicon_line.parse_string(line, parse_all=True))
     ]
@@ -113,27 +113,30 @@ entry = (
     .set_name("entry")
 )
 
-lang_parent = (
-    (Suppress("lang") - lang - Suppress("<") - lang)
-    .set_parse_action(tokens_map(LangParent))
-    .set_name("lang_parent")
-)
-
-record = (entry ^ affix_definition ^ template ^ lang_parent).set_name("record")
-
-comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 
 double_quoted_string = QuotedString(quote_char='"', esc_char="\\")
 single_quoted_string = QuotedString(quote_char="'", esc_char="\\")
 quoted_string = double_quoted_string ^ single_quoted_string
 
+path = quoted_string.copy().set_parse_action(token_map(Path)).set_name("path")
+
+lang_definition = (
+    (Suppress("lang") - lang - Suppress("<") - lang - Opt(path))
+    .set_parse_action(tokens_map(LangDefinition))
+    .set_name("lang_definition")
+)
+
+record = (entry ^ affix_definition ^ template ^ lang_definition).set_name("record")
+
 include = (
-    (Suppress("include") - quoted_string)
-    .set_parse_action(token_map(Path))
+    (Suppress("include") - path)
+    # .set_parse_action(token_map(Path))
     .set_name("include")
 )
 
 meaningful_segment = record ^ include
+
+comment = Suppress(Regex(r"#(?:\\\n|[^\n])*")).set_name("comment")
 
 lexicon_line = (Opt(meaningful_segment) + Opt(comment)).set_name("lexicon line")
 

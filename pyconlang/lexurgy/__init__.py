@@ -1,4 +1,6 @@
+from dataclasses import dataclass, field
 from functools import cached_property
+from pathlib import Path
 from subprocess import PIPE, Popen
 from threading import RLock
 from typing import IO
@@ -11,14 +13,17 @@ from .domain import AnyLexurgyResponse, LexurgyRequest, parse_response
 LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 
 
+@dataclass
 class LexurgyClient:
+    changes: Path = field(default=CHANGES_PATH)
+
     @path_cached_property(CHANGES_PATH, CHANGES_GLOB)
     def popen(self) -> Popen[str]:
         args = [
             "sh",
             str(LEXURGY_PATH),
             "server",
-            str(CHANGES_PATH),
+            str(self.changes),
         ]
         return Popen(args, stdin=PIPE, stdout=PIPE, text=True, bufsize=1)
 

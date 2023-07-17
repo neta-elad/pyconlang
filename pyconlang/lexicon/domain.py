@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from functools import reduce
+from pathlib import Path
 from typing import cast
 
+from .. import CHANGES_PATH
 from ..domain import (
     Affix,
     Component,
@@ -132,6 +134,7 @@ class AffixDefinition:
 
 
 @dataclass(eq=True, frozen=True)
-class LangParent:
+class LangDefinition:
     lang: Lang
     parent: Lang
+    changes: Path = field(default=CHANGES_PATH)

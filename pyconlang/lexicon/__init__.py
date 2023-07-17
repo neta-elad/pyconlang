@@ -23,7 +23,7 @@ from ..domain import (
     Word,
 )
 from ..parser import continue_lines
-from .domain import AffixDefinition, Entry, LangParent, Template, TemplateName, Var
+from .domain import AffixDefinition, Entry, LangDefinition, Template, TemplateName, Var
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
 
@@ -33,7 +33,7 @@ class Lexicon:
     entries: set[Entry]
     affixes: set[AffixDefinition]
     templates: set[Template]
-    lang_parents: set[LangParent]
+    lang_parents: set[LangDefinition]
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
@@ -52,9 +52,9 @@ class Lexicon:
     @classmethod
     def resolve_paths(
         cls,
-        lines: Iterable[Entry | AffixDefinition | Template | LangParent | Path],
+        lines: Iterable[Entry | AffixDefinition | Template | LangDefinition | Path],
         parent: Path,
-    ) -> Iterable[Entry | AffixDefinition | LangParent | Template]:
+    ) -> Iterable[Entry | AffixDefinition | LangDefinition | Template]:
         return (
             definition
             for line in lines
@@ -70,8 +70,10 @@ class Lexicon:
 
     @classmethod
     def resolve_line(
-        cls, line: Entry | AffixDefinition | Template | LangParent | Path, parent: Path
-    ) -> Iterable[Entry | AffixDefinition | Template | LangParent]:
+        cls,
+        line: Entry | AffixDefinition | Template | LangDefinition | Path,
+        parent: Path,
+    ) -> Iterable[Entry | AffixDefinition | Template | LangDefinition]:
         match line:
             case Path():
                 path = cls.resolve_if_relative(line, parent)
@@ -85,7 +87,7 @@ class Lexicon:
 
     @classmethod
     def from_iterable(
-        cls, iterable: Iterable[Entry | AffixDefinition | Template | LangParent]
+        cls, iterable: Iterable[Entry | AffixDefinition | Template | LangDefinition]
     ) -> "Lexicon":
         entries = set()
         affixes = set()
@@ -99,7 +101,7 @@ class Lexicon:
                     affixes.add(record)
                 case Template():
                     templates.add(record)
-                case LangParent():
+                case LangDefinition():
                     lang_parents.add(record)
                 case _:
                     raise UnexpectedRecord(record)

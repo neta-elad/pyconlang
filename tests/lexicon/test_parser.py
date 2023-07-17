@@ -17,12 +17,20 @@ from pyconlang.domain import (
     Tags,
 )
 from pyconlang.lexicon import Lexicon
-from pyconlang.lexicon.domain import AffixDefinition, Entry, Template, TemplateName, Var
+from pyconlang.lexicon.domain import (
+    AffixDefinition,
+    Entry,
+    LangDefinition,
+    Template,
+    TemplateName,
+    Var,
+)
 from pyconlang.lexicon.parser import (
     affix_definition,
     comment,
     entry,
     include,
+    lang_definition,
     lexical_sources,
     part_of_speech,
     quoted_string,
@@ -147,6 +155,22 @@ def test_affix_definition() -> None:
 def test_comment() -> None:
     assert not comment.parse_string("# <nothing at all *..", parse_all=True)
     assert not comment.parse_string("   ### <nothing at all *..", parse_all=True)
+
+
+def test_lang_parent() -> None:
+    assert parse(lang_definition, "lang %modern < %%") == LangDefinition(
+        Lang("modern"), Lang()
+    )
+
+    assert parse(lang_definition, "lang %ultra-modern < %modern") == LangDefinition(
+        Lang("ultra-modern"), Lang("modern")
+    )
+
+    assert parse(
+        lang_definition, "lang %ultra-modern < %modern 'changes/ultra-modern.lsc'"
+    ) == LangDefinition(
+        Lang("ultra-modern"), Lang("modern"), Path("changes") / "ultra-modern.lsc"
+    )
 
 
 def test_lexicon(parsed_lexicon: Lexicon) -> None:
@@ -292,7 +316,7 @@ def test_include() -> None:
     assert parse(quoted_string, "'world'") == "world"
 
     assert parse(include, "include 'a/relative/path'") == Path("a/relative/path")
-    assert parse(include, "include '/an/relative/path'") == Path("/an/relative/path")
+    assert parse(include, "include '/an/absolute/path'") == Path("/an/absolute/path")
 
 
 def test_include_mechanism(
