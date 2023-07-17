@@ -6,7 +6,7 @@ from typing import Generic, Iterator, MutableMapping, Self, TypeVar, cast
 from unicodedata import normalize
 
 from .. import CHANGES_GLOB, CHANGES_PATH
-from ..cache import PersistentDict, path_cached_property
+from ..cache import PersistentDict
 from ..domain import Component, Morpheme, ResolvedForm
 from ..lexurgy import LexurgyClient
 from ..lexurgy.domain import (
@@ -16,7 +16,7 @@ from ..lexurgy.domain import (
     TraceLine,
 )
 from ..lexurgy.tracer import parse_trace_lines
-from .arrange import AffixArranger
+from .arrange import AffixArranger, arranger_for
 from .batch import Batcher, ComponentQuery, CompoundQuery, Query, segment_by_start_end
 from .domain import Evolved
 from .errors import LexurgyError
@@ -75,9 +75,8 @@ class Evolver:
         ) as trace_cache:
             yield cls(query_cache, trace_cache)
 
-    @path_cached_property(CHANGES_PATH, CHANGES_GLOB)
-    def arranger(self) -> AffixArranger:
-        return AffixArranger.from_path(CHANGES_PATH)
+    def arranger(self, changes: Path) -> AffixArranger:
+        return arranger_for(changes)
 
     def lexurgy(self, changes: Path) -> LexurgyClient:
         return LexurgyClient.for_changes(changes)
@@ -93,8 +92,8 @@ class Evolver:
             self.query_cache, changes
         )
 
-        for form in self.normalize_forms(forms):
-            query = self.batcher.builder(self.arranger).build_query(form)
+        for form in self.normalize_forms(forms, changes):
+            query = self.batcher.builder(self.arranger(changes)).build_query(form)
             result.append((cache[query], self.get_trace(query)))
 
         return result
@@ -127,9 +126,9 @@ class Evolver:
         changes: Path = CHANGES_PATH,
     ) -> list[Evolved]:
         cache = TupleMappingView(self.query_cache, changes)
-        resolved_forms = self.normalize_forms(forms)
+        resolved_forms = self.normalize_forms(forms, changes)
 
-        mapping, layers = self.batcher.builder(self.arranger).build_and_order(
+        mapping, layers = self.batcher.builder(self.arranger(changes)).build_and_order(
             resolved_forms
         )
 
@@ -170,16 +169,18 @@ class Evolver:
 
         return result
 
-    def normalize_form(self, form: Evolvable) -> ResolvedForm:
+    def normalize_form(self, form: Evolvable, changes: Path) -> ResolvedForm:
         if isinstance(form, str):
             form = Morpheme(form)
         if isinstance(form, Morpheme):
             form = Component(form)
 
-        return self.arranger.rearrange(form)
+        return self.arranger(changes).rearrange(form)
 
-    def normalize_forms(self, forms: Sequence[Evolvable]) -> Sequence[ResolvedForm]:
-        return [self.normalize_form(form) for form in forms]
+    def normalize_forms(
+        self, forms: Sequence[Evolvable], changes: Path
+    ) -> Sequence[ResolvedForm]:
+        return [self.normalize_form(form, changes) for form in forms]
 
     def evolve_words(
         self,

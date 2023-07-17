@@ -5,6 +5,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import Callable, Generic, Self, TypeVar
 
+from .. import CHANGES_GLOB, CHANGES_PATH
+from ..cache import path_cache
 from ..domain import Component, Compound, Joiner, Morpheme, ResolvedForm
 
 RULE_PATTERN = r"^\s*([A-Za-z0-9-]+)\s*:"
@@ -96,3 +98,8 @@ class AffixArranger:
 
     def rearrange(self, form: ResolvedForm) -> ResolvedForm:
         return rearrange(form, self.ranker)
+
+
+@path_cache(CHANGES_PATH, CHANGES_GLOB)
+def arranger_for(changes: Path) -> AffixArranger:
+    return AffixArranger.from_path(changes)
