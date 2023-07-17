@@ -6,7 +6,17 @@ from itertools import chain
 from pathlib import Path
 from threading import RLock
 from types import GenericAlias, TracebackType
-from typing import Generic, Iterable, Optional, ParamSpec, Self, Type, TypeVar, cast
+from typing import (
+    Any,
+    Generic,
+    Iterable,
+    Optional,
+    ParamSpec,
+    Self,
+    Type,
+    TypeVar,
+    cast,
+)
 
 from . import PYCONLANG_PATH
 from .checksum import checksum
@@ -39,13 +49,28 @@ class _NotFound:
     pass
 
 
+def hash_or_id(value: Any) -> int:
+    if isinstance(value, tuple):
+        return hash(tuple(hash_or_id(element) for element in value))
+
+    try:
+        return hash(value)
+    except TypeError:
+        return id(value)
+
+
+_empty_tuple_hash = hash(())
+
+
 @dataclass
 class PathCachedFunc(Generic[_P, _T]):
     paths: list[AnyPath]
     func: Callable[_P, _T]
     st_mtimes: dict[Path, float] | None = field(default=None)
     checksums: dict[Path, bytes] | None = field(default=None)
-    value: _T | type[_NotFound] = field(default=_NotFound)
+    value: dict[int, _T] = field(
+        default_factory=dict
+    )  # | type[_NotFound] = field(default=_NotFound)
     lock: RLock = field(default_factory=RLock, init=False)
 
     def all_paths(self) -> list[Path]:
@@ -71,18 +96,29 @@ class PathCachedFunc(Generic[_P, _T]):
         paths = self.all_paths()
         self.st_mtimes = {path: path.stat().st_mtime for path in paths}
         self.checksums = {path: checksum(path) for path in paths}
+        self.value = {}
 
     def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
+        hashed = hash_or_id(tuple(args))
         if not self.up_to_date():
             with self.lock:
                 if not self.up_to_date():
                     self.update()
-                    self.value = self.func(*args, **kwargs)
+
+        if hashed not in self.value:
+            self.value[hashed] = self.func(*args, **kwargs)
 
         assert self.checksums is not None
-        assert self.value is not _NotFound
+        assert hashed in self.value
 
-        return cast(_T, self.value)
+        return self.value[hashed]
+
+
+def path_cache(*paths: AnyPath) -> Callable[[Callable[_P, _T]], PathCachedFunc[_P, _T]]:
+    def wrapper(func: Callable[_P, _T]) -> PathCachedFunc[_P, _T]:
+        return PathCachedFunc(list(paths), func)
+
+    return wrapper
 
 
 class PathCachedProperty(Generic[_C, _T]):
@@ -177,7 +213,9 @@ class PersistentDict(Generic[_K, _V], MutableMapping[_K, _V]):
 
         value, st_times, checksums = pickle.loads(self.cache_path.read_bytes())
 
-        return PathCachedFunc(self.paths, dict, st_times, checksums, value)
+        return PathCachedFunc(
+            self.paths, dict, st_times, checksums, {_empty_tuple_hash: value}
+        )
 
     @property
     def value(self) -> dict[_K, _V]:

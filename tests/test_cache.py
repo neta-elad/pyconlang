@@ -3,7 +3,7 @@ from multiprocessing import Process, Value
 from pathlib import Path
 from typing import Protocol, cast
 
-from pyconlang.cache import PersistentDict, path_cached_property
+from pyconlang.cache import PersistentDict, path_cache, path_cached_property
 
 
 def test_path_cached_property(tmpdir: Path) -> None:
@@ -41,6 +41,33 @@ def test_path_cached_property(tmpdir: Path) -> None:
     a2 = A()
 
     assert a2.test == 1
+
+
+def test_path_cached_func(tmpdir: Path) -> None:
+    path_a = tmpdir / "a.md"
+    path_a.write_text("hello")
+    path_b = tmpdir / "b.txt"
+    path_b.write_text("hi")
+
+    counter = {"val": 0}
+
+    @path_cache("*.txt", path_a)
+    def example(x: int) -> int:
+        counter["val"] += x
+        return counter["val"]
+
+    assert example(1) == 1
+    assert example(2) == 3
+
+    path_a.touch()
+
+    assert example(1) == 1
+    assert example(2) == 3
+
+    path_a.write_text("goodbye")
+
+    assert example(1) == 4
+    assert example(2) == 6
 
 
 class SettableInt(Protocol):
