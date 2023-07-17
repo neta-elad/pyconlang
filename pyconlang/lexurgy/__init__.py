@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from functools import cached_property, lru_cache
+from functools import cache, cached_property
 from pathlib import Path
 from subprocess import PIPE, Popen
 from threading import RLock
@@ -18,7 +18,7 @@ class LexurgyClient:
     changes: Path = field(default=CHANGES_PATH)
 
     @classmethod
-    @lru_cache
+    @cache
     def for_changes(cls, changes: Path) -> Self:
         return cls(changes)
 
