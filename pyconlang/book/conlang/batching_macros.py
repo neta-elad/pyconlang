@@ -12,7 +12,7 @@ class BatchingMacro(AdvancedMacro, metaclass=ABCMeta):
         lines = super().run(lines)
 
         all_resolved = list(chain(*map(self.translator.resolve_string, self.batch)))
-        self.translator.evolver.evolve(all_resolved)
+        self.translator.evolver.evolve(all_resolved)  # todo: change
 
         return lines
 

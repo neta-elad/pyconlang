@@ -32,7 +32,8 @@ class Translator:
 
     def resolve_and_evolve(self, sentence: Sentence[Word[Fusion]]) -> list[Evolved]:
         return self.evolver.evolve(
-            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
+            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words],
+            changes=self.lexicon.changes_for(sentence.lang),
         )
 
     def evolve_string(self, string: str) -> list[Evolved]:
@@ -53,7 +54,9 @@ class Translator:
             for record in sentence.words
         ]
 
-    def resolve_string(self, string: str) -> list[ResolvedForm]:
+    def resolve_string(
+        self, string: str
+    ) -> list[ResolvedForm]:  # todo: remove, do differently for batching
         sentence = self.parse_sentence(string)
         return [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
 

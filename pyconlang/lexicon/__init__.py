@@ -4,7 +4,7 @@ from functools import cached_property
 from itertools import chain
 from pathlib import Path
 
-from .. import LEXICON_PATH
+from .. import CHANGES_PATH, LEXICON_PATH
 from ..domain import (
     Affix,
     Component,
@@ -33,7 +33,7 @@ class Lexicon:
     entries: set[Entry]
     affixes: set[AffixDefinition]
     templates: set[Template]
-    lang_parents: set[LangDefinition]
+    langs: set[LangDefinition]
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
@@ -307,9 +307,14 @@ class Lexicon:
 
     @cached_property
     def parents(self) -> dict[Lang, Lang]:
-        return {
-            lang_parent.lang: lang_parent.parent for lang_parent in self.lang_parents
-        }
+        return {lang_def.lang: lang_def.parent for lang_def in self.langs}
+
+    @cached_property
+    def changes(self) -> dict[Lang, Path]:
+        return {lang_def.lang: lang_def.changes for lang_def in self.langs}
 
     def parent(self, lang: Lang) -> Lang:
         return self.parents.get(lang, Lang())
+
+    def changes_for(self, lang: Lang) -> Path:
+        return self.changes.get(lang, CHANGES_PATH)

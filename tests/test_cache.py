@@ -21,22 +21,26 @@ def test_path_cached_property(tmpdir: Path) -> None:
             self.counter += 1
             return self.counter
 
-    a = A()
+    a1 = A()
 
-    assert a.test == 1
-    assert a.test == 1
+    assert a1.test == 1
+    assert a1.test == 1
 
     path_a.touch()
 
-    assert a.test == 1
+    assert a1.test == 1
 
     path_a.write_text("goodbye")
 
-    assert a.test == 2
+    assert a1.test == 2
 
     path_b.write_text("ciao")
 
-    assert a.test == 3
+    assert a1.test == 3
+
+    a2 = A()
+
+    assert a2.test == 1
 
 
 class SettableInt(Protocol):

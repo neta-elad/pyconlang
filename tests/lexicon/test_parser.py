@@ -196,7 +196,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             TemplateName("plural"),
             Lexeme("stone"),
-            Tags(),
+            Tags(frozenset({Tag("lang")})),
             Component(Fusion(Morpheme("apak"))),
             PartOfSpeech("n"),
             "stone, pebble",
@@ -204,7 +204,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             None,
             Lexeme("stone"),
-            Tags.from_set_and_lang({Tag("lang", "modern")}),
+            Tags(frozenset({Tag("lang", "modern")})),
             Component(Fusion(Morpheme("kapa"))),
             PartOfSpeech("n"),
             "stone, pebble (modern)",
@@ -247,6 +247,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         AffixDefinition(
             stressed=False,
             affix=Suffix("COL"),
+            tags=Tags(frozenset({Tag("lang")})),
             era=None,
             form=Component(Fusion(Morpheme(form="ma", era=None))),
             sources=(),
@@ -269,6 +270,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         AffixDefinition(
             stressed=False,
             affix=Prefix("STONE"),
+            tags=Tags(frozenset({Tag("lang")})),
             era=None,
             form=Component(
                 Fusion(

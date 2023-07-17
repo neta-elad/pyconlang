@@ -1,11 +1,10 @@
 import pickle
-from collections.abc import Callable
+from collections.abc import Callable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
-from multiprocessing import RLock
-from multiprocessing.synchronize import RLock as RLockClass
 from pathlib import Path
+from threading import RLock
 from types import GenericAlias, TracebackType
 from typing import Generic, Iterable, Optional, ParamSpec, Self, Type, TypeVar, cast
 
@@ -47,7 +46,7 @@ class PathCachedFunc(Generic[_P, _T]):
     st_mtimes: dict[Path, float] | None = field(default=None)
     checksums: dict[Path, bytes] | None = field(default=None)
     value: _T | type[_NotFound] = field(default=_NotFound)
-    lock: RLockClass = field(default_factory=RLock, init=False)
+    lock: RLock = field(default_factory=RLock, init=False)
 
     def all_paths(self) -> list[Path]:
         return list(chain(*(resolve_any_path(path) for path in self.paths)))
@@ -87,15 +86,68 @@ class PathCachedFunc(Generic[_P, _T]):
 
 
 class PathCachedProperty(Generic[_C, _T]):
-    func: PathCachedFunc[[_C], _T]
+    paths: list[AnyPath]
+    func: Callable[[_C], _T]
+    attrname: str | None
+
+    @cached_property
+    def lock(self) -> RLock:
+        return RLock()
 
     def __init__(self, paths: list[AnyPath], func: Callable[[_C], _T]) -> None:
-        self.func = PathCachedFunc(paths, func)
+        self.paths = paths
+        self.func = func
+        self.attrname = None
         self.__doc__ = func.__doc__
+
+    def __set_name__(self, owner: _C, name: str) -> None:
+        if self.attrname is None:
+            self.attrname = name
+        elif name != self.attrname:
+            raise TypeError(
+                "Cannot assign the same cached_property to two different names "
+                f"({self.attrname!r} and {name!r})."
+            )
+
+    @cached_property
+    def hidden_name(self) -> str:
+        return f"__path_cached_func_{self.attrname}"
 
     def __get__(self, instance: _C | None, owner: type[_C] | None = None) -> _T:
         assert instance is not None
-        return self.func(instance)
+
+        if self.attrname is None:
+            raise TypeError(
+                "Cannot use cached_property instance without calling __set_name__ on it."
+            )
+        try:
+            cache = instance.__dict__
+        except (
+            AttributeError
+        ):  # not all objects have __dict__ (e.g. class defines slots)
+            msg = (
+                f"No '__dict__' attribute on {type(instance).__name__!r} "
+                f"instance to cache {self.attrname!r} property."
+            )
+            raise TypeError(msg) from None
+
+        val = cache.get(self.hidden_name, _NotFound)
+
+        if val is _NotFound:
+            with self.lock:
+                # check if another thread filled cache while we awaited lock
+                val = cache.get(self.hidden_name, _NotFound)
+                if val is _NotFound:
+                    val = PathCachedFunc(self.paths, self.func)
+                    try:
+                        cache[self.hidden_name] = val
+                    except TypeError:
+                        msg = (
+                            f"The '__dict__' attribute on {type(instance).__name__!r} instance "
+                            f"does not support item assignment for caching {self.attrname!r} property."
+                        )
+                        raise TypeError(msg) from None
+        return cast(_T, val(instance))
 
     __class_getitem__ = classmethod(GenericAlias)
 
@@ -110,7 +162,7 @@ def path_cached_property(
 
 
 @dataclass
-class PersistentDict(Generic[_K, _V]):
+class PersistentDict(Generic[_K, _V], MutableMapping[_K, _V]):
     name: str
     paths: list[AnyPath]
 
@@ -137,7 +189,16 @@ class PersistentDict(Generic[_K, _V]):
     def __setitem__(self, key: _K, value: _V) -> None:
         self.value[key] = value
 
-    def __contains__(self, item: _K) -> bool:
+    def __delitem__(self, key: _K) -> None:
+        del self.value[key]
+
+    def __len__(self) -> int:
+        return len(self.value)
+
+    def __iter__(self) -> Iterator[_K]:
+        return iter(self.value)
+
+    def __contains__(self, item: object) -> bool:
         return item in self.value
 
     def __enter__(self) -> Self:

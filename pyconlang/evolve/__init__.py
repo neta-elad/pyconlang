@@ -1,8 +1,8 @@
 from collections.abc import Generator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from functools import cached_property
-from typing import Self, cast
+from pathlib import Path
+from typing import Generic, Iterator, MutableMapping, Self, TypeVar, cast
 from unicodedata import normalize
 
 from .. import CHANGES_GLOB, CHANGES_PATH
@@ -27,21 +27,50 @@ QueryTrace = tuple[str, list[TraceLine]]
 Trace = list[QueryTrace]
 EvolvedWithTrace = tuple[Evolved, Trace]
 
+_K1 = TypeVar("_K1")
+_K2 = TypeVar("_K2")
+_V = TypeVar("_V")
+
+
+@dataclass
+class TupleMappingView(Generic[_K1, _K2, _V], MutableMapping[_K2, _V]):
+    underlying_mapping: MutableMapping[tuple[_K1, _K2], _V]
+    first: _K1
+
+    def __getitem__(self, item: _K2) -> _V:
+        return self.underlying_mapping[(self.first, item)]
+
+    def __setitem__(self, key: _K2, value: _V) -> None:
+        self.underlying_mapping[(self.first, key)] = value
+
+    def __delitem__(self, key: _K2) -> None:
+        del self.underlying_mapping[(self.first, key)]
+
+    def __len__(self) -> int:
+        return len({key for key in self.underlying_mapping if key[0] == self.first})
+
+    def __iter__(self) -> Iterator[_K2]:
+        return iter(key[1] for key in self.underlying_mapping if key[0] == self.first)
+
+    def __contains__(self, item: object) -> bool:
+        return (self.first, item) in self.underlying_mapping
+
 
 @dataclass
 class Evolver:
-    query_cache: PersistentDict[Query, Evolved]
-    trace_cache: PersistentDict[Query, list[TraceLine]]
+    query_cache: PersistentDict[tuple[Path, Query], Evolved]
+    trace_cache: PersistentDict[tuple[Path, Query], list[TraceLine]]
     batcher: Batcher = field(default_factory=Batcher)
+    clients: dict[Path, LexurgyClient] = field(default_factory=dict)
 
     @classmethod
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
         with cast(
-            PersistentDict[Query, Evolved],
+            PersistentDict[tuple[Path, Query], Evolved],
             PersistentDict("evolve-cache", [CHANGES_PATH, CHANGES_GLOB]),
         ) as query_cache, cast(
-            PersistentDict[Query, list[TraceLine]],
+            PersistentDict[tuple[Path, Query], list[TraceLine]],
             PersistentDict("trace-cache", [CHANGES_PATH, CHANGES_GLOB]),
         ) as trace_cache:
             yield cls(query_cache, trace_cache)
@@ -50,38 +79,54 @@ class Evolver:
     def arranger(self) -> AffixArranger:
         return AffixArranger.from_path(CHANGES_PATH)
 
-    @cached_property
-    def lexurgy(self) -> LexurgyClient:
-        return LexurgyClient()
+    def lexurgy(self, changes: Path) -> LexurgyClient:
+        return LexurgyClient.for_changes(changes)
 
-    def trace(self, forms: Sequence[Evolvable]) -> list[EvolvedWithTrace]:
-        self.evolve(forms, trace=True)
+    def trace(
+        self, forms: Sequence[Evolvable], *, changes: Path = CHANGES_PATH
+    ) -> list[EvolvedWithTrace]:
+        self.evolve(forms, trace=True, changes=changes)
 
         result = []
 
+        cache: MutableMapping[Query, Evolved] = TupleMappingView(
+            self.query_cache, changes
+        )
+
         for form in self.normalize_forms(forms):
             query = self.batcher.builder(self.arranger).build_query(form)
-            result.append((self.query_cache[query], self.get_trace(query)))
+            result.append((cache[query], self.get_trace(query)))
 
         return result
 
-    def get_trace(self, query: Query) -> Trace:
-        if query not in self.trace_cache:
+    def get_trace(self, query: Query, *, changes: Path = CHANGES_PATH) -> Trace:
+        trace_cache: Mapping[Query, list[TraceLine]] = TupleMappingView(
+            self.trace_cache, changes
+        )
+        if query not in trace_cache:
             return []
-        query_trace = (query.get_query(self.query_cache), self.trace_cache[query])
+        query_trace = (
+            query.get_query(TupleMappingView(self.query_cache, changes)),
+            self.trace_cache[(changes, query)],
+        )
         match query:
             case ComponentQuery():
                 return [query_trace]
             case CompoundQuery():
                 return (
-                    self.get_trace(query.head)
-                    + self.get_trace(query.tail)
+                    self.get_trace(query.head, changes=changes)
+                    + self.get_trace(query.tail, changes=changes)
                     + [query_trace]
                 )
 
     def evolve(
-        self, forms: Sequence[Evolvable], *, trace: bool = False
+        self,
+        forms: Sequence[Evolvable],
+        *,
+        trace: bool = False,
+        changes: Path = CHANGES_PATH,
     ) -> list[Evolved]:
+        cache = TupleMappingView(self.query_cache, changes)
         resolved_forms = self.normalize_forms(forms)
 
         mapping, layers = self.batcher.builder(self.arranger).build_and_order(
@@ -95,29 +140,31 @@ class Evolver:
                 new_queries = [
                     query
                     for query in queries
-                    if query not in self.query_cache
-                    or (trace and query not in self.trace_cache)
+                    if (changes, query) not in self.query_cache
+                    or (trace and (changes, query) not in self.trace_cache)
                 ]
 
                 words = []
                 for query in new_queries:
-                    word = query.get_query(self.query_cache)
+                    word = query.get_query(cache)
                     words.append(word)
 
                 evolved_forms, trace_lines = self.evolve_words(
-                    words, start=start, end=end, trace=trace
+                    words, start=start, end=end, trace=trace, changes=changes
                 )
 
                 for query, evolved in zip(new_queries, evolved_forms):
-                    self.query_cache[query] = evolved
+                    self.query_cache[(changes, query)] = evolved
                     if trace:
                         if evolved.proto in trace_lines:
-                            self.trace_cache[query] = trace_lines[evolved.proto]
+                            self.trace_cache[(changes, query)] = trace_lines[
+                                evolved.proto
+                            ]
 
         result: list[Evolved] = []
 
         for form in resolved_forms:
-            evolved_result = self.query_cache[mapping[form]]
+            evolved_result = self.query_cache[(changes, mapping[form])]
             assert evolved_result is not None
             result.append(evolved_result)
 
@@ -141,6 +188,7 @@ class Evolver:
         start: str | None = None,
         end: str | None = None,
         trace: bool = False,
+        changes: Path = CHANGES_PATH,
     ) -> tuple[list[Evolved], Mapping[str, list[TraceLine]]]:
         if not words:
             return [], {}
@@ -151,7 +199,7 @@ class Evolver:
 
         request = LexurgyRequest(words, start, end, trace_words)
 
-        response = self.lexurgy.roundtrip(request)
+        response = self.lexurgy(changes).roundtrip(request)
 
         match response:
             case LexurgyErrorResponse():

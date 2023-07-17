@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from pyconlang import CHANGES_PATH
 from pyconlang.domain import (
     Component,
     Compound,
@@ -231,3 +234,11 @@ def test_lookup(parsed_lexicon: Lexicon) -> None:
             "(n.) stone, pebble",
         ),
     ]
+
+
+def test_langs(parsed_lexicon: Lexicon) -> None:
+    assert parsed_lexicon.parent(Lang("modern")) == Lang()
+    assert parsed_lexicon.parent(Lang("ultra-modern")) == Lang("modern")
+    assert parsed_lexicon.changes_for(Lang()) == CHANGES_PATH
+    assert parsed_lexicon.changes_for(Lang("modern")) == CHANGES_PATH
+    assert parsed_lexicon.changes_for(Lang("ultra-modern")) == Path("ultra-modern.lsc")

@@ -35,10 +35,10 @@ def sample_lexicon() -> str:
         
         affix .PL *iki@era1 (<big> <pile>) 
             plural for inanimate
-        affix .COL *ma collective
+        affix .COL %% *ma collective
         
         affix .LARGE $.COL.PL large plural
-        affix STONE. <stone>.COL made of stone
+        affix STONE. %% <stone>.COL made of stone
         
         entry <pile> *ma (n.) pile
         
@@ -53,13 +53,13 @@ def sample_lexicon() -> str:
             strong, stable
         
         # here is how to use a template
-        entry &plural <stone> *apak (n.) stone, pebble
+        entry &plural <stone> %% *apak (n.) stone, pebble
         
         entry <stone> %modern *kapa (n.) stone, pebble (modern)
         
         entry <gravel> <stone>.PL (n.) gravel
         
-        lang %ultra-modern < %modern
+        lang %ultra-modern < %modern './ultra-modern.lsc'
         
         entry <gravel> %ultra-modern <stone>.DIST-PL (n.) gravel (ultra-modern)
         """
@@ -113,6 +113,55 @@ def sample_changes() -> str:
 
 
 @pytest.fixture
+def extended_sample_changes() -> str:
+    return cleandoc(
+        """
+        Feature type (*consonant, vowel)
+        Feature height (*low, mid, high)
+
+        Feature +stressed
+
+        Diacritic ˈ (before) [+stressed] (floating)
+
+        Symbol a [low vowel]
+        Symbol u [mid vowel]
+        Symbol i [high vowel]
+
+        syllables:
+            explicit
+
+        palatalization:
+            k => ʃ / _ i
+
+        era1:
+            unchanged
+
+        intervocalic-voicing:
+            {p, t, k, s} => {b, d, g, z} / [vowel] _ [vowel]
+
+        vowel-raising:
+            [+stressed vowel] => [high]
+
+        era2:
+            unchanged
+            
+        ultra-modern:
+            [vowel] => [high]
+
+        romanizer-phonetic:
+            unchanged
+
+        syllables:
+            clear
+
+        romanizer:
+            [+stressed vowel] => [*stressed]
+            ʃ => sh
+    """
+    )
+
+
+@pytest.fixture
 def simple_changes(
     sample_changes: str, tmp_pyconlang: Path
 ) -> Generator[Path, None, None]:
@@ -124,8 +173,11 @@ def simple_changes(
 
 @pytest.fixture
 def simple_pyconlang(
-    simple_changes: Path, sample_lexicon: str
+    simple_changes: Path, extended_sample_changes: str, sample_lexicon: str
 ) -> Generator[Path, None, None]:
+    changes_path = simple_changes.parent / "ultra-modern.lsc"
+    changes_path.write_text(extended_sample_changes)
+
     (simple_changes.parent / "lexicon.pycl").write_text(sample_lexicon)
 
     yield simple_changes.parent

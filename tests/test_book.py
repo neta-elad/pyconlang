@@ -105,7 +105,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
     assert "apak" in html
     assert "kika" in html
     assert "kaba" in html
-    assert "kabaishima" in html
+    assert "kibiishimi" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
 
@@ -140,7 +140,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
     assert "<strong>shiga</strong>" in html
     assert "<strong>abagigi abak shiga</strong>" in html
     assert "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>" in html
-    assert "<ruby><strong>kabaishima</strong> <rt>[kabaiʃima]</rt></ruby>" in html
+    assert "<ruby><strong>kibiishimi</strong> <rt>[kibiiʃimi]</rt></ruby>" in html
     assert "<em>*apak</em>" in html
     assert "<em>*kika</em>" in html
     assert "<em>*iki</em>" in html
@@ -210,7 +210,7 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     )
 
     assert (
-        "<th><ruby><strong>kabaishima</strong> <rt>[kabaiʃima]</rt></ruby></th>" in html
+        "<th><ruby><strong>kibiishimi</strong> <rt>[kibiiʃimi]</rt></ruby></th>" in html
     )
 
     assert '<td><abbr title="(n.) gravel (ultra-modern)">gravel</abbr></td>' in html

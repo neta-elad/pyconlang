@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.domain import Evolved
@@ -10,6 +12,16 @@ def test_evolve_words(simple_evolver: Evolver) -> None:
         [
             Evolved("apaki", "abashi", "abaʃi"),
             Evolved("apakí", "abashí", "abaʃí"),
+        ],
+        {},
+    )
+
+    assert simple_evolver.evolve_words(
+        ["apaki", "apakí"], changes=Path("ultra-modern.lsc")
+    ) == (
+        [
+            Evolved("apaki", "ibishi", "ibiʃi"),
+            Evolved("apakí", "ibishí", "ibiʃí"),
         ],
         {},
     )

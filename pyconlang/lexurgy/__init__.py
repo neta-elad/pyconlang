@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
-from functools import cached_property
+from functools import cached_property, lru_cache
 from pathlib import Path
 from subprocess import PIPE, Popen
 from threading import RLock
-from typing import IO
+from typing import IO, Self
 
 from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
 from ..assets import LEXURGY_VERSION
@@ -16,6 +16,11 @@ LEXURGY_PATH = PYCONLANG_PATH / f"lexurgy-{LEXURGY_VERSION}" / "bin" / "lexurgy"
 @dataclass
 class LexurgyClient:
     changes: Path = field(default=CHANGES_PATH)
+
+    @classmethod
+    @lru_cache
+    def for_changes(cls, changes: Path) -> Self:
+        return cls(changes)
 
     @path_cached_property(CHANGES_PATH, CHANGES_GLOB)
     def popen(self) -> Popen[str]:
