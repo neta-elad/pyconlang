@@ -65,7 +65,7 @@ class Template:
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: TemplateName | None
-    lexeme: Lexeme
+    lexeme: Fusion
     tags: Tags
     form: Word[Fusion]
     part_of_speech: PartOfSpeech
@@ -125,7 +125,7 @@ class AffixDefinition:
     def to_entry(self) -> Entry:
         return Entry(
             None,
-            self.affix.to_lexeme(),
+            self.affix.to_fusion(),
             self.tags,
             self.get_form(),
             PartOfSpeech("afx"),

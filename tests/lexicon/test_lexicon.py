@@ -75,6 +75,7 @@ def test_resolve(parsed_lexicon: Lexicon) -> None:
         Joiner.head(Rule("era1")),
         Component(Morpheme("iki", Rule("era1"))),
     )
+
     assert parsed_lexicon.resolve(
         Compound(
             Component(Fusion(Lexeme("stone"))),
@@ -95,6 +96,20 @@ def test_resolve(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme(str(Prefix("STONE")))))
     ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma")))
+
+
+def test_resolve_fusions(parsed_lexicon: Lexicon) -> None:
+    assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("gravel"), (), (Suffix("PL"),)))
+    ) == Component(Morpheme("ka"))
+
+    assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("gravel"), (Prefix("STONE"),), (Suffix("PL"),)))
+    ) == Compound(
+        Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
+        Joiner.tail(),
+        Component(Morpheme("ka")),
+    )
 
 
 def test_substitute_var(parsed_lexicon: Lexicon) -> None:

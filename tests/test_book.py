@@ -99,15 +99,17 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
+    print(html)  # todo:remove
+
     assert "abak" in html
     assert "shiga" in html
     assert "ʃiga" in html
     assert "apak" in html
     assert "kika" in html
-    assert "kaba" in html
-    assert "kibiishimi" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
+    assert "kaba" in html
+    assert "kibiishimi" in html
 
 
 def test_advanced_macros(simple_pyconlang: Path) -> None:
@@ -199,8 +201,7 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
 
     assert (
         "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"
-        "<th><ruby><strong>abagigiigi</strong> <rt>[abagigiigi]</rt></ruby></th>"
-        in html
+        "<th><ruby><strong>ka</strong> <rt>[ka]</rt></ruby></th>" in html
     )
 
     assert (

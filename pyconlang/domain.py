@@ -59,6 +59,9 @@ class AffixBase(ABC):
     def to_lexeme(self) -> Lexeme:
         return Lexeme(str(self))
 
+    def to_fusion(self) -> "Fusion":
+        return Fusion(self.to_lexeme())
+
     def __str__(self) -> str:
         return self.combine("", self.name)
 

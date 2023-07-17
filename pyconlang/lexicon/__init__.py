@@ -109,16 +109,17 @@ class Lexicon:
         return cls(entries, affixes, templates, lang_parents)
 
     @cached_property
-    def entry_mapping(self) -> dict[tuple[Lang, Lexeme], Entry]:
+    def entry_mapping(self) -> dict[tuple[Lang, Fusion], Entry]:
         return {(entry.tags.lang, entry.lexeme): entry for entry in self.entries} | {
-            (definition.tags.lang, definition.affix.to_lexeme()): definition.to_entry()
+            (definition.tags.lang, definition.affix.to_fusion()): definition.to_entry()
             for definition in self.affixes
             if not definition.is_var()
         }
 
     def get_entry(self, lexeme: Lexeme, lang: Lang = Lang()) -> Entry:
-        if (lang, lexeme) in self.entry_mapping:
-            return self.entry_mapping[(lang, lexeme)]
+        fusion = Fusion(lexeme)
+        if (lang, fusion) in self.entry_mapping:
+            return self.entry_mapping[(lang, fusion)]
 
         parent = self.parent(lang)
         if lang == parent:
@@ -164,8 +165,27 @@ class Lexicon:
                 return self.resolve(form, lang)
 
     def resolve_fusion(self, fusion: Fusion, lang: Lang = Lang()) -> ResolvedForm:
-        # prefixes = self.resolve_affixes(fusion.prefixes)  # todo: remove?
-        # suffixes = self.resolve_affixes(fusion.suffixes)
+        prefixes = fusion.prefixes
+        suffixes = fusion.suffixes
+        max_total_length = len(prefixes) + len(suffixes)
+        for k in range(max_total_length, -1, -1):
+            for i in range(0, 1 + len(prefixes)):
+                j = 1 + k - i
+                if 0 <= j <= 1 + len(suffixes):
+                    this_prefixes = prefixes[i:]
+                    rest_prefixes = prefixes[:i]
+                    this_suffixes = suffixes[:j]
+                    rest_suffixes = suffixes[j:]
+                    this_fusion = Fusion(fusion.stem, this_prefixes, this_suffixes)
+                    if (lang, this_fusion) in self.entry_mapping:
+                        return self.extend_with_affixes(
+                            self.resolve(
+                                self.entry_mapping[(lang, this_fusion)].form, lang
+                            ),
+                            lang,
+                            *(rest_prefixes + rest_suffixes),
+                        )
+
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem, lang),
             lang,
