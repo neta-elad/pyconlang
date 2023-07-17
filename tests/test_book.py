@@ -99,8 +99,6 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    print(html)  # todo:remove
-
     assert "abak" in html
     assert "shiga" in html
     assert "ʃiga" in html
