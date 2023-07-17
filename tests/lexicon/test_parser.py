@@ -158,16 +158,16 @@ def test_comment() -> None:
 
 
 def test_lang_parent() -> None:
-    assert parse(lang_definition, "lang %modern < %%") == LangDefinition(
+    assert parse(lang_definition, "lang %modern : %%") == LangDefinition(
         Lang("modern"), Lang()
     )
 
-    assert parse(lang_definition, "lang %ultra-modern < %modern") == LangDefinition(
+    assert parse(lang_definition, "lang %ultra-modern : %modern") == LangDefinition(
         Lang("ultra-modern"), Lang("modern")
     )
 
     assert parse(
-        lang_definition, "lang %ultra-modern < %modern 'changes/ultra-modern.lsc'"
+        lang_definition, "lang %ultra-modern : %modern 'changes/ultra-modern.lsc'"
     ) == LangDefinition(
         Lang("ultra-modern"), Lang("modern"), Path("changes") / "ultra-modern.lsc"
     )

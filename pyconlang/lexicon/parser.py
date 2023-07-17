@@ -122,7 +122,7 @@ quoted_string = double_quoted_string ^ single_quoted_string
 path = quoted_string.copy().set_parse_action(token_map(Path)).set_name("path")
 
 lang_definition = (
-    (Suppress("lang") - lang - Suppress("<") - lang - Opt(path))
+    (Suppress("lang") - lang - Suppress(":") - lang - Opt(path))
     .set_parse_action(tokens_map(LangDefinition))
     .set_name("lang_definition")
 )

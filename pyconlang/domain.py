@@ -187,10 +187,8 @@ class Lang:
     lang: str | None = field(default=None)
 
     def __str__(self) -> str:
-        if self.lang is None:
-            return ""
-
-        return f"%{self.lang}"
+        lang = self.lang or "<ROOT>"
+        return f"%{lang}"
 
 
 @dataclass(eq=True, frozen=True)
