@@ -1,4 +1,6 @@
+from functools import cached_property
 from subprocess import PIPE, Popen
+from threading import RLock
 from typing import IO
 
 from .. import CHANGES_GLOB, CHANGES_PATH, PYCONLANG_PATH
@@ -19,6 +21,10 @@ class LexurgyClient:
             str(CHANGES_PATH),
         ]
         return Popen(args, stdin=PIPE, stdout=PIPE, text=True, bufsize=1)
+
+    @cached_property
+    def lock(self) -> RLock:
+        return RLock()
 
     @property
     def stdin(self) -> IO[str]:
@@ -43,5 +49,8 @@ class LexurgyClient:
         return parse_response(self.read_line())
 
     def roundtrip(self, request: LexurgyRequest) -> AnyLexurgyResponse:
+        self.lock.acquire()
         self.send(request)
-        return self.receive()
+        response = self.receive()
+        self.lock.release()
+        return response
