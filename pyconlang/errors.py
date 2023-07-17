@@ -5,31 +5,7 @@ class PyconlangError(Exception):
     ...
 
 
-class LexiconError(PyconlangError):
-    ...
-
-
-class AffixDefinitionMissingForm(LexiconError):
-    ...
-
-
-class AffixDefinitionMissingVar(LexiconError):
-    ...
-
-
-class DoubleTagDefinition(LexiconError):
-    ...
-
-
-class LexurgyClientError(PyconlangError):
-    ...
-
-
-class LexurgyResponseMissingType(LexurgyClientError):
-    ...
-
-
-class LexurgyResponseBadType(LexurgyClientError):
+class DoubleTagDefinition(PyconlangError):
     ...
 
 

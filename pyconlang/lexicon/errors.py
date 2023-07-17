@@ -19,3 +19,11 @@ class MissingTemplate(LexiconError):
 
 class UnexpectedRecord(LexiconError):
     ...
+
+
+class AffixDefinitionMissingForm(LexiconError):
+    ...
+
+
+class AffixDefinitionMissingVar(LexiconError):
+    ...

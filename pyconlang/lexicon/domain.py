@@ -20,7 +20,7 @@ from ..domain import (
     Tags,
     Word,
 )
-from ..errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
+from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 
 
 @dataclass(eq=True, frozen=True)

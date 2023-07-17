@@ -4,7 +4,7 @@ from typing import Any, Mapping, Protocol, TypeVar, cast
 
 from dataclasses_json import DataClassJsonMixin, LetterCase, config
 
-from ..errors import LexurgyResponseBadType, LexurgyResponseMissingType
+from .errors import LexurgyResponseBadType, LexurgyResponseMissingType
 
 
 @dataclass(eq=True, frozen=True)
