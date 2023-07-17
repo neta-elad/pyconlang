@@ -23,21 +23,13 @@ from ..parser import (
     ident,
     lang,
     lexeme,
+    optional_tags,
     prefix,
     rule,
     suffix,
     tokens_map,
 )
-from .domain import (
-    AffixDefinition,
-    Entry,
-    LangParent,
-    Tag,
-    Tags,
-    Template,
-    TemplateName,
-    Var,
-)
+from .domain import AffixDefinition, Entry, LangParent, Template, TemplateName, Var
 
 
 def make_diagrams() -> None:
@@ -55,13 +47,6 @@ def parse_lexicon(
 
 
 ParserElement.set_default_whitespace_chars(" \t")
-
-tag_key = ident.copy().set_parse_action(token_map(Tag.lang))
-tag_key_value = (ident - Suppress(":") - ident).set_parse_action(tokens_map(Tag))
-tag = tag_key_value ^ tag_key
-
-tags = (Suppress("{") - tag[...] - Suppress("}")).set_parse_action(Tags.from_iterable)
-optional_tags = explicit_opt(tags, Tags())
 
 var = (
     (

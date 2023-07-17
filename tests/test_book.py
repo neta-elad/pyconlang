@@ -83,15 +83,16 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
         simple_pyconlang / "book.md",
         """
           
-          r{<stone>} r{*kika} 
+          r(<stone>) r(*kika) 
           
-          ph{*kika} 
+          ph(*kika) 
           
-          pr{<stone>} pr{*kika}
+          pr(<stone>) pr(*kika)
           
-          d{<stone>} d{.PL}
+          d(<stone>) d(.PL)
           
-          r{%modern <stone>}
+          r(%modern <stone>)
+          r({lang:ultra-modern} <gravel>)
           
           """,
     )
@@ -104,6 +105,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
     assert "apak" in html
     assert "kika" in html
     assert "kaba" in html
+    assert "kabaishima" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
 

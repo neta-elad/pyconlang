@@ -2,7 +2,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cached_property
-from typing import Generic, TypeVar
+from typing import Generic, Self, TypeVar
 
 from .metadata import Metadata
 from .unicode import combine
@@ -169,9 +169,7 @@ class Compound(Tree[Compoundable]):
 
 Word = Component[Compoundable] | Compound[Compoundable]
 
-
 Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
-
 
 Describable = Lexeme | Affix | Morpheme
 Record = Word[Fusion] | Fusion | Describable
@@ -190,17 +188,54 @@ class Lang:
         return f"%{self.lang}"
 
 
+@dataclass(eq=True, frozen=True)
+class Tag:
+    key: str
+    value: str | None = field(default=None)
+
+    def __str__(self) -> str:
+        if self.value is None:
+            return self.key
+        return f"{self.key}:{self.value}"
+
+
+@dataclass(eq=True, frozen=True)
+class Tags:
+    tags: frozenset[Tag] = field(default_factory=frozenset)
+
+    @classmethod
+    def from_set_and_lang(cls, tags: set[Tag], lang: Lang | None = None) -> Self:
+        tags = set(tags)
+        if lang is not None:
+            lang_tag = Tag("lang", lang.lang)
+            tags.add(lang_tag)
+        return cls(frozenset(tags))
+
+    # todo: check no tag is defined twice?
+
+    @cached_property
+    def map(self) -> dict[str, str | None]:
+        return {tag.key: tag.value for tag in self.tags}
+
+    @cached_property
+    def lang(self) -> Lang:
+        if "lang" in self.map:
+            return Lang(self.map["lang"])
+
+        return Lang(Metadata.default().lang)
+
+    def __str__(self) -> str:
+        return "{" + " ".join(str(tag) for tag in self.tags) + "}"
+
+
 AnyWord = TypeVar("AnyWord", Word[Fusion], Definable)
 
 
 @dataclass
 class Sentence(Generic[AnyWord]):
-    raw_lang: Lang | None
+    tags: Tags
     words: list[AnyWord]
 
     @cached_property
     def lang(self) -> Lang:
-        if self.raw_lang is not None:
-            return self.raw_lang
-
-        return Lang(Metadata.default().lang)
+        return self.tags.lang

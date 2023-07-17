@@ -1,5 +1,6 @@
 import sys
 import time
+import traceback
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -30,7 +31,7 @@ class Compiler:
     @classmethod
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
-        with Translator.new() as translator:
+        with Translator.new() as translator:  # todo: better error handling
             try:
                 yield cls(translator)
             except Exception as e:
@@ -161,4 +162,4 @@ def compile_book() -> None:
         try:
             compiler.compile()
         except Exception as e:
-            print(e)
+            traceback.print_exception(e)

@@ -8,7 +8,7 @@ from .conlang_macro import ConlangMacro
 class RawMacro(ConlangMacro, metaclass=ABCMeta):
     @classmethod
     def expression(cls) -> str:
-        return rf"\b{cls.token()}\{{(?P<text>.+?)\}}"
+        return rf"\b{cls.token()}\((?P<text>.+?)\)"
 
     @classmethod
     @abstractmethod

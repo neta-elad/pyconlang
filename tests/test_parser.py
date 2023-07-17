@@ -14,6 +14,8 @@ from pyconlang.domain import (
     Rule,
     Sentence,
     Suffix,
+    Tag,
+    Tags,
 )
 from pyconlang.parser import (
     base_unit,
@@ -23,6 +25,7 @@ from pyconlang.parser import (
     joiner,
     lexeme,
     morpheme,
+    optional_tags,
     parse_definables,
     parse_sentence,
     rule,
@@ -112,7 +115,7 @@ def test_compound() -> None:
 
 def test_sentence() -> None:
     assert parse_sentence("*aka <strong> COL.<with space> *taka@start.PL") == Sentence(
-        None,
+        Tags(),
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong"), ())),
@@ -124,7 +127,19 @@ def test_sentence() -> None:
     assert parse_sentence(
         "%test *aka <strong> COL.<with space> *taka@start.PL"
     ) == Sentence(
-        Lang("test"),
+        Tags.from_set_and_lang(set(), Lang("test")),
+        [
+            Component(Fusion(Morpheme("aka"))),
+            Component(Fusion(Lexeme("strong"), ())),
+            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+        ],
+    )
+
+    assert parse_sentence(
+        "{lang:test} *aka <strong> COL.<with space> *taka@start.PL"
+    ) == Sentence(
+        Tags.from_set_and_lang(set(), Lang("test")),
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong"), ())),
@@ -142,6 +157,23 @@ def test_definables() -> None:
     ]
 
     assert parse_definables("%modern <strong> COL. .PL").lang == Lang("modern")
+
+
+def test_tags() -> None:
+    assert parse(optional_tags, "") == Tags()
+    assert parse(optional_tags, "{foo}") == Tags.from_set_and_lang({Tag("foo")})
+    assert parse(optional_tags, "{foo bar:baz}") == Tags.from_set_and_lang(
+        {Tag("foo"), Tag("bar", "baz")}
+    )
+    assert parse(optional_tags, "{foo bar:baz lang:modern}") == Tags.from_set_and_lang(
+        {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
+    )
+    assert parse(optional_tags, "{foo bar:baz} %modern") == Tags.from_set_and_lang(
+        {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
+    )
+    assert parse(optional_tags, "{foo bar:baz} %%") == Tags.from_set_and_lang(
+        {Tag("foo"), Tag("bar", "baz")}, Lang()
+    )
 
 
 def parse(parser: ParserElement, string: str) -> Any:

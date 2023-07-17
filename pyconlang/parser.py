@@ -29,6 +29,8 @@ from .domain import (
     Rule,
     Sentence,
     Suffix,
+    Tag,
+    Tags,
     Word,
 )
 
@@ -166,10 +168,21 @@ any_lang = (Suppress("%") - ident).set_parse_action(token_map(Lang))
 lang = default_lang ^ any_lang
 opt_lang = explicit_opt(lang)
 
-sentence = (opt_lang - words).set_parse_action(tokens_map(Sentence))
+tag_key = ident.copy().set_parse_action(token_map(Tag))
+tag_key_value = (ident - Suppress(":") - ident).set_parse_action(tokens_map(Tag))
+tag = tag_key_value ^ tag_key
+
+just_tags = Group(Suppress("{") - tag[...] - Suppress("}")).set_parse_action(
+    token_map(set)
+)
+opt_just_tags = explicit_opt(just_tags, set())
+tags = (opt_just_tags - opt_lang).set_parse_action(tokens_map(Tags.from_set_and_lang))
+optional_tags = explicit_opt(tags, Tags())
+
+sentence = (optional_tags - words).set_parse_action(tokens_map(Sentence))
 
 definable = (lexeme ^ affix).set_name("definable")
 
 definables = Group(definable[...]).set_parse_action(token_map(list))
 
-definable_sentence = (opt_lang - definables).set_parse_action(tokens_map(Sentence))
+definable_sentence = (optional_tags - definables).set_parse_action(tokens_map(Sentence))

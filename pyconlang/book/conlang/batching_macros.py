@@ -31,7 +31,7 @@ class BatchingRomanizedMacro(BatchingMacro):
         return "r"
 
     def map_batched_text(self, text: str) -> str:
-        return f"**r{{{text}}}**"
+        return f"**r({text})**"
 
 
 class BatchingPhoneticMacro(BatchingMacro):
@@ -40,4 +40,4 @@ class BatchingPhoneticMacro(BatchingMacro):
         return "ph"
 
     def map_batched_text(self, text: str) -> str:
-        return rf"<ruby>r[{text}] <rt>\[ph{{{text}}}\]</rt></ruby>"
+        return rf"<ruby>r[{text}] <rt>\[ph({text})\]</rt></ruby>"

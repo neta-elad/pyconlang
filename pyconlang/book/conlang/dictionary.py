@@ -96,7 +96,7 @@ class ConlangDictionary(Preprocessor):
 
         return (
             ", ".join(forms)
-            + f" [ph{{{entry.form}}}] pr[{entry.form}] {entry.description()}"
+            + f" [ph({entry.form})] pr[{entry.form}] {entry.description()}"
         )
 
     def form_to_morphemes(self, form: Word[Fusion]) -> list[Morpheme]:

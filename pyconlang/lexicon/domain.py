@@ -1,7 +1,6 @@
-from collections.abc import Iterable
 from dataclasses import dataclass, field
-from functools import cached_property, reduce
-from typing import Self, cast
+from functools import reduce
+from typing import cast
 
 from ..domain import (
     Affix,
@@ -16,42 +15,10 @@ from ..domain import (
     Prefix,
     Rule,
     Suffix,
+    Tags,
     Word,
 )
 from ..errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
-
-
-@dataclass(eq=True, frozen=True)
-class Tag:
-    key: str
-    value: str
-
-    @cached_property
-    def is_lang(self) -> bool:
-        return self.key == "lang"
-
-    @classmethod
-    def lang(cls, lang: str) -> Self:
-        return cls("lang", lang)
-
-
-@dataclass(eq=True, frozen=True)
-class Tags:
-    tags: frozenset[Tag] = field(default_factory=frozenset)
-
-    @classmethod
-    def from_iterable(cls, iterable: Iterable[Tag]) -> Self:
-        return cls(frozenset(iterable))
-
-    # todo: check no tag is defined twice?
-
-    @cached_property
-    def map(self) -> dict[str, str]:
-        return {tag.key: tag.value for tag in self.tags}
-
-    @cached_property
-    def lang(self) -> Lang:
-        return Lang(self.map.get("lang"))
 
 
 @dataclass(eq=True, frozen=True)

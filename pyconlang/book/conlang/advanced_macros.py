@@ -1,7 +1,7 @@
 import re
 from abc import ABCMeta, abstractmethod
 
-from ...domain import Definable, Lang, Lexeme, Prefix, ResolvedForm, Suffix
+from ...domain import Definable, Lexeme, Prefix, ResolvedForm, Suffix, Tags
 from .conlang_macro import ConlangMacro
 
 
@@ -43,14 +43,14 @@ class AdvancedDefinitionMacro(AdvancedMacro):
         sentence = self.translator.parse_definables(text)
         return "".join(
             map(
-                lambda word: self.map_definable(word, sentence.lang),
+                lambda word: self.map_definable(word, sentence.tags),
                 sentence.words,
             )
         )
 
     @classmethod
-    def map_definable(cls, definable: Definable, lang: Lang) -> str:
-        abbr = cls.build_definition_abbr(lang, definable.name, str(definable))
+    def map_definable(cls, definable: Definable, tags: Tags) -> str:
+        abbr = cls.build_definition_abbr(tags, definable.name, str(definable))
         match definable:
             case Lexeme():
                 return abbr
@@ -58,8 +58,8 @@ class AdvancedDefinitionMacro(AdvancedMacro):
                 return definable.combine("", abbr)
 
     @staticmethod
-    def build_definition_abbr(lang: Lang, text: str, title: str) -> str:
-        return f'<abbr title="d{{{lang} {title}}}">{text}</abbr>'
+    def build_definition_abbr(tags: Tags, text: str, title: str) -> str:
+        return f'<abbr title="d({tags} {title})">{text}</abbr>'
 
 
 class GlossTableMacro(AdvancedMacro):
@@ -73,7 +73,7 @@ class GlossTableMacro(AdvancedMacro):
 
         result = (
             "|"
-            + "|".join(f"ph[{sentence.lang} {word}]" for word in words)
+            + "|".join(f"ph[{sentence.tags} {word}]" for word in words)
             + "|"
             + "\n"
             + "|"
@@ -81,7 +81,7 @@ class GlossTableMacro(AdvancedMacro):
             + "|"
             + "\n"
             + "|"
-            + "|".join(f"d[{sentence.lang} {word}]" for word in words)
+            + "|".join(f"d[{sentence.tags} {word}]" for word in words)
             + "|"
         )
 
@@ -103,4 +103,4 @@ class AdvancedProtoMacro(AdvancedMacro):
 
 
 def _join_morphemes(form: ResolvedForm) -> str:
-    return " \\+ ".join(f"_\\*pr{{{morpheme}}}_" for morpheme in form.leaves())
+    return " \\+ ".join(f"_\\*pr({morpheme})_" for morpheme in form.leaves())
