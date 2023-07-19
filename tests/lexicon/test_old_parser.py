@@ -25,7 +25,7 @@ from pyconlang.lexicon.domain import (
     TemplateName,
     Var,
 )
-from pyconlang.lexicon.parser import (
+from pyconlang.lexicon.old_parser import (
     affix_definition,
     comment,
     entry,
@@ -38,9 +38,9 @@ from pyconlang.lexicon.parser import (
     template_name,
     var,
 )
-from pyconlang.parser import affix
+from pyconlang.old_parser import affix
 
-from ..test_parser import parse
+from ..test_old_parser import parse
 
 
 def test_entry_parts() -> None:
@@ -153,8 +153,8 @@ def test_affix_definition() -> None:
 
 
 def test_comment() -> None:
-    assert parse(comment, "# <nothing at all *..") == "# <nothing at all *.."
-    assert parse(comment, "   ### <nothing at all *..") == "   ### <nothing at all *.."
+    assert not comment.parse_string("# <nothing at all *..", parse_all=True)
+    assert not comment.parse_string("   ### <nothing at all *..", parse_all=True)
 
 
 def test_lang_parent() -> None:

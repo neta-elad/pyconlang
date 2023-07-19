@@ -35,10 +35,10 @@ def sample_lexicon() -> str:
         
         affix .PL *iki@era1 (<big> <pile>) 
             plural for inanimate
-        affix .COL %% *ma collective
+        affix .COL % *ma collective
         
         affix .LARGE $.COL.PL large plural
-        affix STONE. %% <stone>.COL made of stone
+        affix STONE. % <stone>.COL made of stone
         
         entry <pile> *ma (n.) pile
         
@@ -53,7 +53,7 @@ def sample_lexicon() -> str:
             strong, stable
         
         # here is how to use a template
-        entry &plural %% <stone> *apak (n.) stone, pebble
+        entry &plural % <stone> *apak (n.) stone, pebble
         
         entry %modern <stone> *kapa (n.) stone, pebble (modern)
         

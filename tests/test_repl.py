@@ -60,8 +60,8 @@ def test_basic(simple_repl: Evaluator) -> None:
 
 def test_default_lang(repl_with_modern_default: Evaluator) -> None:
     assert repl_with_modern_default("p <stone>") == "kaba"
-    assert repl_with_modern_default("p %% <stone>") == "abak"
-    assert repl_with_modern_default("p %% STONE.<stone>") == "abakmaabak"
+    assert repl_with_modern_default("p % <stone>") == "abak"
+    assert repl_with_modern_default("p % STONE.<stone>") == "abakmaabak"
     assert repl_with_modern_default("p STONE.<stone>") == "abakmagaba"
 
 

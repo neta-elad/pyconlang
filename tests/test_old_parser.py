@@ -1,6 +1,7 @@
-from typing import TypeVar
+from typing import Any
 
 import pytest
+from pyparsing import ParserElement
 
 from pyconlang.domain import (
     Component,
@@ -19,24 +20,20 @@ from pyconlang.domain import (
     default_sentence,
 )
 from pyconlang.errors import DoubleTagDefinition
-from pyconlang.parser import (
+from pyconlang.old_parser import (
     base_unit,
+    compound,
     continue_lines,
-    default_fusion,
-    default_word,
+    fusion,
     joiner,
+    lang_lexeme,
     lexeme,
     morpheme,
-    opt_tags,
+    optional_tags,
     parse_definables,
     parse_sentence,
     rule,
-    scope,
-    scoped_lexeme,
 )
-from pyconlang.pyrsec import Parser
-
-U = TypeVar("U", covariant=True)
 
 
 def test_continue_lines() -> None:
@@ -45,23 +42,16 @@ def test_continue_lines() -> None:
     ) == ["a", "b c", "d\t e", "f", " g\t h"]
 
 
-def test_scope() -> None:
-    assert parse(scope, "%%") is None
-    assert parse(scope, "%") == Lang()
-    assert parse(scope, "%modern") == Lang("modern")
-    assert parse(scope, "% modern") == Lang()
-
-
 def test_base_unit() -> None:
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
-    assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
+    assert parse(lang_lexeme, "<name of the-form>%%") == Lexeme(
         "name of the-form"
     ).with_lang(Lang())
-    assert parse(scoped_lexeme, "<name of the-form>%") == LangLexeme(
+    assert parse(lang_lexeme, "<name of the-form>%%") == LangLexeme(
         Lexeme("name of the-form"), Lang()
     )
-    assert parse(scoped_lexeme, "<name of the-form>%modern") == LangLexeme(
+    assert parse(lang_lexeme, "<name of the-form>%modern") == LangLexeme(
         Lexeme("name of the-form"), Lang("modern")
     )
     assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
@@ -76,7 +66,7 @@ def test_base_unit() -> None:
 
 
 def test_fusion() -> None:
-    assert parse(default_fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
+    assert parse(fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
         Lexeme("stone").with_lang(Lang("modern")),
         (Prefix("DEF"),),
         (
@@ -85,7 +75,7 @@ def test_fusion() -> None:
         ),
     )
 
-    assert parse(default_fusion, "DEF.<stone>.PL.ACC") == Fusion(
+    assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
         Lexeme("stone").with_lang(),
         (Prefix("DEF"),),
         (
@@ -94,11 +84,9 @@ def test_fusion() -> None:
         ),
     )
 
-    assert parse(default_fusion, "*proto@era1") == Fusion(
-        Morpheme("proto", Rule("era1"))
-    )
+    assert parse(fusion, "*proto@era1") == Fusion(Morpheme("proto", Rule("era1")))
 
-    assert parse(default_fusion, "DEF.*proto@era1.PL") == Fusion(
+    assert parse(fusion, "DEF.*proto@era1.PL") == Fusion(
         Morpheme("proto", Rule("era1")),
         (Prefix("DEF"),),
         (Suffix("PL"),),
@@ -113,23 +101,23 @@ def test_joiner() -> None:
 
 
 def test_compound() -> None:
-    assert parse(default_word, "*foo") == Component(Fusion(Morpheme("foo"), ()))
-    assert parse(default_word, "*foo +! *bar") == default_compound(
+    assert parse(compound, "*foo") == Component(Fusion(Morpheme("foo"), ()))
+    assert parse(compound, "*foo +! *bar") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.tail(),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(default_word, "*foo !+@era *bar") == default_compound(
+    assert parse(compound, "*foo !+@era *bar") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(default_word, '"*foo !+@era *bar"') == default_compound(
+    assert parse(compound, '"*foo !+@era *bar"') == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(default_word, '"*foo +!@era *bar" !+ *baz') == default_compound(
+    assert parse(compound, '"*foo +!@era *bar" !+ *baz') == default_compound(
         default_compound(
             Component(Fusion(Morpheme("foo"), ())),
             Joiner.tail(Rule("era")),
@@ -189,29 +177,28 @@ def test_definables() -> None:
 
 
 def test_tags() -> None:
-    assert parse(opt_tags, "") == Tags()
+    assert parse(optional_tags, "") == Tags()
 
-    assert parse(opt_tags, "{foo}") == Tags.from_set_and_lang({Tag("foo")})
-    assert parse(opt_tags, "{foo} %%") == Tags.from_set_and_lang({Tag("foo")})
-    assert parse(opt_tags, "{foo bar:baz}") == Tags.from_set_and_lang(
+    assert parse(optional_tags, "{foo}") == Tags.from_set_and_lang({Tag("foo")})
+    assert parse(optional_tags, "{foo bar:baz}") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}
     )
-    assert parse(opt_tags, "{foo bar:baz lang:modern}") == Tags.from_set_and_lang(
+    assert parse(optional_tags, "{foo bar:baz lang:modern}") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
     )
-    assert parse(opt_tags, "{foo bar:baz} %modern") == Tags.from_set_and_lang(
+    assert parse(optional_tags, "{foo bar:baz} %modern") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
     )
-    assert parse(opt_tags, "{foo bar:baz} %") == Tags.from_set_and_lang(
+    assert parse(optional_tags, "{foo bar:baz} %%") == Tags.from_set_and_lang(
         {Tag("foo"), Tag("bar", "baz")}, Lang()
     )
 
     with pytest.raises(DoubleTagDefinition):
-        assert parse(opt_tags, "{foo foo:bar}")
+        assert parse(optional_tags, "{foo foo:bar}")
 
     with pytest.raises(DoubleTagDefinition):
-        assert parse(opt_tags, "{lang:bar} %foo")
+        assert parse(optional_tags, "{lang:bar} %foo")
 
 
-def parse(parser: Parser[str, U], string: str) -> U:
-    return parser.parse_or_raise(string)
+def parse(parser: ParserElement, string: str) -> Any:
+    return parser.parse_string(string, parse_all=True)[0]

@@ -1,6 +1,6 @@
 from pyparsing import Suppress, Word, pyparsing_unicode, rest_of_line, token_map
 
-from ..parser import explicit_opt, tokens_map
+from ..old_parser import explicit_opt, tokens_map
 from .domain import TraceLine
 
 # ParserElement.set_default_whitespace_chars(" \t")

@@ -4,7 +4,7 @@ from pyconlang.lexurgy.domain import TraceLine
 from pyconlang.lexurgy.parser import any_trace_line, trace_line, trace_line_heading
 from pyconlang.lexurgy.tracer import group_trace_lines, parse_trace_lines
 
-from ..test_parser import parse
+from ..test_old_parser import parse
 
 
 def test_grouping() -> None:
