@@ -22,7 +22,7 @@ from ..domain import (
     Record,
     ResolvedForm,
     Scope,
-    ScopedLexeme,
+    Scoped,
     Suffix,
 )
 from ..parser import continue_lines
@@ -156,7 +156,7 @@ class Lexicon:
 
     def resolve_any(
         self,
-        form: DefaultWord | Morpheme | Lexeme | ScopedLexeme,
+        form: DefaultWord | Morpheme | Lexeme | Scoped[Lexeme],
         scope: Scope = Scope(),
     ) -> ResolvedForm:
         match form:
@@ -164,8 +164,8 @@ class Lexicon:
                 return self.resolve_fusion(form, scope)
             case Morpheme():
                 return Component(form)
-            case ScopedLexeme():
-                return self.resolve_any(form.lexeme, form.scope or scope)
+            case Scoped():
+                return self.resolve_any(form.scoped, form.scope or scope)
             case Lexeme():
                 return self.resolve(self.get_entry(form, scope).form, scope)
             case _:
@@ -185,10 +185,10 @@ class Lexicon:
                     rest_prefixes = prefixes[:i]
                     this_suffixes = suffixes[:j]
                     rest_suffixes = suffixes[j:]
-                    if isinstance(fusion.stem, ScopedLexeme):
+                    if isinstance(fusion.stem, Scoped):
                         override_scope = fusion.stem.scope or scope
                         this_fusion = Fusion(
-                            fusion.stem.lexeme, this_prefixes, this_suffixes
+                            fusion.stem.scoped, this_prefixes, this_suffixes
                         )
                         if (override_scope, this_fusion) in self.entry_mapping:
                             return self.extend_with_affixes(
@@ -318,8 +318,8 @@ class Lexicon:
                 return self.singleton_lookup(
                     record, self.get_affix(record, scope).description
                 )
-            case ScopedLexeme():
-                return self.lookup(record.lexeme, record.scope or scope)
+            case Scoped():
+                return self.lookup(record.scoped, record.scope or scope)
             case Lexeme():
                 entry = self.get_entry(record, scope)
                 return self.singleton_lookup(record, entry.description())

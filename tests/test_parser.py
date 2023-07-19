@@ -11,7 +11,7 @@ from pyconlang.domain import (
     Prefix,
     Rule,
     Scope,
-    ScopedLexeme,
+    Scoped,
     Suffix,
     Tag,
     Tags,
@@ -58,10 +58,10 @@ def test_base_unit() -> None:
     assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
         "name of the-form"
     ).scoped(Scope())
-    assert parse(scoped_lexeme, "<name of the-form>%") == ScopedLexeme(
+    assert parse(scoped_lexeme, "<name of the-form>%") == Scoped[Lexeme](
         Lexeme("name of the-form"), Scope()
     )
-    assert parse(scoped_lexeme, "<name of the-form>%modern") == ScopedLexeme(
+    assert parse(scoped_lexeme, "<name of the-form>%modern") == Scoped[Lexeme](
         Lexeme("name of the-form"), Scope("modern")
     )
     assert parse(base_unit, "<name of the-form>%modern") == Lexeme(

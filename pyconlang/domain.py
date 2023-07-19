@@ -33,17 +33,8 @@ class Lexeme:
     def __str__(self) -> str:
         return f"<{self.name}>"
 
-    def scoped(self, scope: Scope | None = None) -> "ScopedLexeme":
-        return ScopedLexeme(self, scope)
-
-
-@dataclass(eq=True, frozen=True)
-class ScopedLexeme:
-    lexeme: Lexeme
-    scope: Scope | None = field(default=None)
-
-    def __str__(self) -> str:
-        return f"{self.lexeme}{self.scope or ''}"
+    def scoped(self, scope: Scope | None = None) -> "Scoped[Lexeme]":
+        return Scoped[Lexeme](self, scope)
 
 
 @dataclass(eq=True, frozen=True)
@@ -100,9 +91,22 @@ class Suffix(AffixBase):
 
 Affix = Prefix | Suffix
 
-Definable = Lexeme | Affix  # todo: should be ScopedLexeme
 
-BaseUnit = Morpheme | ScopedLexeme
+ScopedT = TypeVar("ScopedT", Lexeme, Affix)
+
+
+@dataclass(eq=True, frozen=True)
+class Scoped(Generic[ScopedT]):
+    scoped: ScopedT
+    scope: Scope | None = field(default=None)
+
+    def __str__(self) -> str:
+        return f"{self.scoped}{self.scope or ''}"
+
+
+Definable = Lexeme | Affix  # todo: should be Scoped[Lexeme]
+
+BaseUnit = Morpheme | Scoped[Lexeme]
 
 Fusible = TypeVar("Fusible", Lexeme, BaseUnit, covariant=True)
 
@@ -211,7 +215,7 @@ DefaultWord = Word[DefaultFusion]
 
 # Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
 
-Describable = Lexeme | Affix | Morpheme | ScopedLexeme
+Describable = Lexeme | Affix | Morpheme | Scoped[Lexeme]
 Record = DefaultWord | DefaultFusion | Describable
 
 ResolvedForm = Word[Morpheme]

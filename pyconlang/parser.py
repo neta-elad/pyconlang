@@ -19,7 +19,7 @@ from .domain import (
     Prefix,
     Rule,
     Scope,
-    ScopedLexeme,
+    Scoped,
     Sentence,
     Suffix,
     Tag,
@@ -63,7 +63,7 @@ scope = default_scope ^ non_default_scope
 opt_scope = -scope
 
 lexeme = (string("<") >> regex(r"[^<>]+") << string(">"))[Lexeme]
-scoped_lexeme = (lexeme & opt_scope)[lift2(ScopedLexeme)]
+scoped_lexeme = (lexeme & opt_scope)[lift2(Scoped[Lexeme])]
 
 rule = (string("@") >> ident)[Rule]
 
