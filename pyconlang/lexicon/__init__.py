@@ -184,13 +184,17 @@ class Lexicon:
                     this_suffixes = suffixes[:j]
                     rest_suffixes = suffixes[j:]
                     if isinstance(fusion.stem, LangLexeme):
+                        override_lang = fusion.stem.lang or lang
                         this_fusion = Fusion(
                             fusion.stem.lexeme, this_prefixes, this_suffixes
                         )
-                        if (lang, this_fusion) in self.entry_mapping:
+                        if (override_lang, this_fusion) in self.entry_mapping:
                             return self.extend_with_affixes(
                                 self.resolve(
-                                    self.entry_mapping[(lang, this_fusion)].form, lang
+                                    self.entry_mapping[
+                                        (override_lang, this_fusion)
+                                    ].form,
+                                    lang,
                                 ),
                                 lang,
                                 *(rest_prefixes + rest_suffixes),

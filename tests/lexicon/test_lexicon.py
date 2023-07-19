@@ -28,8 +28,27 @@ def test_resolve(parsed_lexicon: Lexicon, tmp_pyconlang: Path) -> None:
     )
 
     assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("stone").with_lang())), Lang("modern")
+    ) == Component(Morpheme("kapa"))
+
+    assert parsed_lexicon.resolve(
+        Component(Fusion(Lexeme("stone").with_lang(Lang("modern")))), Lang()
+    ) == Component(Morpheme("kapa"))
+
+    assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("DIST-PL"),))),
         Lang("modern"),
+    ) == Compound(
+        Component(Morpheme("kapa")),
+        Joiner.head(),
+        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+    )
+
+    assert parsed_lexicon.resolve(
+        Component(
+            Fusion(Lexeme("stone").with_lang(Lang("modern")), (), (Suffix("DIST-PL"),))
+        ),
+        Lang(),
     ) == Compound(
         Component(Morpheme("kapa")),
         Joiner.head(),
