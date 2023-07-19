@@ -18,6 +18,7 @@ from pyconlang.domain import (
 )
 from pyconlang.errors import DoubleTagDefinition
 from pyconlang.parser import (
+    affix,
     base_unit,
     continue_lines,
     default_fusion,
@@ -30,7 +31,7 @@ from pyconlang.parser import (
     parse_sentence,
     rule,
     scope,
-    scoped_lexeme,
+    scoped_lexeme, scoped_affix,
 )
 from pyconlang.pyrsec import Parser, PyrsecError
 
@@ -57,7 +58,7 @@ def test_base_unit() -> None:
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
     assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
         "name of the-form"
-    ).scoped(Scope())
+    ).with_scope(Scope())
     assert parse(scoped_lexeme, "<name of the-form>%") == Scoped[Lexeme](
         Lexeme("name of the-form"), Scope()
     )
@@ -66,7 +67,7 @@ def test_base_unit() -> None:
     )
     assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
         "name of the-form"
-    ).scoped(Scope("modern"))
+    ).with_scope(Scope("modern"))
     assert parse(morpheme, "*proto") == Morpheme("proto")
     assert parse(base_unit, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
@@ -75,9 +76,17 @@ def test_base_unit() -> None:
     assert parse(base_unit, "*proto@era1") == Morpheme("proto", Rule("era1"))
 
 
+def test_affix() -> None:
+    assert parse(affix, "DEF.") == Prefix("DEF")
+    assert parse(affix, "DEF.") == Prefix("DEF")
+    assert parse(scoped_affix, "DEF.") == Scoped(Prefix("DEF"))
+    assert parse(scoped_affix, ".PL%") == Scoped(Suffix("PL"), Scope())
+    assert parse(scoped_affix, "DEF.%modern") == Scoped(Prefix("DEF"), Scope("modern"))
+
+
 def test_fusion() -> None:
     assert parse(default_fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
-        Lexeme("stone").scoped(Scope("modern")),
+        Lexeme("stone").with_scope(Scope("modern")),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -86,7 +95,7 @@ def test_fusion() -> None:
     )
 
     assert parse(default_fusion, "DEF.<stone>.PL.ACC") == Fusion(
-        Lexeme("stone").scoped(),
+        Lexeme("stone").with_scope(),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -150,8 +159,8 @@ def test_sentence() -> None:
         Tags(),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").scoped(), ())),
-            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_scope(), ())),
+            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
@@ -162,8 +171,8 @@ def test_sentence() -> None:
         Tags.from_set_and_scope(set(), Scope("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").scoped(), ())),
-            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_scope(), ())),
+            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
@@ -174,8 +183,8 @@ def test_sentence() -> None:
         Tags.from_set_and_scope(set(), Scope("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").scoped(), ())),
-            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_scope(), ())),
+            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )

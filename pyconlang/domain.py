@@ -33,7 +33,7 @@ class Lexeme:
     def __str__(self) -> str:
         return f"<{self.name}>"
 
-    def scoped(self, scope: Scope | None = None) -> "Scoped[Lexeme]":
+    def with_scope(self, scope: Scope | None = None) -> "Scoped[Lexeme]":
         return Scoped[Lexeme](self, scope)
 
 
@@ -92,7 +92,7 @@ class Suffix(AffixBase):
 Affix = Prefix | Suffix
 
 
-ScopedT = TypeVar("ScopedT", Lexeme, Affix)
+ScopedT = TypeVar("ScopedT", Lexeme, AffixBase)
 
 
 @dataclass(eq=True, frozen=True)

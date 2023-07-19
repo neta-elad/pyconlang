@@ -79,7 +79,7 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Lexeme("heavy").scoped(), (), (Suffix("PL"),))),
+        Component(Fusion(Lexeme("heavy").with_scope(), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -138,7 +138,7 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Prefix("COL"),
         era=None,
-        form=Component(Fusion(Lexeme("big").scoped(), (), (Suffix("PL"),))),
+        form=Component(Fusion(Lexeme("big").with_scope(), (), (Suffix("PL"),))),
         sources=(),
         description="collective form",
     )
@@ -151,9 +151,9 @@ def test_affix_definition() -> None:
         affix=Prefix("COL"),
         era=None,
         form=Compound(
-            Component(Fusion(Lexeme("big").scoped())),
+            Component(Fusion(Lexeme("big").with_scope())),
             Joiner.head(),
-            Component(Fusion(Lexeme("pile").scoped(), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("pile").with_scope(), (), (Suffix("PL"),))),
         ),
         sources=(),
         description="collective form",
@@ -262,7 +262,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),))),
             PartOfSpeech("n"),
             "gravel",
         ),
@@ -270,7 +270,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags.from_set_and_scope(set(), Scope("ultra-modern")),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("DIST-PL"),))),
+            Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("DIST-PL"),))),
             PartOfSpeech("n"),
             "gravel (ultra-modern)",
         ),
@@ -333,7 +333,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             era=None,
             form=Component(
                 Fusion(
-                    stem=Lexeme(name="stone").scoped(),
+                    stem=Lexeme(name="stone").with_scope(),
                     prefixes=(),
                     suffixes=(Suffix("COL"),),
                 )

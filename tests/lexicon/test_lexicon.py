@@ -20,7 +20,7 @@ from .. import default_compound
 
 def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("DIST-PL"),)))
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("DIST-PL"),)))
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(),
@@ -28,15 +28,15 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped())), Scope("modern")
+        Component(Fusion(Lexeme("stone").with_scope())), Scope("modern")
     ) == Component(Morpheme("kapa"))
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(Scope("modern")))), Scope()
+        Component(Fusion(Lexeme("stone").with_scope(Scope("modern")))), Scope()
     ) == Component(Morpheme("kapa"))
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("DIST-PL"),))),
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("DIST-PL"),))),
         Scope("modern"),
     ) == Compound(
         Component(Morpheme("kapa")),
@@ -46,7 +46,9 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.resolve(
         Component(
-            Fusion(Lexeme("stone").scoped(Scope("modern")), (), (Suffix("DIST-PL"),))
+            Fusion(
+                Lexeme("stone").with_scope(Scope("modern")), (), (Suffix("DIST-PL"),)
+            )
         ),
         Scope(),
     ) == Compound(
@@ -56,7 +58,9 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(Scope()), (), (Suffix("DIST-PL"),))),
+        Component(
+            Fusion(Lexeme("stone").with_scope(Scope()), (), (Suffix("DIST-PL"),))
+        ),
         Scope("modern"),
     ) == Compound(
         Component(Morpheme("apak")),
@@ -65,7 +69,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("gravel").scoped(), (), ())), Scope("ultra-modern")
+        Component(Fusion(Lexeme("gravel").with_scope(), (), ())), Scope("ultra-modern")
     ) == Compound(
         Component(Morpheme("kapa")),
         Joiner.head(),
@@ -73,7 +77,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),)))
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),)))
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(Rule("era1")),
@@ -83,7 +87,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(
             Fusion(
-                Lexeme("stone").scoped(),
+                Lexeme("stone").with_scope(),
                 (),
                 (
                     Suffix("COL"),
@@ -100,7 +104,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("LARGE"),)))
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("LARGE"),)))
     ) == Compound(
         Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
         Joiner.head(Rule("era1")),
@@ -109,7 +113,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.resolve(
         Compound(
-            Component(Fusion(Lexeme("stone").scoped())),
+            Component(Fusion(Lexeme("stone").with_scope())),
             Joiner.tail(),
             Component(Fusion(Morpheme("baka"))),
         )
@@ -125,18 +129,18 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
         Component(Morpheme("mana")),
     )
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme(str(Prefix("STONE"))).scoped()))
+        Component(Fusion(Lexeme(str(Prefix("STONE"))).with_scope()))
     ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma")))
 
 
 def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("gravel").scoped(), (), (Suffix("PL"),)))
+        Component(Fusion(Lexeme("gravel").with_scope(), (), (Suffix("PL"),)))
     ) == Component(Morpheme("ka"))
 
     assert parsed_lexicon.resolve(
         Component(
-            Fusion(Lexeme("gravel").scoped(), (Prefix("STONE"),), (Suffix("PL"),))
+            Fusion(Lexeme("gravel").with_scope(), (Prefix("STONE"),), (Suffix("PL"),))
         )
     ) == Compound(
         Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma"))),
@@ -159,7 +163,8 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.substitute(
-        Var((), ()), Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),)))
+        Var((), ()),
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),))),
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(Rule("era1")),
@@ -168,7 +173,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.substitute(
         Var((), (Suffix("PL"),)),
-        Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),))),
+        Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),))),
     ) == Compound(
         Compound(
             Component(Morpheme("apak")),
@@ -202,7 +207,7 @@ def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.form(Lexeme("gravel")) == Component(
         Fusion(
-            stem=Lexeme(name="stone").scoped(),
+            stem=Lexeme(name="stone").with_scope(),
             prefixes=(),
             suffixes=(Suffix(name="PL"),),
         )
@@ -220,7 +225,7 @@ def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.lookup(Morpheme("baka")) == [(Morpheme("baka"), "*baka")]
 
-    fusion = Component(Fusion(Lexeme("stone").scoped()))
+    fusion = Component(Fusion(Lexeme("stone").with_scope()))
     assert parsed_lexicon.lookup(fusion) == [
         (
             Lexeme("stone"),
@@ -236,7 +241,7 @@ def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
         )
     ]
 
-    fusion = Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),)))
+    fusion = Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),)))
     assert parsed_lexicon.lookup(fusion) == [
         (
             Lexeme("stone"),
@@ -257,7 +262,7 @@ def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     compound = default_compound(
         Component(Fusion(Morpheme("baka"), (), (Suffix("PL"),))),
         Joiner.head(),
-        Component(Fusion(Lexeme("stone").scoped())),
+        Component(Fusion(Lexeme("stone").with_scope())),
     )
     assert parsed_lexicon.lookup(compound) == [
         (

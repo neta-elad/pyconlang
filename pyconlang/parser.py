@@ -18,6 +18,7 @@ from .domain import (
     Rule,
     Scope,
     Scoped,
+    ScopedT,
     Sentence,
     Suffix,
     Tag,
@@ -60,8 +61,13 @@ non_default_scope = actual_scope ^ root_scope
 scope = default_scope ^ non_default_scope
 opt_scope = -scope
 
+
+def scoped(parser: Parser[str, ScopedT]) -> Parser[str, Scoped[ScopedT]]:
+    return (parser & opt_scope)[lift2(Scoped[ScopedT])]
+
+
 lexeme = (string("<") >> regex(r"[^<>]+") << string(">"))[Lexeme]
-scoped_lexeme = (lexeme & opt_scope)[lift2(Scoped[Lexeme])]
+scoped_lexeme = scoped(lexeme)
 
 rule = (string("@") >> ident)[Rule]
 
@@ -74,6 +80,8 @@ base_unit = scoped_lexeme ^ morpheme
 prefix = (ident << string("."))[Prefix]
 suffix = (string(".") >> ident)[Suffix]
 affix = prefix ^ suffix
+
+scoped_affix = scoped(affix)
 
 
 def fusion(stem: Parser[str, Fusible]) -> Parser[str, Fusion[Fusible]]:
