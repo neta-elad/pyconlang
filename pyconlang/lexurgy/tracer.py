@@ -1,12 +1,11 @@
 from collections.abc import Iterable, Mapping
-from typing import cast
 
 from .domain import TraceLine
 from .parser import any_trace_line
 
 
 def parse_trace_line(line: str) -> TraceLine | None:
-    return cast(TraceLine | None, any_trace_line.parse_string(line, parse_all=True)[0])
+    return any_trace_line.parse_or_raise(line)
 
 
 def parse_trace_lines(

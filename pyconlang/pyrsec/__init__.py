@@ -226,6 +226,16 @@ def lift3(
     return lifted
 
 
+def lift4(
+    fun: Callable[[_T1, _T2, _T3, _T4], _U]
+) -> Callable[[tuple[tuple[tuple[_T1, _T2], _T3], _T4]], _U]:
+    def lifted(quadruple: tuple[tuple[tuple[_T1, _T2], _T3], _T4]) -> _U:
+        ((a, b), c), d = quadruple
+        return fun(a, b, c, d)
+
+    return lifted
+
+
 def lift6(
     fun: Callable[[_T1, _T2, _T3, _T4, _T5, _T6], _U]
 ) -> Callable[[tuple[tuple[tuple[tuple[tuple[_T1, _T2], _T3], _T4], _T5], _T6]], _U]:

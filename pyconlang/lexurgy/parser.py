@@ -1,19 +1,15 @@
-from pyparsing import Suppress, Word, pyparsing_unicode, rest_of_line, token_map
-
-from ..old_parser import explicit_opt, tokens_map
+from ..pyrsec import default, lift4, regex, string, token
 from .domain import TraceLine
 
-# ParserElement.set_default_whitespace_chars(" \t")
-
-word = Word(pyparsing_unicode.BasicMultilingualPlane.printables, exclude_chars=":")
-to = explicit_opt(Suppress("to") - word, "")
+word = regex(r"[^\s:]+")
+to = (-(token(string("to")) >> token(word)))[default(lambda: "")]
 trace_line = (
-    Suppress("Applied") - word - to - Suppress(":") - word - Suppress("->") - word
-).set_parse_action(tokens_map(TraceLine))
-trace_line_heading = (Suppress("Tracing") - rest_of_line).set_parse_action(
-    token_map(lambda _: None)
-)
+    token(string("Applied")) >> token(word)
+    & to << token(string(":"))
+    & token(word) << token(string("->"))
+    & token(word)
+)[lift4(TraceLine)]
+
+trace_line_heading = (token(string("Tracing")) << regex(r".*"))[lambda _: None]
 
 any_trace_line = trace_line_heading ^ trace_line
-
-# trace_lines = Suppress(trace_line_heading) - trace_line[...]
