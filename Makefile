@@ -20,7 +20,7 @@ type:
 
 .PHONY: test
 test:
-	pytest
+	pytest -n auto
 
 
 .PHONY: coverage
