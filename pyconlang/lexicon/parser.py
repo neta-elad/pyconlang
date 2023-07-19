@@ -44,8 +44,8 @@ affix_form = default_word ^ var
 affix_definition = (
     (
         string("affix") >> token(-string("!"))[bool]
-        & token(affix)
         & opt_tags
+        & token(affix)
         & token(-rule)
         & token(-affix_form)
         & token(-lexical_sources)[default(tuple[Lexeme])]

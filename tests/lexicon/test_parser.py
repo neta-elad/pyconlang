@@ -96,6 +96,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         stressed=True,
+        tags=Tags(),
         affix=Suffix("PL"),
         era=Rule("era"),
         form=Component(Fusion(Morpheme("proto"))),
@@ -107,6 +108,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix .PL *proto@era plural for inanimate"
     ) == AffixDefinition(
         stressed=False,
+        tags=Tags(),
         affix=Suffix("PL"),
         form=Component(Fusion(Morpheme("proto", Rule("era")))),
         description="plural for inanimate",
@@ -114,7 +116,7 @@ def test_affix_definition() -> None:
 
     assert parse(
         affix_definition,
-        "affix .PL { foo bar:baz } (<big> <pile>) plural for inanimate",
+        "affix { foo bar:baz } .PL (<big> <pile>) plural for inanimate",
     ) == AffixDefinition(
         stressed=False,
         affix=Suffix("PL"),
@@ -129,6 +131,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix COL. <big>.PL collective form"
     ) == AffixDefinition(
         stressed=False,
+        tags=Tags(),
         affix=Prefix("COL"),
         era=None,
         form=Component(Fusion(Lexeme("big").with_lang(), (), (Suffix("PL"),))),
@@ -140,6 +143,7 @@ def test_affix_definition() -> None:
         affix_definition, 'affix COL. "<big> !+ <pile>.PL" collective form'
     ) == AffixDefinition(
         stressed=False,
+        tags=Tags(),
         affix=Prefix("COL"),
         era=None,
         form=Compound(
@@ -246,6 +250,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.affixes == {
         AffixDefinition(
             stressed=False,
+            tags=Tags(),
             affix=Suffix("PL"),
             era=None,
             form=Component(Fusion(Morpheme("iki", Rule("era1")))),
@@ -254,8 +259,8 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
-            affix=Suffix("COL"),
             tags=Tags(frozenset({Tag("lang")})),
+            affix=Suffix("COL"),
             era=None,
             form=Component(Fusion(Morpheme(form="ma", era=None))),
             sources=(),
@@ -263,6 +268,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
+            tags=Tags(),
             affix=Suffix("LARGE"),
             era=None,
             form=Var(
@@ -292,6 +298,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
+            tags=Tags(),
             affix=Suffix("DIST-PL"),
             era=None,
             form=None,

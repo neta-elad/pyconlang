@@ -79,8 +79,8 @@ class Entry:
 @dataclass(eq=True, frozen=True)
 class AffixDefinition:
     stressed: bool
+    tags: Tags
     affix: Affix
-    tags: Tags = field(default_factory=Tags)
     era: Rule | None = field(default=None)
     form: DefaultWord | Var | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
