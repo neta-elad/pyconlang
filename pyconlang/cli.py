@@ -30,7 +30,7 @@ def reset() -> None:
     "directory", type=click.Path(file_okay=False, path_type=Path), default="."
 )
 @click.option(
-    "-n", "--name", default="NewLang", help="Name of the lang (can be changed later)"
+    "-n", "--name", default="NewLang", help="Name of the scope (can be changed later)"
 )
 @click.option(
     "-a",

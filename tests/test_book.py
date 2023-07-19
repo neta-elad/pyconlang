@@ -92,7 +92,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
           d(<stone>) d(.PL)
           
           r(% <stone>)
-          r({lang:ultra-modern} <gravel>)
+          r({scope:ultra-modern} <gravel>)
           
           """,
     )

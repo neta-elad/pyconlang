@@ -15,7 +15,7 @@ class Metadata:
     name: str = field(default="")
     author: str = field(default="")
     syllables: bool = field(default=False)
-    lang: str = field(default="")
+    scope: str = field(default="")
 
     @classmethod
     def from_file(cls, path: Path = METADATA_PATH) -> "Metadata":

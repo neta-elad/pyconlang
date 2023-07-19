@@ -19,11 +19,11 @@ class Rule:
 
 
 @dataclass(eq=True, frozen=True)
-class Lang:  # todo: rename to scope?
-    lang: str = field(default="")
+class Scope:  # todo: rename to scope?
+    scope: str = field(default="")
 
     def __str__(self) -> str:
-        return f"%{self.lang}"
+        return f"%{self.scope}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -33,17 +33,17 @@ class Lexeme:
     def __str__(self) -> str:
         return f"<{self.name}>"
 
-    def with_lang(self, lang: Lang | None = None) -> "LangLexeme":
-        return LangLexeme(self, lang)
+    def scoped(self, scope: Scope | None = None) -> "ScopedLexeme":
+        return ScopedLexeme(self, scope)
 
 
 @dataclass(eq=True, frozen=True)
-class LangLexeme:
+class ScopedLexeme:
     lexeme: Lexeme
-    lang: Lang | None = field(default=None)
+    scope: Scope | None = field(default=None)
 
     def __str__(self) -> str:
-        return f"{self.lexeme}{self.lang or ''}"
+        return f"{self.lexeme}{self.scope or ''}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -100,9 +100,9 @@ class Suffix(AffixBase):
 
 Affix = Prefix | Suffix
 
-Definable = Lexeme | Affix  # todo: should be LangLexeme
+Definable = Lexeme | Affix  # todo: should be ScopedLexeme
 
-BaseUnit = Morpheme | LangLexeme
+BaseUnit = Morpheme | ScopedLexeme
 
 Fusible = TypeVar("Fusible", Lexeme, BaseUnit, covariant=True)
 
@@ -211,7 +211,7 @@ DefaultWord = Word[DefaultFusion]
 
 # Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
 
-Describable = Lexeme | Affix | Morpheme | LangLexeme
+Describable = Lexeme | Affix | Morpheme | ScopedLexeme
 Record = DefaultWord | DefaultFusion | Describable
 
 ResolvedForm = Word[Morpheme]
@@ -233,11 +233,11 @@ class Tags:
     tags: frozenset[Tag] = field(default_factory=frozenset)
 
     @classmethod
-    def from_set_and_lang(cls, tags: set[Tag], lang: Lang | None = None) -> Self:
+    def from_set_and_scope(cls, tags: set[Tag], scope: Scope | None = None) -> Self:
         tags = set(tags)
-        if lang is not None:
-            lang_tag = Tag("lang", lang.lang)
-            tags.add(lang_tag)
+        if scope is not None:
+            scope_tag = Tag("scope", scope.scope)
+            tags.add(scope_tag)
         return cls(frozenset(tags))
 
     def __post_init__(self) -> None:
@@ -255,11 +255,11 @@ class Tags:
         return {tag.key: tag.value for tag in self.tags}
 
     @cached_property
-    def lang(self) -> Lang:
-        if "lang" in self.map:
-            return Lang(self.map["lang"])
+    def scope(self) -> Scope:
+        if "scope" in self.map:
+            return Scope(self.map["scope"])
 
-        return Lang(Metadata.default().lang)
+        return Scope(Metadata.default().scope)
 
     def __str__(self) -> str:
         return "{" + " ".join(str(tag) for tag in self.tags) + "}"
@@ -274,8 +274,8 @@ class Sentence(Generic[AnyWord]):
     words: list[AnyWord]
 
     @cached_property
-    def lang(self) -> Lang:
-        return self.tags.lang
+    def scope(self) -> Scope:
+        return self.tags.scope
 
 
 DefaultSentence = Sentence[DefaultWord]

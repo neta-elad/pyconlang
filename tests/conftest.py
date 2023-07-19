@@ -32,9 +32,9 @@ def tmp_pyconlang(tmpdir: Path) -> Generator[Path, None, None]:
 def sample_lexicon() -> str:
     return cleandoc(
         """
-        lang % : % 'changes/archaic.lsc'
-        lang %modern : % 'changes/modern.lsc'
-        lang %ultra-modern : %modern 'changes/ultra-modern.lsc'
+        scope % : % 'changes/archaic.lsc'
+        scope %modern : % 'changes/modern.lsc'
+        scope %ultra-modern : %modern 'changes/ultra-modern.lsc'
         
         template &plural $ $.PL # this is a template
         
@@ -257,7 +257,7 @@ def simple_pyconlang(
 @pytest.fixture
 def metadata(tmp_pyconlang: Path) -> None:  # todo: differently
     """Set up global Metadata.default()"""
-    Metadata.default().lang = "modern"
+    Metadata.default().scope = "modern"
     Metadata.default().save()
     return
 
@@ -265,7 +265,7 @@ def metadata(tmp_pyconlang: Path) -> None:  # todo: differently
 @pytest.fixture
 def root_metadata(tmp_pyconlang: Path) -> None:  # todo: differently
     """Set up global Metadata.default()"""
-    Metadata.default().lang = ""
+    Metadata.default().scope = ""
     Metadata.default().save()
     return
 

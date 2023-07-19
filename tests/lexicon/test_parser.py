@@ -6,12 +6,12 @@ from pyconlang.domain import (
     Compound,
     Fusion,
     Joiner,
-    Lang,
     Lexeme,
     Morpheme,
     PartOfSpeech,
     Prefix,
     Rule,
+    Scope,
     Suffix,
     Tag,
     Tags,
@@ -20,7 +20,7 @@ from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.domain import (
     AffixDefinition,
     Entry,
-    LangDefinition,
+    ScopeDefinition,
     Template,
     TemplateName,
     Var,
@@ -30,10 +30,10 @@ from pyconlang.lexicon.parser import (
     comment,
     entry,
     include,
-    lang_definition,
     lexical_sources,
     part_of_speech,
     quoted_string,
+    scope_definition,
     template,
     template_name,
     var,
@@ -75,7 +75,7 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Lexeme("heavy").with_lang(), (), (Suffix("PL"),))),
+        Component(Fusion(Lexeme("heavy").scoped(), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -120,7 +120,7 @@ def test_affix_definition() -> None:
     ) == AffixDefinition(
         stressed=False,
         affix=Suffix("PL"),
-        tags=Tags.from_set_and_lang({Tag("foo"), Tag("bar", "baz")}),
+        tags=Tags.from_set_and_scope({Tag("foo"), Tag("bar", "baz")}),
         era=None,
         form=None,
         sources=(Lexeme("big"), Lexeme("pile")),
@@ -134,7 +134,7 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Prefix("COL"),
         era=None,
-        form=Component(Fusion(Lexeme("big").with_lang(), (), (Suffix("PL"),))),
+        form=Component(Fusion(Lexeme("big").scoped(), (), (Suffix("PL"),))),
         sources=(),
         description="collective form",
     )
@@ -147,9 +147,9 @@ def test_affix_definition() -> None:
         affix=Prefix("COL"),
         era=None,
         form=Compound(
-            Component(Fusion(Lexeme("big").with_lang())),
+            Component(Fusion(Lexeme("big").scoped())),
             Joiner.head(),
-            Component(Fusion(Lexeme("pile").with_lang(), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("pile").scoped(), (), (Suffix("PL"),))),
         ),
         sources=(),
         description="collective form",
@@ -161,19 +161,19 @@ def test_comment() -> None:
     assert parse(comment, "   ### <nothing at all *..") == "   ### <nothing at all *.."
 
 
-def test_lang_parent() -> None:
-    assert parse(lang_definition, "lang %modern : %%") == LangDefinition(
-        Lang("modern"), Lang()
+def test_scope() -> None:
+    assert parse(scope_definition, "scope %modern : %%") == ScopeDefinition(
+        Scope("modern"), Scope()
     )
 
-    assert parse(lang_definition, "lang %ultra-modern : %modern") == LangDefinition(
-        Lang("ultra-modern"), Lang("modern")
+    assert parse(scope_definition, "scope %ultra-modern : %modern") == ScopeDefinition(
+        Scope("ultra-modern"), Scope("modern")
     )
 
     assert parse(
-        lang_definition, "lang %ultra-modern : %modern 'changes/ultra-modern.lsc'"
-    ) == LangDefinition(
-        Lang("ultra-modern"), Lang("modern"), Path("changes") / "ultra-modern.lsc"
+        scope_definition, "scope %ultra-modern : %modern 'changes/ultra-modern.lsc'"
+    ) == ScopeDefinition(
+        Scope("ultra-modern"), Scope("modern"), Path("changes") / "ultra-modern.lsc"
     )
 
 
@@ -199,7 +199,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             TemplateName("plural"),
-            Tags(frozenset({Tag("lang")})),
+            Tags(frozenset({Tag("scope")})),
             Fusion(Lexeme("stone")),
             Component(Fusion(Morpheme("apak"))),
             PartOfSpeech("n"),
@@ -207,7 +207,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(frozenset({Tag("lang", "modern")})),
+            Tags(frozenset({Tag("scope", "modern")})),
             Fusion(Lexeme("stone")),
             Component(Fusion(Morpheme("kapa"))),
             PartOfSpeech("n"),
@@ -217,15 +217,15 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("PL"),))),
             PartOfSpeech("n"),
             "gravel",
         ),
         Entry(
             None,
-            Tags.from_set_and_lang(set(), Lang("ultra-modern")),
+            Tags.from_set_and_scope(set(), Scope("ultra-modern")),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("DIST-PL"),))),
+            Component(Fusion(Lexeme("stone").scoped(), (), (Suffix("DIST-PL"),))),
             PartOfSpeech("n"),
             "gravel (ultra-modern)",
         ),
@@ -250,7 +250,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.affixes == {
         AffixDefinition(
             stressed=False,
-            tags=Tags(frozenset({Tag("lang")})),
+            tags=Tags(frozenset({Tag("scope")})),
             affix=Suffix("PL"),
             era=None,
             form=Component(Fusion(Morpheme("iki", Rule("era1")))),
@@ -259,7 +259,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
-            tags=Tags(frozenset({Tag("lang")})),
+            tags=Tags(frozenset({Tag("scope")})),
             affix=Suffix("COL"),
             era=None,
             form=Component(Fusion(Morpheme(form="ma", era=None))),
@@ -284,11 +284,11 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         AffixDefinition(
             stressed=False,
             affix=Prefix("STONE"),
-            tags=Tags(frozenset({Tag("lang")})),
+            tags=Tags(frozenset({Tag("scope")})),
             era=None,
             form=Component(
                 Fusion(
-                    stem=Lexeme(name="stone").with_lang(),
+                    stem=Lexeme(name="stone").scoped(),
                     prefixes=(),
                     suffixes=(Suffix("COL"),),
                 )
@@ -376,6 +376,6 @@ def test_template() -> None:
     )
     assert parse(template, "template &name { foo bar:baz } %modern $") == Template(
         TemplateName("name"),
-        Tags.from_set_and_lang({Tag("foo"), Tag("bar", "baz")}, Lang("modern")),
+        Tags.from_set_and_scope({Tag("foo"), Tag("bar", "baz")}, Scope("modern")),
         (Var(),),
     )

@@ -35,7 +35,7 @@ def repl_with_archaic_default(
     capsys: CaptureFixture[str], simple_pyconlang: Path
 ) -> Generator[Evaluator, None, None]:
     metadata = Metadata.default()
-    metadata.lang = "archaic"
+    metadata.scope = "archaic"
     metadata.save()
     with create_session() as session:
 
@@ -44,7 +44,7 @@ def repl_with_archaic_default(
             return capsys.readouterr().out.strip()
 
         yield evaluate
-    metadata.lang = "modern"
+    metadata.scope = "modern"
     metadata.save()
 
 
@@ -58,7 +58,7 @@ def test_basic(simple_repl: Evaluator) -> None:
     assert simple_repl("*apak +!@era1 *i") == "abagi"
 
 
-def test_default_lang(repl_with_archaic_default: Evaluator) -> None:
+def test_default_scope(repl_with_archaic_default: Evaluator) -> None:
     assert repl_with_archaic_default("p <stone>") == "apak"
     assert repl_with_archaic_default("p %modern <stone>") == "kaba"
     assert repl_with_archaic_default("p STONE.<stone>") == "apakmaapak"

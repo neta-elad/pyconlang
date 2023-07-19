@@ -11,13 +11,13 @@ from ..domain import (
     DefaultWord,
     Fusion,
     Joiner,
-    Lang,
     Lexeme,
     LexemeFusion,
     Morpheme,
     PartOfSpeech,
     Prefix,
     Rule,
+    Scope,
     Suffix,
     Tags,
 )
@@ -135,7 +135,7 @@ class AffixDefinition:
 
 
 @dataclass(eq=True, frozen=True)
-class LangDefinition:
-    lang: Lang
-    parent: Lang
+class ScopeDefinition:
+    scope: Scope
+    parent: Scope
     changes: Path = field(default=CHANGES_PATH)

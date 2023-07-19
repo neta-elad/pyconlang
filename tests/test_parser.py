@@ -6,12 +6,12 @@ from pyconlang.domain import (
     Component,
     Fusion,
     Joiner,
-    Lang,
-    LangLexeme,
     Lexeme,
     Morpheme,
     Prefix,
     Rule,
+    Scope,
+    ScopedLexeme,
     Suffix,
     Tag,
     Tags,
@@ -47,9 +47,9 @@ def test_continue_lines() -> None:
 
 def test_scope() -> None:
     assert parse(scope, "%%") is None
-    assert parse(scope, "%") == Lang()
-    assert parse(scope, "%modern") == Lang("modern")
-    assert parse(scope, "% modern") == Lang()
+    assert parse(scope, "%") == Scope()
+    assert parse(scope, "%modern") == Scope("modern")
+    assert parse(scope, "% modern") == Scope()
 
 
 def test_base_unit() -> None:
@@ -57,16 +57,16 @@ def test_base_unit() -> None:
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
     assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
         "name of the-form"
-    ).with_lang(Lang())
-    assert parse(scoped_lexeme, "<name of the-form>%") == LangLexeme(
-        Lexeme("name of the-form"), Lang()
+    ).scoped(Scope())
+    assert parse(scoped_lexeme, "<name of the-form>%") == ScopedLexeme(
+        Lexeme("name of the-form"), Scope()
     )
-    assert parse(scoped_lexeme, "<name of the-form>%modern") == LangLexeme(
-        Lexeme("name of the-form"), Lang("modern")
+    assert parse(scoped_lexeme, "<name of the-form>%modern") == ScopedLexeme(
+        Lexeme("name of the-form"), Scope("modern")
     )
     assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
         "name of the-form"
-    ).with_lang(Lang("modern"))
+    ).scoped(Scope("modern"))
     assert parse(morpheme, "*proto") == Morpheme("proto")
     assert parse(base_unit, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
@@ -77,7 +77,7 @@ def test_base_unit() -> None:
 
 def test_fusion() -> None:
     assert parse(default_fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
-        Lexeme("stone").with_lang(Lang("modern")),
+        Lexeme("stone").scoped(Scope("modern")),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -86,7 +86,7 @@ def test_fusion() -> None:
     )
 
     assert parse(default_fusion, "DEF.<stone>.PL.ACC") == Fusion(
-        Lexeme("stone").with_lang(),
+        Lexeme("stone").scoped(),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -147,8 +147,8 @@ def test_sentence() -> None:
         Tags(),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").with_lang(), ())),
-            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").scoped(), ())),
+            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
@@ -156,23 +156,23 @@ def test_sentence() -> None:
     assert parse_sentence(
         "%test *aka <strong> COL.<with space> *taka@start.PL"
     ) == default_sentence(
-        Tags.from_set_and_lang(set(), Lang("test")),
+        Tags.from_set_and_scope(set(), Scope("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").with_lang(), ())),
-            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").scoped(), ())),
+            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
 
     assert parse_sentence(
-        "{lang:test} *aka <strong> COL.<with space> *taka@start.PL"
+        "{scope:test} *aka <strong> COL.<with space> *taka@start.PL"
     ) == default_sentence(
-        Tags.from_set_and_lang(set(), Lang("test")),
+        Tags.from_set_and_scope(set(), Scope("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong").with_lang(), ())),
-            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").scoped(), ())),
+            Component(Fusion(Lexeme("with space").scoped(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
@@ -185,32 +185,32 @@ def test_definables() -> None:
         Suffix("PL"),
     ]
 
-    assert parse_definables("%modern <strong> COL. .PL").lang == Lang("modern")
+    assert parse_definables("%modern <strong> COL. .PL").scope == Scope("modern")
 
 
 def test_tags() -> None:
     assert parse(opt_tags, "") == Tags()
 
-    assert parse(opt_tags, "{foo}") == Tags.from_set_and_lang({Tag("foo")})
-    assert parse(opt_tags, "{foo} %%") == Tags.from_set_and_lang({Tag("foo")})
-    assert parse(opt_tags, "{foo bar:baz}") == Tags.from_set_and_lang(
+    assert parse(opt_tags, "{foo}") == Tags.from_set_and_scope({Tag("foo")})
+    assert parse(opt_tags, "{foo} %%") == Tags.from_set_and_scope({Tag("foo")})
+    assert parse(opt_tags, "{foo bar:baz}") == Tags.from_set_and_scope(
         {Tag("foo"), Tag("bar", "baz")}
     )
-    assert parse(opt_tags, "{foo bar:baz lang:modern}") == Tags.from_set_and_lang(
-        {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
+    assert parse(opt_tags, "{foo bar:baz scope:modern}") == Tags.from_set_and_scope(
+        {Tag("foo"), Tag("bar", "baz")}, Scope("modern")
     )
-    assert parse(opt_tags, "{foo bar:baz} %modern") == Tags.from_set_and_lang(
-        {Tag("foo"), Tag("bar", "baz")}, Lang("modern")
+    assert parse(opt_tags, "{foo bar:baz} %modern") == Tags.from_set_and_scope(
+        {Tag("foo"), Tag("bar", "baz")}, Scope("modern")
     )
-    assert parse(opt_tags, "{foo bar:baz} %") == Tags.from_set_and_lang(
-        {Tag("foo"), Tag("bar", "baz")}, Lang()
+    assert parse(opt_tags, "{foo bar:baz} %") == Tags.from_set_and_scope(
+        {Tag("foo"), Tag("bar", "baz")}, Scope()
     )
 
     with pytest.raises(DoubleTagDefinition):
         assert parse(opt_tags, "{foo foo:bar}")
 
     with pytest.raises(DoubleTagDefinition):
-        assert parse(opt_tags, "{lang:bar} %foo")
+        assert parse(opt_tags, "{scope:bar} %foo")
 
 
 def parse(parser: Parser[str, U], string: str) -> U:

@@ -15,12 +15,12 @@ from ..parser import (
     suffix,
 )
 from ..pyrsec import default, lift2, lift3, lift6, lift7, regex, string, token
-from .domain import AffixDefinition, Entry, LangDefinition, Template, TemplateName, Var
+from .domain import AffixDefinition, Entry, ScopeDefinition, Template, TemplateName, Var
 
 
 def parse_lexicon(
     lines: Iterable[str],
-) -> Iterable[Entry | AffixDefinition | Template | LangDefinition | Path]:
+) -> Iterable[Entry | AffixDefinition | Template | ScopeDefinition | Path]:
     return [
         parsed_line
         for line in lines
@@ -70,17 +70,19 @@ quoted_string = double_quoted_string ^ single_quoted_string
 
 path = quoted_string[Path]
 
-base_lang_definition = string("lang") >> token(non_default_scope) << string(
+base_scope_definition = string("scope") >> token(non_default_scope) << string(
     ":"
 ) & token(non_default_scope)
 
-lang_definition_without_path = base_lang_definition[lift2(LangDefinition)]
+scope_definition_without_path = base_scope_definition[lift2(ScopeDefinition)]
 
-lang_definition_with_path = (base_lang_definition & token(path))[lift3(LangDefinition)]
+scope_definition_with_path = (base_scope_definition & token(path))[
+    lift3(ScopeDefinition)
+]
 
-lang_definition = lang_definition_with_path ^ lang_definition_without_path
+scope_definition = scope_definition_with_path ^ scope_definition_without_path
 
-record = entry ^ affix_definition ^ template ^ lang_definition
+record = entry ^ affix_definition ^ template ^ scope_definition
 
 include = string("include") >> token(path)
 

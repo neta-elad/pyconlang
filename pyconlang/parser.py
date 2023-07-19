@@ -14,12 +14,12 @@ from .domain import (
     Fusion,
     Joiner,
     JoinerStress,
-    Lang,
-    LangLexeme,
     Lexeme,
     Morpheme,
     Prefix,
     Rule,
+    Scope,
+    ScopedLexeme,
     Sentence,
     Suffix,
     Tag,
@@ -56,14 +56,14 @@ def continue_lines(lines: Iterable[str]) -> Iterable[str]:
 ident = regex(r"[A-Za-z0-9-]+")
 
 default_scope = string("%%")[lambda _: None]
-root_scope = string("%")[lambda _: Lang()]
-actual_scope = (string("%") >> ident)[Lang]
+root_scope = string("%")[lambda _: Scope()]
+actual_scope = (string("%") >> ident)[Scope]
 non_default_scope = actual_scope ^ root_scope
 scope = default_scope ^ non_default_scope
 opt_scope = -scope
 
 lexeme = (string("<") >> regex(r"[^<>]+") << string(">"))[Lexeme]
-scoped_lexeme = (lexeme & opt_scope)[lift2(LangLexeme)]
+scoped_lexeme = (lexeme & opt_scope)[lift2(ScopedLexeme)]
 
 rule = (string("@") >> ident)[Rule]
 
@@ -115,7 +115,7 @@ tag_key_value = (ident & string(":") >> ident)[lift2(Tag)]
 tag = tag_key_value ^ tag_key
 just_tags = (string("{") >> ~token(tag) << string("}"))[set[Tag]]
 opt_just_tags = (-just_tags)[default(set)]
-tags = (opt_just_tags & token(opt_scope))[lift2(Tags.from_set_and_lang)]
+tags = (opt_just_tags & token(opt_scope))[lift2(Tags.from_set_and_scope)]
 opt_tags = (-tags)[default(Tags)]
 
 sentence = (opt_tags & words)[lift2(Sentence[DefaultWord])]

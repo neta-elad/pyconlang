@@ -10,8 +10,8 @@ from .domain import (
     DefaultWord,
     Definable,
     Describable,
-    Lang,
     ResolvedForm,
+    Scope,
     Sentence,
 )
 from .evolve import EvolvedWithTrace, Evolver
@@ -41,12 +41,12 @@ class Translator:
     def resolve_sentence(
         self, sentence: Sentence[DefaultWord]
     ) -> Sequence[ResolvedForm]:
-        return [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
+        return [self.lexicon.resolve(form, sentence.scope) for form in sentence.words]
 
     def resolve_and_evolve(self, sentence: Sentence[DefaultWord]) -> list[Evolved]:
         return self.evolver.evolve(
             self.resolve_sentence(sentence),
-            changes=self.lexicon.changes_for(sentence.lang),
+            changes=self.lexicon.changes_for(sentence.scope),
         )
 
     def evolve_string(self, string: str) -> list[Evolved]:
@@ -58,37 +58,39 @@ class Translator:
 
     def define_string(self, string: str) -> list[str]:
         sentence = self.parse_definables(string)
-        return [self.lexicon.define(record, sentence.lang) for record in sentence.words]
+        return [
+            self.lexicon.define(record, sentence.scope) for record in sentence.words
+        ]
 
     def resolve_definable_string(self, string: str) -> list[ResolvedForm]:
         sentence = self.parse_definables(string)
         return [
-            self.lexicon.resolve_definable(record, sentence.lang)
+            self.lexicon.resolve_definable(record, sentence.scope)
             for record in sentence.words
         ]
 
     def resolve_and_evolve_all(self, strings: list[str]) -> None:
-        per_lang_sentences: dict[Lang, list[ResolvedForm]] = {}
+        per_scope_sentences: dict[Scope, list[ResolvedForm]] = {}
         for string in strings:
             sentence = self.parse_sentence(string)
-            per_lang_sentences.setdefault(sentence.lang, [])
-            per_lang_sentences[sentence.lang].extend(self.resolve_sentence(sentence))
+            per_scope_sentences.setdefault(sentence.scope, [])
+            per_scope_sentences[sentence.scope].extend(self.resolve_sentence(sentence))
 
-        for lang, forms in per_lang_sentences.items():
-            self.evolver.evolve(forms, changes=self.lexicon.changes_for(lang))
+        for scope, forms in per_scope_sentences.items():
+            self.evolver.evolve(forms, changes=self.lexicon.changes_for(scope))
 
     def lookup_string(
         self, string: str
     ) -> Sequence[tuple[DefaultWord, list[tuple[Describable, str]]]]:
         lexicon = self.lexicon
         sentence = self.parse_sentence(string)
-        return [(word, lexicon.lookup(word, sentence.lang)) for word in sentence.words]
+        return [(word, lexicon.lookup(word, sentence.scope)) for word in sentence.words]
 
     def trace_string(self, string: str) -> list[EvolvedWithTrace]:
         sentence = self.parse_sentence(string)
         return self.evolver.trace(
-            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words],
-            changes=self.lexicon.changes_for(sentence.lang),
+            [self.lexicon.resolve(form, sentence.scope) for form in sentence.words],
+            changes=self.lexicon.changes_for(sentence.scope),
         )
 
     @staticmethod

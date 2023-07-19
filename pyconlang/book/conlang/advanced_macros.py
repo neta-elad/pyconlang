@@ -96,7 +96,7 @@ class AdvancedProtoMacro(AdvancedMacro):
     def map_inner_text(self, text: str) -> str:
         sentence = self.translator.parse_sentence(text.strip())
         forms = [
-            self.translator.lexicon.resolve(word, sentence.lang)
+            self.translator.lexicon.resolve(word, sentence.scope)
             for word in sentence.words
         ]
         return " ".join(_join_morphemes(form) for form in forms)
