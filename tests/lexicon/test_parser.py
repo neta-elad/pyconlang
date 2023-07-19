@@ -51,8 +51,8 @@ def test_entry_parts() -> None:
 def test_entry() -> None:
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
-        Fusion(Lexeme("strong")),
         Tags(),
+        Fusion(Lexeme("strong")),
         Component(Fusion(Morpheme("kipu", Rule("era1")))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -62,8 +62,8 @@ def test_entry() -> None:
         entry, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Fusion(Lexeme("strong")),
         Tags(),
+        Fusion(Lexeme("strong")),
         Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
@@ -73,9 +73,9 @@ def test_entry() -> None:
         entry, "entry &plural <strong> <heavy>.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Fusion(Lexeme("strong")),
         Tags(),
-        Component(Fusion(Lexeme("heavy"), (), (Suffix("PL"),))),
+        Fusion(Lexeme("strong")),
+        Component(Fusion(Lexeme("heavy").with_lang(), (), (Suffix("PL"),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -131,7 +131,7 @@ def test_affix_definition() -> None:
         stressed=False,
         affix=Prefix("COL"),
         era=None,
-        form=Component(Fusion(Lexeme("big"), (), (Suffix("PL"),))),
+        form=Component(Fusion(Lexeme("big").with_lang(), (), (Suffix("PL"),))),
         sources=(),
         description="collective form",
     )
@@ -143,9 +143,9 @@ def test_affix_definition() -> None:
         affix=Prefix("COL"),
         era=None,
         form=Compound(
-            Component(Fusion(Lexeme("big"))),
+            Component(Fusion(Lexeme("big").with_lang())),
             Joiner.head(),
-            Component(Fusion(Lexeme("pile"), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("pile").with_lang(), (), (Suffix("PL"),))),
         ),
         sources=(),
         description="collective form",
@@ -179,64 +179,64 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.entries == {
         Entry(
             None,
-            Fusion(Lexeme("strong")),
             Tags(),
+            Fusion(Lexeme("strong")),
             Component(Fusion(Morpheme("kipu", Rule("era1")))),
             PartOfSpeech("adj"),
             "strong, stable",
         ),
         Entry(
             None,
-            Fusion(Lexeme("big")),
             Tags(),
+            Fusion(Lexeme("big")),
             Component(Fusion(Morpheme("iki"))),
             PartOfSpeech("adj"),
             "big, great",
         ),
         Entry(
             TemplateName("plural"),
-            Fusion(Lexeme("stone")),
             Tags(frozenset({Tag("lang")})),
+            Fusion(Lexeme("stone")),
             Component(Fusion(Morpheme("apak"))),
             PartOfSpeech("n"),
             "stone, pebble",
         ),
         Entry(
             None,
-            Fusion(Lexeme("stone")),
             Tags(frozenset({Tag("lang", "modern")})),
+            Fusion(Lexeme("stone")),
             Component(Fusion(Morpheme("kapa"))),
             PartOfSpeech("n"),
             "stone, pebble (modern)",
         ),
         Entry(
             None,
-            Fusion(Lexeme("gravel")),
             Tags(),
-            Component(Fusion(Lexeme("stone"), (), (Suffix("PL"),))),
+            Fusion(Lexeme("gravel")),
+            Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("PL"),))),
             PartOfSpeech("n"),
             "gravel",
         ),
         Entry(
             None,
-            Fusion(Lexeme("gravel")),
             Tags.from_set_and_lang(set(), Lang("ultra-modern")),
-            Component(Fusion(Lexeme("stone"), (), (Suffix("DIST-PL"),))),
+            Fusion(Lexeme("gravel")),
+            Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("DIST-PL"),))),
             PartOfSpeech("n"),
             "gravel (ultra-modern)",
         ),
         Entry(
             None,
-            Fusion(Lexeme("pile")),
             Tags(),
+            Fusion(Lexeme("pile")),
             Component(Fusion(Morpheme("ma"))),
             PartOfSpeech("n"),
             "pile",
         ),
         Entry(
             None,
-            Fusion(Lexeme("gravel"), (), (Suffix("PL"),)),
             Tags(),
+            Fusion(Lexeme("gravel"), (), (Suffix("PL"),)),
             Component(Fusion(Morpheme("ka"))),
             PartOfSpeech("n"),
             "gravel (plural)",
@@ -282,7 +282,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             era=None,
             form=Component(
                 Fusion(
-                    stem=Lexeme(name="stone"),
+                    stem=Lexeme(name="stone").with_lang(),
                     prefixes=(),
                     suffixes=(Suffix("COL"),),
                 )

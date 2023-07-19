@@ -5,7 +5,7 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
-from ...domain import Fusion, Morpheme, Word
+from ...domain import DefaultFusion, Morpheme, Word
 from ...lexicon.domain import Entry
 from ...translate import Translator
 
@@ -99,5 +99,5 @@ class ConlangDictionary(Preprocessor):
             + f" [ph({entry.form})] pr[{entry.form}] {entry.description()}"
         )
 
-    def form_to_morphemes(self, form: Word[Fusion]) -> list[Morpheme]:
+    def form_to_morphemes(self, form: Word[DefaultFusion]) -> list[Morpheme]:
         return self.translator.lexicon.resolve(form).leaves()

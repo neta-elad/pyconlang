@@ -5,18 +5,19 @@ from pyparsing import ParserElement
 
 from pyconlang.domain import (
     Component,
-    Compound,
     Fusion,
     Joiner,
     Lang,
+    LangLexeme,
     Lexeme,
     Morpheme,
     Prefix,
     Rule,
-    Sentence,
     Suffix,
     Tag,
     Tags,
+    default_compound,
+    default_sentence,
 )
 from pyconlang.errors import DoubleTagDefinition
 from pyconlang.parser import (
@@ -25,6 +26,7 @@ from pyconlang.parser import (
     continue_lines,
     fusion,
     joiner,
+    lang_lexeme,
     lexeme,
     morpheme,
     optional_tags,
@@ -43,7 +45,18 @@ def test_continue_lines() -> None:
 def test_base_unit() -> None:
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
-    assert parse(base_unit, "<name of the-form>") == Lexeme("name of the-form")
+    assert parse(lang_lexeme, "<name of the-form>%%") == Lexeme(
+        "name of the-form"
+    ).with_lang(Lang())
+    assert parse(lang_lexeme, "<name of the-form>%%") == LangLexeme(
+        Lexeme("name of the-form"), Lang()
+    )
+    assert parse(lang_lexeme, "<name of the-form>%modern") == LangLexeme(
+        Lexeme("name of the-form"), Lang("modern")
+    )
+    assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
+        "name of the-form"
+    ).with_lang(Lang("modern"))
     assert parse(morpheme, "*proto") == Morpheme("proto")
     assert parse(base_unit, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
@@ -53,8 +66,8 @@ def test_base_unit() -> None:
 
 
 def test_fusion() -> None:
-    assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
-        Lexeme("stone"),
+    assert parse(fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
+        Lexeme("stone").with_lang(Lang("modern")),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -63,7 +76,7 @@ def test_fusion() -> None:
     )
 
     assert parse(fusion, "DEF.<stone>.PL.ACC") == Fusion(
-        Lexeme("stone"),
+        Lexeme("stone").with_lang(),
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -89,23 +102,23 @@ def test_joiner() -> None:
 
 def test_compound() -> None:
     assert parse(compound, "*foo") == Component(Fusion(Morpheme("foo"), ()))
-    assert parse(compound, "*foo +! *bar") == Compound(
+    assert parse(compound, "*foo +! *bar") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.tail(),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(compound, "*foo !+@era *bar") == Compound(
+    assert parse(compound, "*foo !+@era *bar") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(compound, '"*foo !+@era *bar"') == Compound(
+    assert parse(compound, '"*foo !+@era *bar"') == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(compound, '"*foo +!@era *bar" !+ *baz') == Compound(
-        Compound(
+    assert parse(compound, '"*foo +!@era *bar" !+ *baz') == default_compound(
+        default_compound(
             Component(Fusion(Morpheme("foo"), ())),
             Joiner.tail(Rule("era")),
             Component(Fusion(Morpheme("bar"))),
@@ -116,36 +129,38 @@ def test_compound() -> None:
 
 
 def test_sentence() -> None:
-    assert parse_sentence("*aka <strong> COL.<with space> *taka@start.PL") == Sentence(
+    assert parse_sentence(
+        "*aka <strong> COL.<with space> *taka@start.PL"
+    ) == default_sentence(
         Tags(),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong"), ())),
-            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_lang(), ())),
+            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
 
     assert parse_sentence(
         "%test *aka <strong> COL.<with space> *taka@start.PL"
-    ) == Sentence(
+    ) == default_sentence(
         Tags.from_set_and_lang(set(), Lang("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong"), ())),
-            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_lang(), ())),
+            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )
 
     assert parse_sentence(
         "{lang:test} *aka <strong> COL.<with space> *taka@start.PL"
-    ) == Sentence(
+    ) == default_sentence(
         Tags.from_set_and_lang(set(), Lang("test")),
         [
             Component(Fusion(Morpheme("aka"))),
-            Component(Fusion(Lexeme("strong"), ())),
-            Component(Fusion(Lexeme("with space"), (Prefix("COL"),), ())),
+            Component(Fusion(Lexeme("strong").with_lang(), ())),
+            Component(Fusion(Lexeme("with space").with_lang(), (Prefix("COL"),), ())),
             Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
         ],
     )

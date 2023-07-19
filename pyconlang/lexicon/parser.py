@@ -20,10 +20,10 @@ from ..parser import (
     affix,
     compound,
     explicit_opt,
-    fusion,
     ident,
     lang,
     lexeme,
+    lexeme_fusion,
     optional_tags,
     prefix,
     rule,
@@ -104,8 +104,8 @@ entry = (
     (
         Suppress("entry")
         - explicit_opt(template_name)
-        - fusion
         - optional_tags
+        - lexeme_fusion
         - compound
         - part_of_speech
         - rest

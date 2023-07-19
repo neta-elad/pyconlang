@@ -9,18 +9,21 @@ from ..domain import (
     Affix,
     Component,
     Compound,
+    DefaultFusion,
+    DefaultWord,
     Definable,
     Describable,
     Fusion,
     Joiner,
     Lang,
+    LangLexeme,
     Lexeme,
+    LexemeFusion,
     Morpheme,
     Prefix,
     Record,
     ResolvedForm,
     Suffix,
-    Word,
 )
 from ..parser import continue_lines
 from .domain import AffixDefinition, Entry, LangDefinition, Template, TemplateName, Var
@@ -109,7 +112,7 @@ class Lexicon:
         return cls(entries, affixes, templates, lang_parents)
 
     @cached_property
-    def entry_mapping(self) -> dict[tuple[Lang, Fusion], Entry]:
+    def entry_mapping(self) -> dict[tuple[Lang, LexemeFusion], Entry]:
         return {(entry.tags.lang, entry.lexeme): entry for entry in self.entries} | {
             (definition.tags.lang, definition.affix.to_fusion()): definition.to_entry()
             for definition in self.affixes
@@ -144,7 +147,7 @@ class Lexicon:
         else:
             return self.get_affix(affix, parent)
 
-    def resolve(self, word: Word[Fusion], lang: Lang = Lang()) -> ResolvedForm:
+    def resolve(self, word: DefaultWord, lang: Lang = Lang()) -> ResolvedForm:
         match word:
             case Component():
                 return self.resolve_fusion(word.form, lang)
@@ -152,19 +155,23 @@ class Lexicon:
                 return self.resolve_compound(word, lang)
 
     def resolve_any(
-        self, form: Word[Fusion] | Fusion | Morpheme | Lexeme, lang: Lang = Lang()
+        self, form: DefaultWord | Morpheme | Lexeme | LangLexeme, lang: Lang = Lang()
     ) -> ResolvedForm:
         match form:
             case Fusion():
                 return self.resolve_fusion(form, lang)
             case Morpheme():
                 return Component(form)
+            case LangLexeme():
+                return self.resolve_any(form.lexeme, form.lang or lang)
             case Lexeme():
                 return self.resolve(self.get_entry(form, lang).form, lang)
             case _:
                 return self.resolve(form, lang)
 
-    def resolve_fusion(self, fusion: Fusion, lang: Lang = Lang()) -> ResolvedForm:
+    def resolve_fusion(
+        self, fusion: DefaultFusion, lang: Lang = Lang()
+    ) -> ResolvedForm:
         prefixes = fusion.prefixes
         suffixes = fusion.suffixes
         max_total_length = len(prefixes) + len(suffixes)
@@ -176,15 +183,18 @@ class Lexicon:
                     rest_prefixes = prefixes[:i]
                     this_suffixes = suffixes[:j]
                     rest_suffixes = suffixes[j:]
-                    this_fusion = Fusion(fusion.stem, this_prefixes, this_suffixes)
-                    if (lang, this_fusion) in self.entry_mapping:
-                        return self.extend_with_affixes(
-                            self.resolve(
-                                self.entry_mapping[(lang, this_fusion)].form, lang
-                            ),
-                            lang,
-                            *(rest_prefixes + rest_suffixes),
+                    if isinstance(fusion.stem, LangLexeme):
+                        this_fusion = Fusion(
+                            fusion.stem.lexeme, this_prefixes, this_suffixes
                         )
+                        if (lang, this_fusion) in self.entry_mapping:
+                            return self.extend_with_affixes(
+                                self.resolve(
+                                    self.entry_mapping[(lang, this_fusion)].form, lang
+                                ),
+                                lang,
+                                *(rest_prefixes + rest_suffixes),
+                            )
 
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem, lang),
@@ -193,7 +203,7 @@ class Lexicon:
         )
 
     def resolve_compound(
-        self, compound: Compound[Fusion], lang: Lang = Lang()
+        self, compound: Compound[DefaultFusion], lang: Lang = Lang()
     ) -> ResolvedForm:
         head = self.resolve(compound.head, lang)
         tail = self.resolve(compound.tail, lang)
@@ -251,7 +261,7 @@ class Lexicon:
                         )
 
     def substitute(
-        self, var: Var, form: Word[Fusion], lang: Lang = Lang()
+        self, var: Var, form: DefaultWord, lang: Lang = Lang()
     ) -> ResolvedForm:
         return self.extend_with_affixes(
             self.resolve(form, lang), lang, *(var.prefixes + var.suffixes)
@@ -273,7 +283,7 @@ class Lexicon:
             for var in self.get_vars(entry.template)
         ]
 
-    def form(self, record: Definable, lang: Lang = Lang()) -> Word[Fusion]:
+    def form(self, record: Definable, lang: Lang = Lang()) -> DefaultWord:
         match record:
             case Prefix() | Suffix():
                 return self.get_affix(record, lang).get_form()
@@ -300,6 +310,8 @@ class Lexicon:
                 return self.singleton_lookup(
                     record, self.get_affix(record, lang).description
                 )
+            case LangLexeme():
+                return self.lookup(record.lexeme, record.lang or lang)
             case Lexeme():
                 entry = self.get_entry(record, lang)
                 return self.singleton_lookup(record, entry.description())

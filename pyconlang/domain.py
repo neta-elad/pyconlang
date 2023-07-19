@@ -19,11 +19,32 @@ class Rule:
 
 
 @dataclass(eq=True, frozen=True)
+class Lang:  # todo: rename to scope?
+    lang: str | None = field(default=None)
+
+    def __str__(self) -> str:
+        lang = self.lang or "<ROOT>"
+        return f"%{lang}"
+
+
+@dataclass(eq=True, frozen=True)
 class Lexeme:
     name: str
 
     def __str__(self) -> str:
         return f"<{self.name}>"
+
+    def with_lang(self, lang: Lang | None = None) -> "LangLexeme":
+        return LangLexeme(self, lang)
+
+
+@dataclass(eq=True, frozen=True)
+class LangLexeme:
+    lexeme: Lexeme
+    lang: Lang | None = field(default=None)
+
+    def __str__(self) -> str:
+        return f"{self.lexeme}{self.lang or ''}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -59,7 +80,7 @@ class AffixBase(ABC):
     def to_lexeme(self) -> Lexeme:
         return Lexeme(str(self))
 
-    def to_fusion(self) -> "Fusion":
+    def to_fusion(self) -> "Fusion[Lexeme]":
         return Fusion(self.to_lexeme())
 
     def __str__(self) -> str:
@@ -80,12 +101,16 @@ class Suffix(AffixBase):
 
 Affix = Prefix | Suffix
 
-Definable = Lexeme | Affix
+Definable = Lexeme | Affix  # todo: should be LangLexeme
+
+BaseUnit = Morpheme | LangLexeme
+
+Fusible = TypeVar("Fusible", Lexeme, BaseUnit, covariant=True)
 
 
 @dataclass(eq=True, frozen=True)
-class Fusion:
-    stem: "Unit"
+class Fusion(Generic[Fusible]):
+    stem: Fusible
     prefixes: tuple[Prefix, ...] = field(default=())
     """prefixes are stored in reversed order"""
 
@@ -93,8 +118,8 @@ class Fusion:
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: list[Prefix], stem: "Unit", suffixes: list[Suffix]
-    ) -> "Fusion":
+        cls, prefixes: list[Prefix], stem: Fusible, suffixes: list[Suffix]
+    ) -> "Fusion[Fusible]":
         return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
 
     def __str__(self) -> str:
@@ -105,7 +130,10 @@ class Fusion:
         )
 
 
-Compoundable = TypeVar("Compoundable", Morpheme, Fusion)
+DefaultFusion = Fusion[BaseUnit]
+LexemeFusion = Fusion[Lexeme]
+
+Compoundable = TypeVar("Compoundable", DefaultFusion, Morpheme, covariant=True)
 
 
 class Tree(Generic[Compoundable], metaclass=ABCMeta):
@@ -172,23 +200,22 @@ class Compound(Tree[Compoundable]):
         return self.head.leaves() + self.tail.leaves()
 
 
+def default_compound(
+    head: "Word[DefaultFusion]", joiner: Joiner, tail: "Word[DefaultFusion]"
+) -> "Compound[DefaultFusion]":
+    return Compound(head, joiner, tail)
+
+
 Word = Component[Compoundable] | Compound[Compoundable]
 
-Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
+DefaultWord = Word[DefaultFusion]
 
-Describable = Lexeme | Affix | Morpheme
-Record = Word[Fusion] | Fusion | Describable
+# Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
+
+Describable = Lexeme | Affix | Morpheme | LangLexeme
+Record = DefaultWord | DefaultFusion | Describable
 
 ResolvedForm = Word[Morpheme]
-
-
-@dataclass(eq=True, frozen=True)
-class Lang:
-    lang: str | None = field(default=None)
-
-    def __str__(self) -> str:
-        lang = self.lang or "<ROOT>"
-        return f"%{lang}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -239,7 +266,7 @@ class Tags:
         return "{" + " ".join(str(tag) for tag in self.tags) + "}"
 
 
-AnyWord = TypeVar("AnyWord", Word[Fusion], Definable)
+AnyWord = TypeVar("AnyWord", DefaultWord, Definable)
 
 
 @dataclass
@@ -250,3 +277,10 @@ class Sentence(Generic[AnyWord]):
     @cached_property
     def lang(self) -> Lang:
         return self.tags.lang
+
+
+DefaultSentence = Sentence[DefaultWord]
+
+
+def default_sentence(tags: Tags, words: list[DefaultWord]) -> DefaultSentence:
+    return Sentence(tags, words)

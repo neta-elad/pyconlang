@@ -8,17 +8,18 @@ from ..domain import (
     Affix,
     Component,
     Compound,
+    DefaultWord,
     Fusion,
     Joiner,
     Lang,
     Lexeme,
+    LexemeFusion,
     Morpheme,
     PartOfSpeech,
     Prefix,
     Rule,
     Suffix,
     Tags,
-    Word,
 )
 from .errors import AffixDefinitionMissingForm, AffixDefinitionMissingVar
 
@@ -65,9 +66,9 @@ class Template:
 @dataclass(eq=True, frozen=True)
 class Entry:
     template: TemplateName | None
-    lexeme: Fusion
     tags: Tags
-    form: Word[Fusion]
+    lexeme: LexemeFusion
+    form: DefaultWord
     part_of_speech: PartOfSpeech
     definition: str
 
@@ -81,7 +82,7 @@ class AffixDefinition:
     affix: Affix
     tags: Tags = field(default_factory=Tags)
     era: Rule | None = field(default=None)
-    form: Word[Fusion] | Var | None = field(default=None)
+    form: DefaultWord | Var | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
         default_factory=tuple
     )  # or Form - can bare Proto appear?
@@ -102,14 +103,14 @@ class AffixDefinition:
     def is_var(self) -> bool:
         return self.form is not None and isinstance(self.form, Var)
 
-    def get_form(self) -> Word[Fusion]:
+    def get_form(self) -> DefaultWord:
         if self.form is not None and not isinstance(self.form, Var):
             return self.form
         elif self.sources:
             return reduce(
                 lambda head, tail: Compound(head, Joiner.head(), tail),
                 map(
-                    lambda source: cast(Word[Fusion], Component(Fusion(source))),
+                    lambda source: cast(DefaultWord, Component(Fusion(source))),
                     self.sources,
                 ),
             )
@@ -125,8 +126,8 @@ class AffixDefinition:
     def to_entry(self) -> Entry:
         return Entry(
             None,
-            self.affix.to_fusion(),
             self.tags,
+            self.affix.to_fusion(),
             self.get_form(),
             PartOfSpeech("afx"),
             self.description,

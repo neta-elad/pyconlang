@@ -18,11 +18,13 @@ from pyparsing import alphanums, pyparsing_unicode, token_map
 from .domain import (
     Component,
     Compound,
+    DefaultSentence,
     Definable,
     Fusion,
     Joiner,
     JoinerStress,
     Lang,
+    LangLexeme,
     Lexeme,
     Morpheme,
     Prefix,
@@ -31,7 +33,6 @@ from .domain import (
     Suffix,
     Tag,
     Tags,
-    Word,
 )
 
 T = TypeVar("T")
@@ -60,10 +61,8 @@ def const_action(value: T) -> Callable[[], T]:
     return action
 
 
-def parse_sentence(string: str) -> Sentence[Word[Fusion]]:
-    return cast(
-        Sentence[Word[Fusion]], sentence.parse_string(string, parse_all=True)[0]
-    )
+def parse_sentence(string: str) -> DefaultSentence:
+    return cast(DefaultSentence, sentence.parse_string(string, parse_all=True)[0])
 
 
 def parse_definables(string: str) -> Sentence[Definable]:
@@ -88,6 +87,13 @@ def continue_lines(lines: Iterable[str]) -> Iterable[str]:
 
 ParserElement.set_default_whitespace_chars(" \t")
 
+ident = ParseWord(alphanums + "-").set_name("ident")
+
+default_lang = Literal("%%").set_parse_action(token_map(lambda _: Lang()))
+any_lang = (Suppress("%") - ident).set_parse_action(token_map(Lang))
+lang = default_lang ^ any_lang
+opt_lang = explicit_opt(lang)
+
 lexeme = (
     (
         Suppress("<")
@@ -101,7 +107,8 @@ lexeme = (
     .set_name("lexeme")
 )
 
-ident = ParseWord(alphanums + "-").set_name("ident")
+lang_lexeme = (lexeme - opt_lang).set_parse_action(tokens_map(LangLexeme))
+
 
 rule = (Suppress("@") - ident).set_parse_action(token_map(Rule)).set_name("rule")
 
@@ -115,7 +122,7 @@ morpheme = (
     .set_name("morpheme")
 )
 
-base_unit = (lexeme ^ morpheme).set_name("base unit")
+base_unit = (lang_lexeme ^ morpheme).set_name("base unit")
 
 prefix = (ident - Suppress(".")).set_parse_action(token_map(Prefix)).set_name("prefix")
 suffix = (Suppress(".") - ident).set_parse_action(token_map(Suffix)).set_name("suffix")
@@ -131,6 +138,17 @@ fusion = (
     .set_parse_action(tokens_map(Fusion.from_prefixes_and_suffixes))
     .set_name("fusion")
 )
+
+lexeme_fusion = (
+    (
+        (Group(prefix[...], True) + FollowedBy(base_unit))
+        - lexeme
+        - Group(suffix[...], True)
+    )
+    .set_parse_action(tokens_map(Fusion.from_prefixes_and_suffixes))
+    .set_name("lexeme fusion")
+)
+
 
 head_stresser = Literal("!+").set_parse_action(const_action(JoinerStress.HEAD))
 tail_stresser = Literal("+!").set_parse_action(const_action(JoinerStress.TAIL))
@@ -163,10 +181,6 @@ joined_compound = (
 compound <<= fusion_or_bracketed ^ joined_compound
 
 words = Group(compound[...]).set_parse_action(token_map(list))
-default_lang = Literal("%%").set_parse_action(token_map(lambda _: Lang()))
-any_lang = (Suppress("%") - ident).set_parse_action(token_map(Lang))
-lang = default_lang ^ any_lang
-opt_lang = explicit_opt(lang)
 
 tag_key = ident.copy().set_parse_action(token_map(Tag))
 tag_key_value = (ident - Suppress(":") - ident).set_parse_action(tokens_map(Tag))

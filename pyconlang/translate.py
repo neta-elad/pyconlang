@@ -5,7 +5,15 @@ from typing import Self
 
 from . import LEXICON_GLOB, LEXICON_PATH
 from .cache import path_cached_property
-from .domain import Definable, Describable, Fusion, Lang, ResolvedForm, Sentence, Word
+from .domain import (
+    DefaultSentence,
+    DefaultWord,
+    Definable,
+    Describable,
+    Lang,
+    ResolvedForm,
+    Sentence,
+)
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
 from .lexicon import Lexicon
@@ -31,11 +39,11 @@ class Translator:
         return self.cached_lexicon
 
     def resolve_sentence(
-        self, sentence: Sentence[Word[Fusion]]
+        self, sentence: Sentence[DefaultWord]
     ) -> Sequence[ResolvedForm]:
         return [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
 
-    def resolve_and_evolve(self, sentence: Sentence[Word[Fusion]]) -> list[Evolved]:
+    def resolve_and_evolve(self, sentence: Sentence[DefaultWord]) -> list[Evolved]:
         return self.evolver.evolve(
             self.resolve_sentence(sentence),
             changes=self.lexicon.changes_for(sentence.lang),
@@ -44,7 +52,7 @@ class Translator:
     def evolve_string(self, string: str) -> list[Evolved]:
         return self.resolve_and_evolve(self.parse_sentence(string))
 
-    def gloss_string(self, string: str) -> Sequence[tuple[Evolved, Word[Fusion]]]:
+    def gloss_string(self, string: str) -> Sequence[tuple[Evolved, DefaultWord]]:
         sentence = self.parse_sentence(string)
         return list(zip(self.resolve_and_evolve(sentence), sentence.words))
 
@@ -71,7 +79,7 @@ class Translator:
 
     def lookup_string(
         self, string: str
-    ) -> Sequence[tuple[Word[Fusion], list[tuple[Describable, str]]]]:
+    ) -> Sequence[tuple[DefaultWord, list[tuple[Describable, str]]]]:
         lexicon = self.lexicon
         sentence = self.parse_sentence(string)
         return [(word, lexicon.lookup(word, sentence.lang)) for word in sentence.words]
@@ -83,7 +91,7 @@ class Translator:
         )
 
     @staticmethod
-    def parse_sentence(string: str) -> Sentence[Word[Fusion]]:
+    def parse_sentence(string: str) -> DefaultSentence:
         return parse_sentence(string)
 
     @staticmethod
