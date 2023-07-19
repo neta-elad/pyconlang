@@ -94,7 +94,7 @@ class Evolver:
 
         for form in self.normalize_forms(forms, changes):
             query = self.batcher.builder(self.arranger(changes)).build_query(form)
-            result.append((cache[query], self.get_trace(query)))
+            result.append((cache[query], self.get_trace(query, changes=changes)))
 
         return result
 

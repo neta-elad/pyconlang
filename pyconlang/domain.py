@@ -20,11 +20,10 @@ class Rule:
 
 @dataclass(eq=True, frozen=True)
 class Lang:  # todo: rename to scope?
-    lang: str | None = field(default=None)
+    lang: str = field(default="")
 
     def __str__(self) -> str:
-        lang = self.lang or "<ROOT>"
-        return f"%{lang}"
+        return f"%{self.lang}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -221,10 +220,10 @@ ResolvedForm = Word[Morpheme]
 @dataclass(eq=True, frozen=True)
 class Tag:
     key: str
-    value: str | None = field(default=None)
+    value: str = field(default="")
 
     def __str__(self) -> str:
-        if self.value is None:
+        if not self.value:
             return self.key
         return f"{self.key}:{self.value}"
 
@@ -252,7 +251,7 @@ class Tags:
                 raise DoubleTagDefinition(key)
 
     @cached_property
-    def map(self) -> dict[str, str | None]:
+    def map(self) -> dict[str, str]:
         return {tag.key: tag.value for tag in self.tags}
 
     @cached_property

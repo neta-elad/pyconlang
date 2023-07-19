@@ -91,7 +91,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
           
           d(<stone>) d(.PL)
           
-          r(%modern <stone>)
+          r(% <stone>)
           r({lang:ultra-modern} <gravel>)
           
           """,
@@ -99,14 +99,14 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    assert "abak" in html
+    assert "kaba" in html
     assert "shiga" in html
     assert "ʃiga" in html
     assert "apak" in html
     assert "kika" in html
     assert "(n.) stone, pebble" in html
     assert "plural for inanimate" in html
-    assert "kaba" in html
+    assert "apak" in html
     assert "kibiishimi" in html
 
 
@@ -136,17 +136,17 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    assert "<strong>abak</strong>" in html
+    assert "<strong>kaba</strong>" in html
     assert "<strong>shiga</strong>" in html
-    assert "<strong>abagigi abak shiga</strong>" in html
+    assert "<strong>kabaigi kaba shiga</strong>" in html
     assert "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>" in html
     assert "<ruby><strong>kibiishimi</strong> <rt>[kibiiʃimi]</rt></ruby>" in html
-    assert "<em>*apak</em>" in html
+    assert "<em>*kapa</em>" in html
     assert "<em>*kika</em>" in html
     assert "<em>*iki</em>" in html
-    assert "<em>*apak</em> + <em>*iki</em>" in html
+    assert "<em>*kapa</em> + <em>*iki</em>" in html
 
-    assert '<abbr title="(n.) stone, pebble">stone</abbr>' in html
+    assert '<abbr title="(n.) stone, pebble (modern)">stone</abbr>' in html
     assert '.<abbr title="plural for inanimate">PL</abbr>' in html
     assert (
         '<abbr title="(n.) gravel">gravel</abbr>.<abbr title="collective">COL</abbr>'
@@ -169,8 +169,8 @@ def test_before_after(simple_pyconlang: Path) -> None:
 
     html = read()
 
-    assert "<em>*apak</em> &gt; <strong>abak</strong>" in html
-    assert "<strong>abak</strong> &lt; <em>*apak</em>" in html
+    assert "<em>*kapa</em> &gt; <strong>kaba</strong>" in html
+    assert "<strong>kaba</strong> &lt; <em>*kapa</em>" in html
     assert (
         "<em>*kika</em> &gt; <ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>"
         in html
@@ -198,12 +198,12 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     html = read()
 
     assert (
-        "<th><ruby><strong>abagigi</strong> <rt>[abagigi]</rt></ruby></th>\n"
+        "<th><ruby><strong>kabaigi</strong> <rt>[kabaigi]</rt></ruby></th>\n"
         "<th><ruby><strong>ka</strong> <rt>[ka]</rt></ruby></th>" in html
     )
 
     assert (
-        '<td><abbr title="(n.) stone, pebble">stone</abbr>.<abbr title="plural for inanimate">PL</abbr></td>\n'
+        '<td><abbr title="(n.) stone, pebble (modern)">stone</abbr>.<abbr title="plural for inanimate">PL</abbr></td>\n'
         '<td><abbr title="(n.) gravel">gravel</abbr>.<abbr title="plural for inanimate">PL</abbr></td>'
         in html
     )
@@ -264,12 +264,12 @@ def test_dictionary(simple_pyconlang: Path) -> None:
     html = read()
 
     assert (
-        "<p><strong>abagigi</strong> [abagigi] <em>*apak</em> + <em>*iki</em> (n.) gravel</p>"
+        "<p><strong>kabaigi</strong> [kabaigi] <em>*kapa</em> + <em>*iki</em> (n.) gravel</p>"
         in html
     )
 
     assert (
-        "<p><strong>abak</strong>, <strong>abagigi</strong> [abak] <em>*apak</em> (n.) stone, pebble</p>"
+        "<p><strong>kaba</strong> [kaba] <em>*kapa</em> (n.) stone, pebble (modern)</p>"
         in html
     )
 

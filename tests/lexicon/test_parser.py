@@ -250,7 +250,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.affixes == {
         AffixDefinition(
             stressed=False,
-            tags=Tags(),
+            tags=Tags(frozenset({Tag("lang")})),
             affix=Suffix("PL"),
             era=None,
             form=Component(Fusion(Morpheme("iki", Rule("era1")))),

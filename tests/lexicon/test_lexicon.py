@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from pyconlang import CHANGES_PATH
 from pyconlang.domain import (
     Component,
     Compound,
@@ -18,7 +17,7 @@ from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.domain import TemplateName, Var
 
 
-def test_resolve(parsed_lexicon: Lexicon, tmp_pyconlang: Path) -> None:
+def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("stone").with_lang(), (), (Suffix("DIST-PL"),)))
     ) == Compound(
@@ -129,7 +128,7 @@ def test_resolve(parsed_lexicon: Lexicon, tmp_pyconlang: Path) -> None:
     ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma")))
 
 
-def test_resolve_fusions(parsed_lexicon: Lexicon) -> None:
+def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("gravel").with_lang(), (), (Suffix("PL"),)))
     ) == Component(Morpheme("ka"))
@@ -209,7 +208,7 @@ def test_form(parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_resolve_definable(parsed_lexicon: Lexicon) -> None:
+def test_resolve_definable(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve_definable(Suffix("PL")) == Component(
         Morpheme("iki", Rule("era1"))
     )
@@ -287,6 +286,8 @@ def test_lookup(parsed_lexicon: Lexicon) -> None:
 def test_langs(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.parent(Lang("modern")) == Lang()
     assert parsed_lexicon.parent(Lang("ultra-modern")) == Lang("modern")
-    assert parsed_lexicon.changes_for(Lang()) == CHANGES_PATH
-    assert parsed_lexicon.changes_for(Lang("modern")) == CHANGES_PATH
-    assert parsed_lexicon.changes_for(Lang("ultra-modern")) == Path("ultra-modern.lsc")
+    assert parsed_lexicon.changes_for(Lang()) == Path("changes/archaic.lsc")
+    assert parsed_lexicon.changes_for(Lang("modern")) == Path("changes/modern.lsc")
+    assert parsed_lexicon.changes_for(Lang("ultra-modern")) == Path(
+        "changes/ultra-modern.lsc"
+    )

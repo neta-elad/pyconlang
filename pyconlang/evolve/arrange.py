@@ -9,7 +9,8 @@ from .. import CHANGES_GLOB, CHANGES_PATH
 from ..cache import path_cache
 from ..domain import Component, Compound, Joiner, Morpheme, ResolvedForm
 
-RULE_PATTERN = r"^\s*([A-Za-z0-9-]+)\s*:"
+INCLUDE_PATTERN = r'^#include\s*"(?P<included>[^"]+)"'
+RULE_PATTERN = r"^(?P<rule>[A-Za-z0-9-]+)\s*:"
 
 T = TypeVar("T")
 
@@ -73,18 +74,28 @@ def rearrange(tree: ResolvedForm, ranker: Ranker) -> ResolvedForm:
     return rebuild(flatten(tree), ranker)
 
 
+def traverse_path(path: Path) -> list[str]:
+    rules = []
+    for line in path.read_text().splitlines():
+        if (match := re.match(INCLUDE_PATTERN, line.strip())) is not None:
+            included = match.group("included")
+            rules.extend(traverse_path(path.parent / included))
+        if (match := re.match(RULE_PATTERN, line.strip())) is not None:
+            rule = match.group("rule")
+            if rule.lower() == "syllables" or rule.lower().startswith("romanizer"):
+                continue
+            rules.append(match.group("rule"))
+
+    return rules
+
+
 @dataclass
 class AffixArranger:
     raw_rules: list[str]
 
     @classmethod
     def from_path(cls, path: Path) -> Self:
-        rules = []
-        for line in path.read_text().splitlines():
-            if (match := re.match(RULE_PATTERN, line.strip())) is not None:
-                rules.append(match.group(1))
-
-        return cls(rules)
+        return cls(traverse_path(path))
 
     @cached_property
     def rules(self) -> Mapping[str | None, int]:

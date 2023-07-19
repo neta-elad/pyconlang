@@ -87,7 +87,8 @@ class Translator:
     def trace_string(self, string: str) -> list[EvolvedWithTrace]:
         sentence = self.parse_sentence(string)
         return self.evolver.trace(
-            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words]
+            [self.lexicon.resolve(form, sentence.lang) for form in sentence.words],
+            changes=self.lexicon.changes_for(sentence.lang),
         )
 
     @staticmethod

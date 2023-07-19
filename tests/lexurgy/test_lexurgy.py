@@ -6,22 +6,24 @@ from pyconlang.lexurgy.domain import LexurgyRequest, LexurgyResponse
 
 
 def test_roundtrip(
-    sample_changes: str, simple_changes: Path, lexurgy_client: LexurgyClient
+    modern_base_changes: str,
+    modern_base_changes_path: Path,
+    lexurgy_client: LexurgyClient,
 ) -> None:
     assert lexurgy_client.roundtrip(LexurgyRequest(["iki"])) == LexurgyResponse(
         ["ishi"], {"phonetic": ["iʃi"]}
     )
 
-    simple_changes.write_text(
-        sample_changes.replace(
-            "romanizer-phonetic:",
+    modern_base_changes_path.write_text(
+        modern_base_changes.replace(
+            "era2:",
             cleandoc(
                 """
-        post-alveolars-front:
-            ʃ => s
-            
-        romanizer-phonetic:
-    """
+                post-alveolars-front:
+                    ʃ => s
+                    
+                era2:
+                """
             ),
         )
     )

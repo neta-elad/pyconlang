@@ -31,11 +31,11 @@ def simple_repl(
 
 
 @pytest.fixture
-def repl_with_modern_default(
+def repl_with_archaic_default(
     capsys: CaptureFixture[str], simple_pyconlang: Path
 ) -> Generator[Evaluator, None, None]:
     metadata = Metadata.default()
-    metadata.lang = "modern"
+    metadata.lang = "archaic"
     metadata.save()
     with create_session() as session:
 
@@ -44,7 +44,7 @@ def repl_with_modern_default(
             return capsys.readouterr().out.strip()
 
         yield evaluate
-    metadata.lang = None
+    metadata.lang = "modern"
     metadata.save()
 
 
@@ -58,11 +58,15 @@ def test_basic(simple_repl: Evaluator) -> None:
     assert simple_repl("*apak +!@era1 *i") == "abagi"
 
 
-def test_default_lang(repl_with_modern_default: Evaluator) -> None:
-    assert repl_with_modern_default("p <stone>") == "kaba"
-    assert repl_with_modern_default("p % <stone>") == "abak"
-    assert repl_with_modern_default("p % STONE.<stone>") == "abakmaabak"
-    assert repl_with_modern_default("p STONE.<stone>") == "abakmagaba"
+def test_default_lang(repl_with_archaic_default: Evaluator) -> None:
+    assert repl_with_archaic_default("p <stone>") == "apak"
+    assert repl_with_archaic_default("p %modern <stone>") == "kaba"
+    assert repl_with_archaic_default("p STONE.<stone>") == "apakmaapak"
+    assert repl_with_archaic_default("p %modern STONE.<stone>") == "kabamagaba"
+    assert repl_with_archaic_default("t <stone>") == ""
+    assert repl_with_archaic_default("t %modern <stone>") == (
+        "kapa\nkapa => kaba (intervocalic-voicing)"
+    )
 
 
 def test_phonetic(simple_repl: Evaluator) -> None:
@@ -71,8 +75,8 @@ def test_phonetic(simple_repl: Evaluator) -> None:
     assert simple_repl("p") == "abaʃi"
     assert simple_repl("phonetic *apaki") == "abaʃi"
     assert simple_repl("phonetic <big>.PL") == "iʃiigi"
-    assert simple_repl("p <stone>") == "abak"
-    assert simple_repl("p %modern <stone>") == "kaba"
+    assert simple_repl("p <stone>") == "kaba"
+    assert simple_repl("p % <stone>") == "apak"
 
 
 def test_simple(simple_repl: Evaluator) -> None:
@@ -90,7 +94,7 @@ def test_gloss(simple_repl: Evaluator) -> None:
 
     assert (
         simple_repl("gloss <stone> <big>.PL")
-        == "abak     ishiigi  \n <stone>   <big>.PL"
+        == "kaba     ishiigi  \n <stone>   <big>.PL"
     )
 
 
@@ -112,7 +116,7 @@ def test_lookup(simple_repl: Evaluator) -> None:
         .PL: plural for inanimate
         
         Records for <stone>.PL
-        <stone>: (n.) stone, pebble
+        <stone>: (n.) stone, pebble (modern)
         .PL: plural for inanimate
         """
     )
@@ -157,8 +161,8 @@ def test_trace(simple_repl: Evaluator) -> None:
         iki
         iki => iʃi (palatalization)
         iʃi => ishi (Romanizer)
-        apak
-        apak => abak (intervocalic-voicing)
+        kapa
+        kapa => kaba (intervocalic-voicing)
         """
     )
 

@@ -240,13 +240,13 @@ class Lexicon:
                 case Prefix():
                     if definition.stressed:
                         return Compound(
-                            self.resolve(definition.get_form()),
+                            self.resolve(definition.get_form(), lang),
                             Joiner.head(definition.get_era()),
                             form,
                         )
                     else:
                         return Compound(
-                            self.resolve(definition.get_form()),
+                            self.resolve(definition.get_form(), lang),
                             Joiner.tail(definition.get_era()),
                             form,
                         )
@@ -255,13 +255,13 @@ class Lexicon:
                         return Compound(
                             form,
                             Joiner.tail(definition.get_era()),
-                            self.resolve(definition.get_form()),
+                            self.resolve(definition.get_form(), lang),
                         )
                     else:
                         return Compound(
                             form,
                             Joiner.head(definition.get_era()),
-                            self.resolve(definition.get_form()),
+                            self.resolve(definition.get_form(), lang),
                         )
 
     def substitute(
