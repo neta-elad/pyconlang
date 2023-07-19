@@ -14,8 +14,8 @@ def simple_evolver(simple_pyconlang: Path) -> Generator[Evolver, None, None]:
         yield evolver
 
 
-@pytest.fixture(scope="session")
-def batcher() -> Batcher:
+@pytest.fixture
+def batcher(metadata: None) -> Batcher:
     return Batcher()
 
 

@@ -164,25 +164,45 @@ def extended_sample_changes() -> str:
 
 
 @pytest.fixture
-def simple_changes(
-    sample_changes: str, tmp_pyconlang: Path
-) -> Generator[Path, None, None]:
+def simple_changes(sample_changes: str, tmp_pyconlang: Path) -> Path:
     changes_path = tmp_pyconlang / "changes.lsc"
     changes_path.write_text(sample_changes)
 
-    yield changes_path
+    return changes_path
+
+
+@pytest.fixture
+def simple_lexicon(
+    tmp_pyconlang: Path,
+    sample_lexicon: str,
+) -> Path:
+    lexicon_path = tmp_pyconlang / "lexicon.pycl"
+    lexicon_path.write_text(sample_lexicon)
+
+    return lexicon_path
+
+
+@pytest.fixture
+def extended_changes(tmp_pyconlang: Path, extended_sample_changes: str) -> Path:
+    extended_path = tmp_pyconlang / "ultra-modern.lsc"
+    extended_path.write_text(extended_sample_changes)
+    return extended_path
 
 
 @pytest.fixture
 def simple_pyconlang(
-    simple_changes: Path, extended_sample_changes: str, sample_lexicon: str
-) -> Generator[Path, None, None]:
-    changes_path = simple_changes.parent / "ultra-modern.lsc"
-    changes_path.write_text(extended_sample_changes)
+    tmp_pyconlang: Path,
+    simple_changes: Path,
+    extended_changes: Path,
+    simple_lexicon: Path,
+) -> Path:
+    return tmp_pyconlang
 
-    (simple_changes.parent / "lexicon.pycl").write_text(sample_lexicon)
 
-    yield simple_changes.parent
+@pytest.fixture
+def metadata(tmp_pyconlang: Path) -> None:  # todo: differently
+    """Set up global Metadata.default()"""
+    return
 
 
 @pytest.fixture(autouse=True, scope="function")
