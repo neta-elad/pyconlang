@@ -92,7 +92,7 @@ class Suffix(AffixBase):
 Affix = Prefix | Suffix
 
 
-ScopedT = TypeVar("ScopedT", Lexeme, AffixBase)
+ScopedT = TypeVar("ScopedT", Lexeme, Affix)
 
 
 @dataclass(eq=True, frozen=True)
@@ -209,6 +209,7 @@ DefaultWord = Word[DefaultFusion]
 
 # Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
 
+Described = Morpheme | Scoped[Lexeme] | Scoped[Affix]
 Describable = Lexeme | Affix | Morpheme | Scoped[Lexeme]
 Record = DefaultWord | DefaultFusion | Describable
 

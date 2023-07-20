@@ -31,7 +31,8 @@ from pyconlang.parser import (
     parse_sentence,
     rule,
     scope,
-    scoped_lexeme, scoped_affix,
+    scoped_affix,
+    scoped_lexeme,
 )
 from pyconlang.pyrsec import Parser, PyrsecError
 
