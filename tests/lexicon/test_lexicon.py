@@ -144,7 +144,7 @@ def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_substitute_var(parsed_lexicon: Lexicon) -> None:
+def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(
         Var((), ()), Component(Fusion(Morpheme("apak")))
     ) == Component(Morpheme("apak"))
@@ -179,7 +179,7 @@ def test_substitute_var(parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_templates(parsed_lexicon: Lexicon) -> None:
+def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.get_vars(None) == (Var((), ()),)
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
@@ -188,13 +188,13 @@ def test_templates(parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_define(parsed_lexicon: Lexicon) -> None:
+def test_define(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.define(Suffix("PL")) == "plural for inanimate"
 
     assert parsed_lexicon.define(Lexeme("stone")) == "(n.) stone, pebble"
 
 
-def test_form(parsed_lexicon: Lexicon) -> None:
+def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.form(Suffix("PL")) == Component(
         Fusion(Morpheme(form="iki", era=Rule(name="era1")))
     )
@@ -220,7 +220,7 @@ def test_resolve_definable(root_metadata: None, parsed_lexicon: Lexicon) -> None
     )
 
 
-def test_lookup(parsed_lexicon: Lexicon) -> None:
+def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.lookup(Suffix("PL")) == [
         (Suffix("PL"), "plural for inanimate")
     ]
@@ -283,7 +283,7 @@ def test_lookup(parsed_lexicon: Lexicon) -> None:
     ]
 
 
-def test_scopes(parsed_lexicon: Lexicon) -> None:
+def test_scopes(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.parent(Scope("modern")) == Scope()
     assert parsed_lexicon.parent(Scope("ultra-modern")) == Scope("modern")
     assert parsed_lexicon.changes_for(Scope()) == Path("changes/archaic.lsc")
