@@ -108,7 +108,7 @@ Definable = Lexeme | Affix  # todo: should be Scoped[Lexeme]
 
 BaseUnit = Morpheme | Scoped[Lexeme]
 
-Fusible = TypeVar("Fusible", Lexeme, BaseUnit, covariant=True)
+Fusible = TypeVar("Fusible", Lexeme, Scoped[Lexeme], BaseUnit, covariant=True)
 
 
 @dataclass(eq=True, frozen=True)
@@ -134,6 +134,7 @@ class Fusion(Generic[Fusible]):
 
 
 DefaultFusion = Fusion[BaseUnit]
+ScopedLexemeFusion = Fusion[Scoped[Lexeme]]
 LexemeFusion = Fusion[Lexeme]
 
 Compoundable = TypeVar("Compoundable", DefaultFusion, Morpheme, covariant=True)
@@ -209,8 +210,8 @@ DefaultWord = Word[DefaultFusion]
 
 # Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
 
-Described = Morpheme | Scoped[Lexeme] | Scoped[Affix]
 Describable = Lexeme | Affix | Morpheme | Scoped[Lexeme]
+Describable2 = Morpheme | Scoped[Affix] | Fusion[Scoped[Lexeme]]
 Record = DefaultWord | DefaultFusion | Describable
 
 ResolvedForm = Word[Morpheme]
