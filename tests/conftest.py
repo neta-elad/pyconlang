@@ -1,6 +1,7 @@
 import os
 import tempfile
 from collections.abc import Generator
+from dataclasses import replace
 from inspect import cleandoc
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from prompt_toolkit.output import DummyOutput
 
 from pyconlang.cli import init
 from pyconlang.metadata import Metadata
+
+from . import metadata_as
 
 
 @pytest.fixture
@@ -255,19 +258,26 @@ def simple_pyconlang(
 
 
 @pytest.fixture
-def metadata(tmp_pyconlang: Path) -> None:  # todo: differently
-    """Set up global Metadata.default()"""
-    Metadata.default().scope = "modern"
-    Metadata.default().save()
-    return
+def default_metadata() -> Metadata:
+    return Metadata(name="TestLang", author="Mr. Tester")
 
 
 @pytest.fixture
-def root_metadata(tmp_pyconlang: Path) -> None:  # todo: differently
-    """Set up global Metadata.default()"""
-    Metadata.default().scope = ""
-    Metadata.default().save()
-    return
+def metadata(
+    default_metadata: Metadata,
+) -> Generator[None, None, None]:
+    """Set up global Metadata.default() with scope = modern"""
+    with metadata_as(replace(default_metadata, scope="modern")):
+        yield
+
+
+@pytest.fixture
+def root_metadata(
+    default_metadata: Metadata,
+) -> Generator[None, None, None]:
+    """Set up global Metadata.default() with scope = <root>"""
+    with metadata_as(replace(default_metadata, scope="")):
+        yield
 
 
 @pytest.fixture(autouse=True, scope="function")

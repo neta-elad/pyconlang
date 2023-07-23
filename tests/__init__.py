@@ -1,3 +1,6 @@
+from contextlib import contextmanager
+from typing import Generator
+
 from pyconlang.domain import (
     Compound,
     DefaultFusion,
@@ -7,6 +10,7 @@ from pyconlang.domain import (
     Sentence,
     Tags,
 )
+from pyconlang.metadata import Metadata
 
 
 def default_compound(
@@ -17,3 +21,11 @@ def default_compound(
 
 def default_sentence(tags: Tags, words: list[DefaultWord]) -> DefaultSentence:
     return Sentence(tags, words)
+
+
+@contextmanager
+def metadata_as(metadata: Metadata) -> Generator[None, None, None]:
+    original = getattr(Metadata, "default")
+    setattr(Metadata, "default", lambda: metadata)
+    yield
+    setattr(Metadata, "default", original)
