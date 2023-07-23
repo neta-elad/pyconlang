@@ -1,6 +1,8 @@
 from inspect import cleandoc
 from pathlib import Path
 
+import pytest
+
 from pyconlang.domain import (
     Component,
     Compound,
@@ -31,6 +33,7 @@ from pyconlang.lexicon.parser import (
     entry,
     include,
     lexical_sources,
+    lexicon_line,
     part_of_speech,
     quoted_string,
     scope_definition,
@@ -39,6 +42,7 @@ from pyconlang.lexicon.parser import (
     var,
 )
 from pyconlang.parser import affix
+from pyconlang.pyrsec import PyrsecError
 
 from ..test_parser import parse
 
@@ -175,6 +179,47 @@ def test_scope() -> None:
     ) == ScopeDefinition(
         Scope("ultra-modern"), Scope("modern"), Path("changes") / "ultra-modern.lsc"
     )
+
+
+def test_lexicon_line() -> None:
+    assert parse(
+        lexicon_line, "scope %ultra-modern : %modern 'changes/ultra-modern.lsc'"
+    ) == ScopeDefinition(
+        Scope("ultra-modern"), Scope("modern"), Path("changes") / "ultra-modern.lsc"
+    )
+
+    assert parse(lexicon_line, "template &name $") == Template(
+        TemplateName("name"), Tags(), (Var(),)
+    )
+
+    assert parse(
+        lexicon_line, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
+    ) == AffixDefinition(
+        stressed=True,
+        tags=Tags(),
+        affix=Suffix("PL"),
+        era=Rule("era"),
+        form=Component(Fusion(Morpheme("proto"))),
+        sources=(Lexeme("big"), Lexeme("pile")),
+        description="plural for inanimate",
+    )
+
+    assert parse(
+        lexicon_line, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
+    ) == Entry(
+        TemplateName("plural"),
+        Tags(),
+        Fusion(Lexeme("strong")),
+        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
+        PartOfSpeech("adj"),
+        "strong, stable",
+    )
+
+    assert parse(lexicon_line, " \t\n") is None
+    assert parse(lexicon_line, " \t # and a comment") is None
+
+    with pytest.raises(PyrsecError):
+        parse(lexicon_line, "lang bla")
 
 
 def test_lexicon(parsed_lexicon: Lexicon) -> None:

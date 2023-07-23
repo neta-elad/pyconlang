@@ -14,7 +14,19 @@ from ..parser import (
     rule,
     suffix,
 )
-from ..pyrsec import default, lift2, lift3, lift6, lift7, regex, string, token
+from ..pyrsec import (
+    default,
+    eof,
+    eol,
+    lift2,
+    lift3,
+    lift6,
+    lift7,
+    regex,
+    string,
+    token,
+    whitespace,
+)
 from .domain import AffixDefinition, Entry, ScopeDefinition, Template, TemplateName, Var
 
 
@@ -90,4 +102,6 @@ meaningful_segment = record ^ include
 
 comment = regex(r"\s*#.*")
 
-lexicon_line = -meaningful_segment << -comment
+lexicon_line = (
+    (meaningful_segment ^ whitespace()[lambda _: None]) << -comment << (eol() ^ eof())
+)

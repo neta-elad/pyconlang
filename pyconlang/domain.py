@@ -19,7 +19,7 @@ class Rule:
 
 
 @dataclass(eq=True, frozen=True)
-class Scope:  # todo: rename to scope?
+class Scope:
     scope: str = field(default="")
 
     def __str__(self) -> str:

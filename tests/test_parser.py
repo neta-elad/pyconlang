@@ -32,7 +32,7 @@ from pyconlang.parser import (
     scope,
     scoped_lexeme,
 )
-from pyconlang.pyrsec import Parser
+from pyconlang.pyrsec import Parser, PyrsecError
 
 from . import default_compound, default_sentence
 
@@ -141,6 +141,9 @@ def test_compound() -> None:
 
 
 def test_sentence() -> None:
+    with pytest.raises(PyrsecError):
+        parse_sentence("*aka..")
+
     assert parse_sentence(
         "*aka <strong> COL.<with space> *taka@start.PL"
     ) == default_sentence(
@@ -179,6 +182,9 @@ def test_sentence() -> None:
 
 
 def test_definables() -> None:
+    with pytest.raises(PyrsecError):
+        parse_definables("..")
+
     assert parse_definables("<strong> COL. .PL").words == [
         Lexeme("strong"),
         Prefix("COL"),

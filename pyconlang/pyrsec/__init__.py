@@ -198,7 +198,8 @@ class ForwardParser(Parser[_I, _U]):
     parser: Parser[_I, _U] | None = field(default=None)
 
     def __call__(self, text: _I, index: int) -> Value[_U]:
-        assert self.parser is not None  # todo: better error handling?
+        if self.parser is None:
+            raise PyrsecError("Using uninitialized ForwardParser")
         return self.parser(text, index)
 
 
@@ -300,8 +301,24 @@ def regex(expression: str) -> Parser[str, str]:
     return parser
 
 
-whitespace = regex(r"\s*")
+def whitespace() -> Parser[str, str]:
+    return regex(r"\s*")
+
+
+def eol() -> Parser[str, str]:
+    return string("\n")
+
+
+def eof() -> Parser[str, None]:
+    @SimpleParser
+    def parser(text: str, index: int) -> Value[None]:
+        if index >= len(text):
+            return Success(index, None)
+        else:
+            return Failure(index, "eof")
+
+    return parser
 
 
 def token(parser: Parser[str, _U]) -> Parser[str, _U]:
-    return whitespace >> parser << whitespace
+    return whitespace() >> parser << whitespace()

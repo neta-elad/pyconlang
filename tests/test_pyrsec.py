@@ -1,6 +1,15 @@
 import pytest
 
-from pyconlang.pyrsec import Failure, PyrsecError, Success, lift2, regex, string, token
+from pyconlang.pyrsec import (
+    Failure,
+    PyrsecError,
+    Success,
+    eof,
+    lift2,
+    regex,
+    string,
+    token,
+)
 
 
 def test_string() -> None:
@@ -43,3 +52,14 @@ def test_many() -> None:
     numbers = ~number
 
     assert numbers.parse("123 456 789") == Success(11, [123, 456, 789])
+
+
+def test_parse_all() -> None:
+    number = token(regex(r"[1-9][0-9]*"))[int]
+
+    assert number.parse("123 foo") == Success(4, 123)
+
+    number_all = number << eof()
+
+    assert number_all.parse("123") == Success(3, 123)
+    assert number_all.parse("123 foo") == Failure(4, "eof")

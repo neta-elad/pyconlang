@@ -1,6 +1,4 @@
 from collections.abc import Iterable
-
-# from string import whitespace
 from typing import TypeVar
 
 from .domain import (
@@ -26,17 +24,17 @@ from .domain import (
     Tags,
     Word,
 )
-from .pyrsec import Parser, default, fix, lift2, lift3, regex, string, token
+from .pyrsec import Parser, default, eof, fix, lift2, lift3, regex, string, token
 
 T = TypeVar("T")
 
 
-def parse_sentence(string: str) -> DefaultSentence:
-    return sentence.parse_or_raise(string)  # todo: parse all?
+def parse_sentence(text: str) -> DefaultSentence:
+    return sentence.parse_or_raise(text)
 
 
-def parse_definables(string: str) -> Sentence[Definable]:
-    return definable_sentence.parse_or_raise(string)
+def parse_definables(text: str) -> Sentence[Definable]:
+    return definable_sentence.parse_or_raise(text)
 
 
 def continue_lines(lines: Iterable[str]) -> Iterable[str]:
@@ -118,9 +116,9 @@ opt_just_tags = (-just_tags)[default(set)]
 tags = (opt_just_tags & token(opt_scope))[lift2(Tags.from_set_and_scope)]
 opt_tags = (-tags)[default(Tags)]
 
-sentence = (opt_tags & words)[lift2(Sentence[DefaultWord])]
+sentence = (opt_tags & words)[lift2(Sentence[DefaultWord])] << eof()
 
 definable = lexeme ^ affix
 definables = ~token(definable)
 
-definable_sentence = (opt_tags & definables)[lift2(Sentence[Definable])]
+definable_sentence = (opt_tags & definables)[lift2(Sentence[Definable])] << eof()
