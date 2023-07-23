@@ -136,7 +136,7 @@ class PathCachedProperty(Generic[_C, _T]):
         self.attrname = None
         self.__doc__ = func.__doc__
 
-    def __set_name__(self, owner: _C, name: str) -> None:
+    def __set_name__(self, _owner: _C, name: str) -> None:
         if self.attrname is None:
             self.attrname = name
         elif name != self.attrname:
@@ -149,7 +149,7 @@ class PathCachedProperty(Generic[_C, _T]):
     def hidden_name(self) -> str:
         return f"__path_cached_func_{self.attrname}"
 
-    def __get__(self, instance: _C | None, owner: type[_C] | None = None) -> _T:
+    def __get__(self, instance: _C | None, _owner: type[_C] | None = None) -> _T:
         assert instance is not None
 
         if self.attrname is None:
@@ -244,9 +244,9 @@ class PersistentDict(Generic[_K, _V], MutableMapping[_K, _V]):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        _exc_type: Optional[Type[BaseException]],
+        _exc_val: Optional[BaseException],
+        _exc_tb: Optional[TracebackType],
     ) -> bool:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         self.cache_path.write_bytes(

@@ -266,7 +266,7 @@ class Lexicon:
                             self.resolve(definition.get_form(), scope),
                         )
 
-    def substitute(
+    def substitute(  # todo: remove?
         self, var: Var, form: DefaultWord, scope: Scope = Scope()
     ) -> ResolvedForm:
         return self.extend_with_affixes(
@@ -283,12 +283,6 @@ class Lexicon:
 
             raise MissingTemplate(name.name)
 
-    def resolve_entry(self, entry: Entry) -> list[ResolvedForm]:
-        return [
-            self.substitute(var, entry.form, entry.tags.scope)
-            for var in self.get_vars(entry.template)
-        ]
-
     def form(self, record: Definable, scope: Scope = Scope()) -> DefaultWord:
         match record:
             case Prefix() | Suffix():
@@ -296,11 +290,6 @@ class Lexicon:
 
             case Lexeme():
                 return self.get_entry(record, scope).form
-
-    def resolve_definable(
-        self, record: Definable, scope: Scope = Scope()
-    ) -> ResolvedForm:
-        return self.resolve(self.form(record, scope), scope)
 
     def define(self, record: Definable, scope: Scope = Scope()) -> str:
         match record:

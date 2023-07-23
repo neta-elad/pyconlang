@@ -28,6 +28,11 @@ coverage:
 	pytest --cov=pyconlang
 
 
+.PHONY: dead-code
+dead-code:
+	vulture pyconlang
+
+
 .PHONY: env
 env:
 	! [ -d .venv ] && python3 -m venv .venv || true

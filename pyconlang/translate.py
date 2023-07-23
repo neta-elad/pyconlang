@@ -62,13 +62,6 @@ class Translator:
             self.lexicon.define(record, sentence.scope) for record in sentence.words
         ]
 
-    def resolve_definable_string(self, string: str) -> list[ResolvedForm]:
-        sentence = self.parse_definables(string)
-        return [
-            self.lexicon.resolve_definable(record, sentence.scope)
-            for record in sentence.words
-        ]
-
     def resolve_and_evolve_all(self, strings: list[str]) -> None:
         per_scope_sentences: dict[Scope, list[ResolvedForm]] = {}
         for string in strings:

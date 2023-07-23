@@ -40,7 +40,6 @@ class Conlang(Extension):
         super().__init__()
 
         self.translator = translator
-        self.valid_cache = False
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.registerExtension(self)

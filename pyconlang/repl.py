@@ -46,11 +46,6 @@ class Handler(BookHandler):
         super().on_any_event(event)
         self.changed = True
 
-    def check_changed(self) -> bool:
-        result = self.changed
-        self.changed = False
-        return result
-
 
 @dataclass
 class ReplSession(Cmd):

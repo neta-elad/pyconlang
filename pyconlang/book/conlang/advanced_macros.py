@@ -5,16 +5,6 @@ from ...domain import Definable, Lexeme, Prefix, ResolvedForm, Suffix, Tags
 from .conlang_macro import ConlangMacro
 
 
-class ShortcutRomanizedMacro(ConlangMacro):
-    @classmethod
-    def expression(cls) -> str:
-        return rf"\[\[(?P<text>.+?)\]\]"
-
-    def map_match(self, match: re.Match[str]) -> str:
-        text = match.group("text")
-        return f"r[{text}]"
-
-
 class AdvancedMacro(ConlangMacro, metaclass=ABCMeta):
     @classmethod
     def expression(cls) -> str:

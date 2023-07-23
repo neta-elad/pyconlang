@@ -18,7 +18,7 @@ class MultiInlineProcessor(InlineProcessor):
     # have contradictory type annotations,
     # so we have to ignore type.
     def handleMatch(  # type: ignore
-        self, m: re.Match[str], data: Any
+        self, m: re.Match[str], _data: Any
     ) -> tuple[ElementTree.Element, int, int]:
         el = ElementTree.Element("span")
         el.text = m.group(2)

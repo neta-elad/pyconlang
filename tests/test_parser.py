@@ -15,8 +15,6 @@ from pyconlang.domain import (
     Suffix,
     Tag,
     Tags,
-    default_compound,
-    default_sentence,
 )
 from pyconlang.errors import DoubleTagDefinition
 from pyconlang.parser import (
@@ -35,6 +33,8 @@ from pyconlang.parser import (
     scoped_lexeme,
 )
 from pyconlang.pyrsec import Parser
+
+from . import default_compound, default_sentence
 
 U = TypeVar("U", covariant=True)
 

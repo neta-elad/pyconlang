@@ -11,10 +11,11 @@ from pyconlang.domain import (
     Rule,
     Scope,
     Suffix,
-    default_compound,
 )
 from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.domain import TemplateName, Var
+
+from .. import default_compound
 
 
 def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
@@ -205,18 +206,6 @@ def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
             prefixes=(),
             suffixes=(Suffix(name="PL"),),
         )
-    )
-
-
-def test_resolve_definable(root_metadata: None, parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.resolve_definable(Suffix("PL")) == Component(
-        Morpheme("iki", Rule("era1"))
-    )
-
-    assert parsed_lexicon.resolve_definable(Lexeme("gravel")) == Compound(
-        Component(Morpheme("apak")),
-        Joiner.head(Rule("era1")),
-        Component(Morpheme("iki", Rule("era1"))),
     )
 
 

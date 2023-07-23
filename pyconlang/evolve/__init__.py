@@ -61,7 +61,6 @@ class Evolver:
     query_cache: PersistentDict[tuple[Path, Query], Evolved]
     trace_cache: PersistentDict[tuple[Path, Query], list[TraceLine]]
     batcher: Batcher = field(default_factory=Batcher)
-    clients: dict[Path, LexurgyClient] = field(default_factory=dict)
 
     @classmethod
     @contextmanager

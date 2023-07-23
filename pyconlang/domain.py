@@ -203,12 +203,6 @@ class Compound(Tree[Compoundable]):
         return self.head.leaves() + self.tail.leaves()
 
 
-def default_compound(
-    head: "Word[DefaultFusion]", joiner: Joiner, tail: "Word[DefaultFusion]"
-) -> "Compound[DefaultFusion]":
-    return Compound(head, joiner, tail)
-
-
 Word = Component[Compoundable] | Compound[Compoundable]
 
 DefaultWord = Word[DefaultFusion]
@@ -283,7 +277,3 @@ class Sentence(Generic[AnyWord]):
 
 
 DefaultSentence = Sentence[DefaultWord]
-
-
-def default_sentence(tags: Tags, words: list[DefaultWord]) -> DefaultSentence:
-    return Sentence(tags, words)

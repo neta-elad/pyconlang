@@ -58,10 +58,6 @@ class Template:
     tags: Tags
     vars: tuple[Var, ...]
 
-    @classmethod
-    def from_args(cls, name: TemplateName, tags: Tags, *var_args: Var) -> "Template":
-        return cls(name, tags, var_args)
-
 
 @dataclass(eq=True, frozen=True)
 class Entry:
