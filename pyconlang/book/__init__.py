@@ -1,6 +1,5 @@
 import sys
 import time
-import traceback
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -13,6 +12,7 @@ from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
 from .. import PYCONLANG_PATH
+from ..errors import pass_exception
 from ..metadata import Metadata
 from ..translate import Translator
 from .any_table_header import AnyTableHeader
@@ -31,11 +31,8 @@ class Compiler:
     @classmethod
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
-        with Translator.new() as translator:  # todo: better error handling
-            try:
-                yield cls(translator)
-            except Exception as e:
-                print(e)  # todo: delete
+        with pass_exception(Translator.new()) as translator:
+            yield cls(translator)
 
     def __init__(self, translator: Translator) -> None:
         self.lexicon = Conlang(translator)
@@ -158,8 +155,7 @@ def watch() -> None:
 
 
 def compile_book() -> None:
-    with Compiler.new() as compiler:
-        try:
-            compiler.compile()
-        except Exception as e:
-            traceback.print_exception(e)
+    from ..errors import pass_exception
+
+    with pass_exception(Compiler.new()) as compiler:
+        compiler.compile()

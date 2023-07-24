@@ -14,6 +14,7 @@ from .domain import (
     Scope,
     Sentence,
 )
+from .errors import pass_exception
 from .evolve import EvolvedWithTrace, Evolver
 from .evolve.domain import Evolved
 from .lexicon import Lexicon
@@ -27,7 +28,7 @@ class Translator:
     @classmethod
     @contextmanager
     def new(cls) -> Generator[Self, None, None]:
-        with Evolver.new() as evolver:
+        with pass_exception(Evolver.new()) as evolver:
             yield cls(evolver)
 
     @path_cached_property(LEXICON_PATH, LEXICON_GLOB)

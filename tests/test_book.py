@@ -1,8 +1,11 @@
 from inspect import cleandoc
 from pathlib import Path
 
+import pytest
+
 from pyconlang import PYCONLANG_PATH
 from pyconlang.book import compile_book
+from pyconlang.pyrsec import PyrsecError
 
 
 def test_details(simple_pyconlang: Path) -> None:
@@ -321,6 +324,28 @@ def test_skip(simple_pyconlang: Path) -> None:
     assert "! this line appears" in html
     assert "this one doesn't" not in html
     assert "and this one also doesn't" not in html
+
+
+def test_errors(simple_pyconlang: Path) -> None:
+    write(
+        simple_pyconlang / "book.md",
+        """
+        r[<book]
+        """,
+    )
+
+    with pytest.raises(PyrsecError):
+        read()
+
+    write(
+        simple_pyconlang / "lexicon.pycl",
+        """
+        bla
+        """,
+    )
+
+    with pytest.raises(PyrsecError):
+        read()
 
 
 def write(path: Path, text: str) -> None:

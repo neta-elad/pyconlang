@@ -244,7 +244,7 @@ class PersistentDict(Generic[_K, _V], MutableMapping[_K, _V]):
 
     def __exit__(
         self,
-        _exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[Type[BaseException]],
         _exc_val: Optional[BaseException],
         _exc_tb: Optional[TracebackType],
     ) -> bool:
@@ -252,4 +252,4 @@ class PersistentDict(Generic[_K, _V], MutableMapping[_K, _V]):
         self.cache_path.write_bytes(
             pickle.dumps((self.value, self.func.st_mtimes, self.func.checksums))
         )
-        return True
+        return exc_type is None
