@@ -30,7 +30,7 @@ class TemplateName:
     name: str
 
 
-Var = Literal["$"]
+Var = Literal["$"]  # todo: should var be just a string template?
 VarFusion = Fusion[Var, Scoped[Prefix], Scoped[Suffix]]
 
 

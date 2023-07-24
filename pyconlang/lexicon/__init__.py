@@ -315,20 +315,22 @@ class Lexicon:
             raise MissingTemplate(name.name)
 
     def form(self, record: Definable, scope: Scope = Scope()) -> DefaultWord:
-        match record:
+        match record.scoped:
             case Prefix() | Suffix():
-                return self.get_affix(record, scope).get_form()
+                return self.get_affix(record.scoped, record.scope or scope).get_form()
 
             case Lexeme():
-                return self.get_entry(record, scope).form
+                return self.get_entry(record.scoped, record.scope or scope).form
 
     def define(self, record: Definable, scope: Scope = Scope()) -> str:
-        match record:
+        match record.scoped:
             case Prefix() | Suffix():
-                return self.get_affix(record, scope).description
+                return self.get_affix(record.scoped, record.scope or scope).description
 
             case Lexeme():
-                return self.get_entry(record, scope).description()
+                return self.get_entry(
+                    record.scoped, record.scope or scope
+                ).description()
 
     def lookup(
         self, record: Record, scope: Scope = Scope()

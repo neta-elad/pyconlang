@@ -225,17 +225,17 @@ def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
 
 def test_define(root_metadata: None, parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.define(Suffix("PL")) == "plural for inanimate"
+    assert parsed_lexicon.define(Scoped(Suffix("PL"))) == "plural for inanimate"
 
-    assert parsed_lexicon.define(Lexeme("stone")) == "(n.) stone, pebble"
+    assert parsed_lexicon.define(Scoped(Lexeme("stone"))) == "(n.) stone, pebble"
 
 
 def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.form(Suffix("PL")) == Component(
+    assert parsed_lexicon.form(Scoped(Suffix("PL"))) == Component(
         DefaultFusion(Morpheme(form="iki", era=Rule(name="era1")))
     )
 
-    assert parsed_lexicon.form(Lexeme("gravel")) == Component(
+    assert parsed_lexicon.form(Scoped(Lexeme("gravel"))) == Component(
         DefaultFusion(
             stem=Lexeme(name="stone").with_scope(),
             prefixes=(),

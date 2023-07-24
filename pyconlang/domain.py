@@ -105,7 +105,7 @@ class Scoped(Generic[ScopedT]):
 
 
 ScopedAffix = Scoped[Prefix] | Scoped[Suffix]
-Definable = Lexeme | Affix  # todo: should be Scoped[Lexeme]
+Definable = Scoped[Lexeme] | ScopedAffix
 
 BaseUnit = Morpheme | Scoped[Lexeme]
 

@@ -217,9 +217,9 @@ def test_definables(metadata: None) -> None:
         parse_definables("..")
 
     assert parse_definables("<strong> COL. .PL").words == [
-        Lexeme("strong"),
-        Prefix("COL"),
-        Suffix("PL"),
+        Scoped(Lexeme("strong")),
+        Scoped(Prefix("COL")),
+        Scoped(Suffix("PL")),
     ]
 
     assert parse_definables("%modern <strong> COL. .PL").scope == Scope("modern")

@@ -40,12 +40,12 @@ class AdvancedDefinitionMacro(AdvancedMacro):
 
     @classmethod
     def map_definable(cls, definable: Definable, tags: Tags) -> str:
-        abbr = cls.build_definition_abbr(tags, definable.name, str(definable))
-        match definable:
+        abbr = cls.build_definition_abbr(tags, definable.scoped.name, str(definable))
+        match definable.scoped:  # todo: should scope appear in abbr?
             case Lexeme():
                 return abbr
             case Prefix() | Suffix():
-                return definable.combine("", abbr)
+                return definable.scoped.combine("", abbr)
 
     @staticmethod
     def build_definition_abbr(tags: Tags, text: str, title: str) -> str:

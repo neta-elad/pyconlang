@@ -136,7 +136,7 @@ opt_tags = (-tags)[default(Tags)]
 
 sentence = (opt_tags & words)[lift2(Sentence[DefaultWord])] << eof()
 
-definable = lexeme ^ affix
+definable = scoped_lexeme ^ scoped_affix
 definables = ~token(definable)
 
 definable_sentence = (opt_tags & definables)[lift2(Sentence[Definable])] << eof()
