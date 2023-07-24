@@ -264,10 +264,7 @@ class Lexicon:
             return self.extend_with_affixes(
                 form,
                 scope,
-                *(
-                    [Scoped(prefix) for prefix in definition.get_var().prefixes]
-                    + [Scoped(suffix) for suffix in definition.get_var().suffixes]
-                ),  # todo: different
+                *definition.get_var().affixes(),
             )
         else:
             match definition.affix:
@@ -304,10 +301,7 @@ class Lexicon:
         return self.extend_with_affixes(
             self.resolve(form, scope),
             scope,
-            *(
-                [Scoped(affix) for affix in var.prefixes]
-                + [Scoped(affix) for affix in var.suffixes]
-            ),  # todo: different?
+            *var.affixes(),
         )
 
     def get_vars(self, name: TemplateName | None) -> tuple[VarFusion, ...]:

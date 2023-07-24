@@ -11,9 +11,9 @@ from ..parser import (
     lexeme_fusion,
     non_default_scope,
     opt_tags,
-    prefix,
     rule,
-    suffix,
+    scoped_prefix,
+    scoped_suffix,
 )
 from ..pyrsec import (
     default,
@@ -49,7 +49,9 @@ def parse_lexicon(
 
 
 var_symbol = string("$")[lambda _: cast(Literal["$"], "$")]
-var = (~prefix & var_symbol & ~suffix)[lift3(VarFusion.from_prefixes_and_suffixes)]
+var = (~scoped_prefix & var_symbol & ~scoped_suffix)[
+    lift3(VarFusion.from_prefixes_and_suffixes)
+]
 template_name = (string("&") >> ident)[TemplateName]
 
 template = (

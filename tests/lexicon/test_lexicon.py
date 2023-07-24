@@ -181,7 +181,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     ) == Component(Morpheme("apak"))
 
     assert parsed_lexicon.substitute(
-        VarFusion("$", (), (Suffix("PL"),)), Component(Fusion(Morpheme("apak")))
+        VarFusion("$", (), (Scoped(Suffix("PL")),)), Component(Fusion(Morpheme("apak")))
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(Rule("era1")),
@@ -200,7 +200,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.substitute(
-        VarFusion("$", (), (Suffix("PL"),)),
+        VarFusion("$", (), (Scoped(Suffix("PL")),)),
         Component(
             DefaultFusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
         ),
@@ -220,7 +220,7 @@ def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
         VarFusion("$", (), ()),
-        VarFusion("$", (), (Suffix("PL"),)),
+        VarFusion("$", (), (Scoped(Suffix("PL")),)),
     )
 
 

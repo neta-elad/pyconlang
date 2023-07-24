@@ -100,7 +100,11 @@ class ConlangDictionary(Preprocessor):
 
     @staticmethod
     def show_var(var: VarFusion, stem: str) -> str:
-        for affix in var.prefixes + var.suffixes:
-            stem = affix.combine(stem, affix.name)
+        for prefix in var.prefixes:
+            stem = f"{prefix}{stem}"
+        for suffix in var.suffixes:
+            stem = f"{stem}{suffix}"
+        # for affix in var.prefixes + var.suffixes:
+        #     stem = affix.combine(stem, affix.name)
 
         return stem

@@ -334,8 +334,8 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 "$",
                 prefixes=(),
                 suffixes=(
-                    Suffix("COL"),
-                    Suffix("PL"),
+                    Scoped(Suffix("COL")),
+                    Scoped(Suffix("PL")),
                 ),
             ),
             sources=(),
@@ -371,20 +371,20 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Template(
             TemplateName("plural"),
             Tags(),
-            (VarFusion("$", (), ()), VarFusion("$", (), (Suffix("PL"),))),
+            (VarFusion("$", (), ()), VarFusion("$", (), (Scoped(Suffix("PL")),))),
         )
     }
 
 
 def test_var() -> None:
     assert parse(var, "$") == VarFusion("$", (), ())
-    assert parse(var, "$.PL") == VarFusion("$", (), (Suffix("PL"),))
+    assert parse(var, "$.PL") == VarFusion("$", (), (Scoped(Suffix("PL")),))
     assert parse(var, "DEF.$.PL.COL") == VarFusion(
         "$",
-        (Prefix("DEF"),),
+        (Scoped(Prefix("DEF")),),
         (
-            Suffix("PL"),
-            Suffix("COL"),
+            Scoped(Suffix("PL")),
+            Scoped(Suffix("COL")),
         ),
     )
 

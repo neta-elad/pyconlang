@@ -18,6 +18,7 @@ from ..domain import (
     Prefix,
     Rule,
     Scope,
+    Scoped,
     Suffix,
     Tags,
 )
@@ -30,7 +31,7 @@ class TemplateName:
 
 
 Var = Literal["$"]
-VarFusion = Fusion[Var, Prefix, Suffix]
+VarFusion = Fusion[Var, Scoped[Prefix], Scoped[Suffix]]
 
 
 @dataclass(eq=True, frozen=True)
