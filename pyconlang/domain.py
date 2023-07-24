@@ -109,7 +109,7 @@ Definable = Lexeme | Affix  # todo: should be Scoped[Lexeme]
 
 BaseUnit = Morpheme | Scoped[Lexeme]
 
-Fusible = TypeVar("Fusible", Lexeme, Scoped[Lexeme], BaseUnit, covariant=True)
+Fusible = TypeVar("Fusible")  # Lexeme, Scoped[Lexeme], BaseUnit, covariant=True)
 AnyPrefix = TypeVar("AnyPrefix", Prefix, Scoped[Prefix], covariant=True)
 AnySuffix = TypeVar("AnySuffix", Suffix, Scoped[Suffix], covariant=True)
 

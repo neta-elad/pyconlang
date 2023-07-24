@@ -15,7 +15,7 @@ from pyconlang.domain import (
     Suffix,
 )
 from pyconlang.lexicon import Lexicon
-from pyconlang.lexicon.domain import TemplateName, Var
+from pyconlang.lexicon.domain import TemplateName, VarFusion
 
 from .. import default_compound
 
@@ -177,11 +177,11 @@ def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
 def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(
-        Var((), ()), Component(Fusion(Morpheme("apak")))
+        VarFusion("$", (), ()), Component(Fusion(Morpheme("apak")))
     ) == Component(Morpheme("apak"))
 
     assert parsed_lexicon.substitute(
-        Var((), (Suffix("PL"),)), Component(Fusion(Morpheme("apak")))
+        VarFusion("$", (), (Suffix("PL"),)), Component(Fusion(Morpheme("apak")))
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(Rule("era1")),
@@ -189,7 +189,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.substitute(
-        Var((), ()),
+        VarFusion("$", (), ()),
         Component(
             DefaultFusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
         ),
@@ -200,7 +200,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.substitute(
-        Var((), (Suffix("PL"),)),
+        VarFusion("$", (), (Suffix("PL"),)),
         Component(
             DefaultFusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
         ),
@@ -216,11 +216,11 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
 
 
 def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.get_vars(None) == (Var((), ()),)
+    assert parsed_lexicon.get_vars(None) == (VarFusion("$", (), ()),)
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
-        Var((), ()),
-        Var((), (Suffix("PL"),)),
+        VarFusion("$", (), ()),
+        VarFusion("$", (), (Suffix("PL"),)),
     )
 
 

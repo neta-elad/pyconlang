@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Literal, cast
 
 from ..domain import Lexeme, PartOfSpeech
 from ..parser import (
@@ -27,7 +28,14 @@ from ..pyrsec import (
     token,
     whitespace,
 )
-from .domain import AffixDefinition, Entry, ScopeDefinition, Template, TemplateName, Var
+from .domain import (
+    AffixDefinition,
+    Entry,
+    ScopeDefinition,
+    Template,
+    TemplateName,
+    VarFusion,
+)
 
 
 def parse_lexicon(
@@ -40,11 +48,14 @@ def parse_lexicon(
     ]
 
 
-var = (~prefix << string("$") & ~suffix)[lift2(Var.from_prefixes_and_suffixes)]
+var_symbol = string("$")[lambda _: cast(Literal["$"], "$")]
+var = (~prefix & var_symbol & ~suffix)[lift3(VarFusion.from_prefixes_and_suffixes)]
 template_name = (string("&") >> ident)[TemplateName]
 
 template = (
-    string("template") >> token(template_name) & opt_tags & (~token(var))[tuple[Var]]
+    string("template") >> token(template_name)
+    & opt_tags
+    & (~token(var))[tuple[VarFusion]]
 )[lift3(Template)]
 
 rest_of_line = regex(r"[^#\n]*")[str.strip]

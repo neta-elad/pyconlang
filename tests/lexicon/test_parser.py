@@ -26,7 +26,7 @@ from pyconlang.lexicon.domain import (
     ScopeDefinition,
     Template,
     TemplateName,
-    Var,
+    VarFusion,
 )
 from pyconlang.lexicon.parser import (
     affix_definition,
@@ -190,7 +190,7 @@ def test_lexicon_line() -> None:
     )
 
     assert parse(lexicon_line, "template &name $") == Template(
-        TemplateName("name"), Tags(), (Var(),)
+        TemplateName("name"), Tags(), (VarFusion("$"),)
     )
 
     assert parse(
@@ -330,7 +330,8 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             tags=Tags(),
             affix=Suffix("LARGE"),
             era=None,
-            form=Var(
+            form=VarFusion(
+                "$",
                 prefixes=(),
                 suffixes=(
                     Suffix("COL"),
@@ -370,15 +371,16 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Template(
             TemplateName("plural"),
             Tags(),
-            (Var((), ()), Var((), (Suffix("PL"),))),
+            (VarFusion("$", (), ()), VarFusion("$", (), (Suffix("PL"),))),
         )
     }
 
 
 def test_var() -> None:
-    assert parse(var, "$") == Var((), ())
-    assert parse(var, "$.PL") == Var((), (Suffix("PL"),))
-    assert parse(var, "DEF.$.PL.COL") == Var(
+    assert parse(var, "$") == VarFusion("$", (), ())
+    assert parse(var, "$.PL") == VarFusion("$", (), (Suffix("PL"),))
+    assert parse(var, "DEF.$.PL.COL") == VarFusion(
+        "$",
         (Prefix("DEF"),),
         (
             Suffix("PL"),
@@ -431,10 +433,10 @@ def test_include_mechanism(
 
 def test_template() -> None:
     assert parse(template, "template &name $") == Template(
-        TemplateName("name"), Tags(), (Var(),)
+        TemplateName("name"), Tags(), (VarFusion("$"),)
     )
     assert parse(template, "template &name { foo bar:baz } %modern $") == Template(
         TemplateName("name"),
         Tags.from_set_and_scope({Tag("foo"), Tag("bar", "baz")}, Scope("modern")),
-        (Var(),),
+        (VarFusion("$"),),
     )

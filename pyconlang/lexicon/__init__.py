@@ -27,7 +27,14 @@ from ..domain import (
     Suffix,
 )
 from ..parser import continue_lines
-from .domain import AffixDefinition, Entry, ScopeDefinition, Template, TemplateName, Var
+from .domain import (
+    AffixDefinition,
+    Entry,
+    ScopeDefinition,
+    Template,
+    TemplateName,
+    VarFusion,
+)
 from .errors import MissingAffix, MissingLexeme, MissingTemplate, UnexpectedRecord
 from .parser import parse_lexicon
 
@@ -292,7 +299,7 @@ class Lexicon:
                         )
 
     def substitute(  # todo: remove?
-        self, var: Var, form: DefaultWord, scope: Scope = Scope()
+        self, var: VarFusion, form: DefaultWord, scope: Scope = Scope()
     ) -> ResolvedForm:
         return self.extend_with_affixes(
             self.resolve(form, scope),
@@ -303,9 +310,9 @@ class Lexicon:
             ),  # todo: different?
         )
 
-    def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:
+    def get_vars(self, name: TemplateName | None) -> tuple[VarFusion, ...]:
         if name is None:
-            return (Var((), ()),)
+            return (VarFusion("$", (), ()),)
         else:
             for template in self.templates:
                 if template.name == name:

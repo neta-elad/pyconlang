@@ -5,7 +5,7 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
-from ...lexicon.domain import Entry
+from ...lexicon.domain import Entry, VarFusion
 from ...translate import Translator
 
 
@@ -89,7 +89,7 @@ class ConlangDictionary(Preprocessor):
         # sources = _join_morphemes(self.translator.lexicon.resolve(entry.form))
 
         forms = [
-            f"r[{var.show(str(entry.form))}]"
+            f"r[{self.show_var(var, str(entry.form))}]"
             for var in self.translator.lexicon.get_vars(entry.template)
         ]
 
@@ -97,3 +97,10 @@ class ConlangDictionary(Preprocessor):
             ", ".join(forms)
             + f" [ph({entry.form})] pr[{entry.form}] {entry.description()}"
         )
+
+    @staticmethod
+    def show_var(var: VarFusion, stem: str) -> str:
+        for affix in var.prefixes + var.suffixes:
+            stem = affix.combine(stem, affix.name)
+
+        return stem

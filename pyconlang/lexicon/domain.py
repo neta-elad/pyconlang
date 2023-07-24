@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from functools import reduce
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 from .. import CHANGES_PATH
 from ..domain import (
@@ -29,34 +29,15 @@ class TemplateName:
     name: str
 
 
-@dataclass(eq=True, frozen=True)
-class Var:  # todo: should vars have scoped affixes?
-    prefixes: tuple[Prefix, ...] = field(default_factory=tuple)
-    """prefixes are stored in reversed order"""
-
-    suffixes: tuple[Suffix, ...] = field(default_factory=tuple)
-
-    @classmethod
-    def from_prefixes_and_suffixes(
-        cls, prefixes: list[Prefix], suffixes: list[Suffix]
-    ) -> "Var":
-        return cls(tuple(reversed(prefixes)), tuple(suffixes))
-
-    def show(self, stem: str) -> str:
-        for affix in self.prefixes + self.suffixes:
-            stem = affix.combine(stem, affix.name)
-
-        return stem
-
-    def __str__(self) -> str:
-        return self.show("$")
+Var = Literal["$"]
+VarFusion = Fusion[Var, Prefix, Suffix]
 
 
 @dataclass(eq=True, frozen=True)
 class Template:
     name: TemplateName
     tags: Tags
-    vars: tuple[Var, ...]
+    vars: tuple[VarFusion, ...]
 
 
 @dataclass(eq=True, frozen=True)
@@ -78,7 +59,7 @@ class AffixDefinition:
     tags: Tags
     affix: Affix
     era: Rule | None = field(default=None)
-    form: DefaultWord | Var | None = field(default=None)
+    form: DefaultWord | VarFusion | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
         default_factory=tuple
     )  # todo: or Form - can bare Proto appear?
@@ -97,10 +78,10 @@ class AffixDefinition:
             return None
 
     def is_var(self) -> bool:
-        return self.form is not None and isinstance(self.form, Var)
+        return self.form is not None and isinstance(self.form, Fusion)
 
     def get_form(self) -> DefaultWord:
-        if self.form is not None and not isinstance(self.form, Var):
+        if self.form is not None and not isinstance(self.form, Fusion):
             return self.form
         elif self.sources:
             return reduce(
@@ -113,8 +94,8 @@ class AffixDefinition:
         else:
             raise AffixDefinitionMissingForm(self)
 
-    def get_var(self) -> Var:
-        if self.form is not None and isinstance(self.form, Var):
+    def get_var(self) -> VarFusion:
+        if self.form is not None and isinstance(self.form, Fusion):
             return self.form
         else:
             raise AffixDefinitionMissingVar(self)
