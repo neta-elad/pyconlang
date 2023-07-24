@@ -202,37 +202,27 @@ class Lexicon:
     def resolve_fusion(
         self, fusion: DefaultFusion, scope: Scope = Scope()
     ) -> ResolvedForm:
-        prefixes = fusion.prefixes
-        suffixes = fusion.suffixes
-        max_total_length = len(prefixes) + len(suffixes)
+        prefixes = len(fusion.prefixes)
+        suffixes = len(fusion.suffixes)
+        max_total_length = prefixes + suffixes
         for k in range(max_total_length, -1, -1):
-            for i in range(
-                0, 1 + len(prefixes)
-            ):  # todo: do differently, with range(max(0, k - lsuf), 1 + min(k, lpre))
-                j = 1 + k - i
-                if 0 <= j <= 1 + len(suffixes):
-                    this_prefixes = prefixes[i:]
-                    rest_prefixes = prefixes[:i]
-                    this_suffixes = suffixes[:j]
-                    rest_suffixes = suffixes[j:]
-                    # override_scope = fusion.stem.scope or scope  # todo: don't do this, use compound scoped
-                    # this_fusion = Fusion(
-                    #     fusion.stem.scoped, this_prefixes, this_suffixes
-                    # )
-                    this_fusion = fusion[i:, :j]
-                    this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
-                    if (
-                        this_lexeme_fusion is not None
-                        and (scope, this_lexeme_fusion) in self.entry_mapping
-                    ):
-                        return self.extend_with_affixes(
-                            self.resolve(
-                                self.entry_mapping[(scope, this_lexeme_fusion)].form,
-                                scope,
-                            ),
+            for i in range(max(0, k - suffixes), 1 + min(k, prefixes)):
+                j = k - i
+                # override_scope = fusion.stem.scope or scope  # todo: don't do this, use compound scoped
+                this_fusion = fusion[i:, :j]
+                this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
+                if (
+                    this_lexeme_fusion is not None
+                    and (scope, this_lexeme_fusion) in self.entry_mapping
+                ):
+                    return self.extend_with_affixes(
+                        self.resolve(
+                            self.entry_mapping[(scope, this_lexeme_fusion)].form,
                             scope,
-                            *fusion[:i, j:].affixes(),
-                        )
+                        ),
+                        scope,
+                        *fusion[:i, j:].affixes(),
+                    )
 
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem, scope),
