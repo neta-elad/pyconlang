@@ -2,6 +2,8 @@ from collections.abc import Iterable
 from typing import TypeVar
 
 from .domain import (
+    AnyPrefix,
+    AnySuffix,
     Component,
     Compound,
     Compoundable,
@@ -78,18 +80,26 @@ morpheme = (string("*") >> unicode_word & -rule)[lift2(Morpheme)]
 base_unit = scoped_lexeme ^ morpheme
 
 prefix = (ident << string("."))[Prefix]
+scoped_prefix = scoped(prefix)
 suffix = (string(".") >> ident)[Suffix]
+scoped_suffix = scoped(suffix)
 affix = prefix ^ suffix
 
-scoped_affix = scoped(affix)
+scoped_affix = scoped_prefix ^ scoped_suffix
 
 
-def fusion(stem: Parser[str, Fusible]) -> Parser[str, Fusion[Fusible]]:
-    return (~prefix & stem & ~suffix)[lift3(Fusion[Fusible].from_prefixes_and_suffixes)]
+def fusion(
+    stem: Parser[str, Fusible],
+    prefix: Parser[str, AnyPrefix],
+    suffix: Parser[str, AnySuffix],
+) -> Parser[str, Fusion[Fusible, AnyPrefix, AnySuffix]]:
+    return (~prefix & stem & ~suffix)[
+        lift3(Fusion[Fusible, AnyPrefix, AnySuffix].from_prefixes_and_suffixes)
+    ]
 
 
-default_fusion = fusion(base_unit)
-lexeme_fusion = fusion(lexeme)
+default_fusion = fusion(base_unit, scoped_prefix, scoped_suffix)
+lexeme_fusion = fusion(lexeme, prefix, suffix)
 
 head_stress = string("!+")[lambda _: JoinerStress.HEAD]
 tail_stress = string("+!")[lambda _: JoinerStress.TAIL]

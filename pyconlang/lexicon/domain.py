@@ -30,7 +30,7 @@ class TemplateName:
 
 
 @dataclass(eq=True, frozen=True)
-class Var:
+class Var:  # todo: should vars have scoped affixes?
     prefixes: tuple[Prefix, ...] = field(default_factory=tuple)
     """prefixes are stored in reversed order"""
 
@@ -81,7 +81,7 @@ class AffixDefinition:
     form: DefaultWord | Var | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
         default_factory=tuple
-    )  # or Form - can bare Proto appear?
+    )  # todo: or Form - can bare Proto appear?
     description: str = field(default="")
 
     def get_era(self) -> Rule | None:

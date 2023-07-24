@@ -14,6 +14,7 @@ from pyconlang.domain import (
     Prefix,
     Rule,
     Scope,
+    Scoped,
     Suffix,
     Tag,
     Tags,
@@ -68,7 +69,7 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
+        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -79,7 +80,7 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Lexeme("heavy").with_scope(), (), (Suffix("PL"),))),
+        Component(Fusion(Lexeme("heavy").with_scope(), (), (Scoped(Suffix("PL")),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -138,7 +139,7 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Prefix("COL"),
         era=None,
-        form=Component(Fusion(Lexeme("big").with_scope(), (), (Suffix("PL"),))),
+        form=Component(Fusion(Lexeme("big").with_scope(), (), (Scoped(Suffix("PL")),))),
         sources=(),
         description="collective form",
     )
@@ -153,7 +154,7 @@ def test_affix_definition() -> None:
         form=Compound(
             Component(Fusion(Lexeme("big").with_scope())),
             Joiner.head(),
-            Component(Fusion(Lexeme("pile").with_scope(), (), (Suffix("PL"),))),
+            Component(Fusion(Lexeme("pile").with_scope(), (), (Scoped(Suffix("PL")),))),
         ),
         sources=(),
         description="collective form",
@@ -210,7 +211,7 @@ def test_lexicon_line() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Suffix("PL"),))),
+        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -262,7 +263,9 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("PL"),))),
+            Component(
+                Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
+            ),
             PartOfSpeech("n"),
             "gravel",
         ),
@@ -270,7 +273,9 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags.from_set_and_scope(set(), Scope("ultra-modern")),
             Fusion(Lexeme("gravel")),
-            Component(Fusion(Lexeme("stone").with_scope(), (), (Suffix("DIST-PL"),))),
+            Component(
+                Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("DIST-PL")),))
+            ),
             PartOfSpeech("n"),
             "gravel (ultra-modern)",
         ),
@@ -335,7 +340,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 Fusion(
                     stem=Lexeme(name="stone").with_scope(),
                     prefixes=(),
-                    suffixes=(Suffix("COL"),),
+                    suffixes=(Scoped(Suffix("COL")),),
                 )
             ),
             sources=(),

@@ -70,7 +70,7 @@ class AffixBase(ABC):
     def to_lexeme(self) -> Lexeme:
         return Lexeme(str(self))
 
-    def to_fusion(self) -> "Fusion[Lexeme]":
+    def to_fusion(self) -> "Fusion[Lexeme, Prefix, Suffix]":
         return Fusion(self.to_lexeme())
 
     def __str__(self) -> str:
@@ -92,7 +92,7 @@ class Suffix(AffixBase):
 Affix = Prefix | Suffix
 
 
-ScopedT = TypeVar("ScopedT", Lexeme, Affix)
+ScopedT = TypeVar("ScopedT", Lexeme, Prefix, Suffix)
 
 
 @dataclass(eq=True, frozen=True)
@@ -104,38 +104,50 @@ class Scoped(Generic[ScopedT]):
         return f"{self.scoped}{self.scope or ''}"
 
 
+ScopedAffix = Scoped[Prefix] | Scoped[Suffix]
 Definable = Lexeme | Affix  # todo: should be Scoped[Lexeme]
 
 BaseUnit = Morpheme | Scoped[Lexeme]
 
 Fusible = TypeVar("Fusible", Lexeme, Scoped[Lexeme], BaseUnit, covariant=True)
+AnyPrefix = TypeVar("AnyPrefix", Prefix, Scoped[Prefix], covariant=True)
+AnySuffix = TypeVar("AnySuffix", Suffix, Scoped[Suffix], covariant=True)
 
 
 @dataclass(eq=True, frozen=True)
-class Fusion(Generic[Fusible]):
+class Fusion(Generic[Fusible, AnyPrefix, AnySuffix]):
     stem: Fusible
-    prefixes: tuple[Prefix, ...] = field(default=())
+    prefixes: tuple[AnyPrefix, ...] = field(default=())
     """prefixes are stored in reversed order"""
 
-    suffixes: tuple[Suffix, ...] = field(default=())
+    suffixes: tuple[AnySuffix, ...] = field(default=())
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: list[Prefix], stem: Fusible, suffixes: list[Suffix]
-    ) -> "Fusion[Fusible]":
+        cls, prefixes: list[AnyPrefix], stem: Fusible, suffixes: list[AnySuffix]
+    ) -> "Fusion[Fusible, AnyPrefix, AnySuffix]":
         return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
+
+    def __getitem__(
+        self, affixes: tuple[slice, slice]
+    ) -> "Fusion[Fusible, AnyPrefix, AnySuffix]":
+        prefixes, suffixes = affixes
+        return Fusion(self.stem, self.prefixes[prefixes], self.suffixes[suffixes])
+
+    def affixes(self) -> tuple[AnyPrefix | AnySuffix, ...]:
+        return self.prefixes + self.suffixes
 
     def __str__(self) -> str:
         return (
-            "".join(affix.name + "." for affix in self.prefixes)
+            "".join(str(affix) for affix in self.prefixes)
             + str(self.stem)
-            + "".join("." + affix.name for affix in self.suffixes)
+            + "".join(str(affix) for affix in self.suffixes)
         )
 
 
-DefaultFusion = Fusion[BaseUnit]
-ScopedLexemeFusion = Fusion[Scoped[Lexeme]]
-LexemeFusion = Fusion[Lexeme]
+DefaultFusion = Fusion[BaseUnit, Scoped[Prefix], Scoped[Suffix]]
+ScopedLexemeFusion = Fusion[Scoped[Lexeme], Prefix, Suffix]
+LexemeFusion = Fusion[Lexeme, Prefix, Suffix]
 
 Compoundable = TypeVar("Compoundable", DefaultFusion, Morpheme, covariant=True)
 
@@ -208,8 +220,12 @@ Word = Component[Compoundable] | Compound[Compoundable]
 
 DefaultWord = Word[DefaultFusion]
 
-Describable = Lexeme | Affix | Morpheme | Scoped[Lexeme]
-Describable2 = Morpheme | Scoped[Affix] | Fusion[Scoped[Lexeme]]
+Describable = (
+    Lexeme | Affix | Morpheme | Scoped[Lexeme] | Scoped[Prefix] | Scoped[Suffix]
+)
+Describable2 = (
+    Morpheme | Scoped[Prefix] | Scoped[Suffix] | Fusion[Scoped[Lexeme], Prefix, Suffix]
+)
 Record = DefaultWord | DefaultFusion | Describable
 
 ResolvedForm = Word[Morpheme]

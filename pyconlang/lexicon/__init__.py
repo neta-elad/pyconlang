@@ -23,6 +23,7 @@ from ..domain import (
     ResolvedForm,
     Scope,
     Scoped,
+    ScopedAffix,
     Suffix,
 )
 from ..parser import continue_lines
@@ -171,6 +172,33 @@ class Lexicon:
             case _:
                 return self.resolve(form, scope)
 
+    def to_lexeme_fusion(self, fusion: DefaultFusion) -> LexemeFusion | None:
+        if not isinstance(fusion.stem, Scoped):
+            return None
+
+        if fusion.stem.scope is not None:
+            return None
+
+        lexeme = fusion.stem.scoped
+
+        prefixes: list[Prefix] = []
+
+        for prefix in fusion.prefixes:
+            if prefix.scope is not None:
+                return None
+
+            prefixes.append(prefix.scoped)
+
+        suffixes: list[Suffix] = []
+
+        for suffix in fusion.suffixes:
+            if suffix.scope is not None:
+                return None
+
+            suffixes.append(suffix.scoped)
+
+        return Fusion(lexeme, tuple(prefixes), tuple(suffixes))
+
     def resolve_fusion(
         self, fusion: DefaultFusion, scope: Scope = Scope()
     ) -> ResolvedForm:
@@ -178,29 +206,33 @@ class Lexicon:
         suffixes = fusion.suffixes
         max_total_length = len(prefixes) + len(suffixes)
         for k in range(max_total_length, -1, -1):
-            for i in range(0, 1 + len(prefixes)):
+            for i in range(
+                0, 1 + len(prefixes)
+            ):  # todo: do differently, with range(max(0, k - lsuf), 1 + min(k, lpre))
                 j = 1 + k - i
                 if 0 <= j <= 1 + len(suffixes):
                     this_prefixes = prefixes[i:]
                     rest_prefixes = prefixes[:i]
                     this_suffixes = suffixes[:j]
                     rest_suffixes = suffixes[j:]
-                    if isinstance(fusion.stem, Scoped):
-                        override_scope = fusion.stem.scope or scope
-                        this_fusion = Fusion(
-                            fusion.stem.scoped, this_prefixes, this_suffixes
-                        )
-                        if (override_scope, this_fusion) in self.entry_mapping:
-                            return self.extend_with_affixes(
-                                self.resolve(
-                                    self.entry_mapping[
-                                        (override_scope, this_fusion)
-                                    ].form,
-                                    scope,
-                                ),
+                    # override_scope = fusion.stem.scope or scope  # todo: don't do this, use compound scoped
+                    # this_fusion = Fusion(
+                    #     fusion.stem.scoped, this_prefixes, this_suffixes
+                    # )
+                    this_fusion = fusion[i:, :j]
+                    this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
+                    if (
+                        this_lexeme_fusion is not None
+                        and (scope, this_lexeme_fusion) in self.entry_mapping
+                    ):
+                        return self.extend_with_affixes(
+                            self.resolve(
+                                self.entry_mapping[(scope, this_lexeme_fusion)].form,
                                 scope,
-                                *(rest_prefixes + rest_suffixes),
-                            )
+                            ),
+                            scope,
+                            *fusion[:i, j:].affixes(),
+                        )
 
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem, scope),
@@ -220,10 +252,10 @@ class Lexicon:
         )
 
     def extend_with_affixes(
-        self, form: ResolvedForm, scope: Scope, *affixes: Affix
+        self, form: ResolvedForm, scope: Scope, *affixes: ScopedAffix
     ) -> ResolvedForm:
         for affix in affixes:
-            form = self.extend_with_affix(form, affix, scope)
+            form = self.extend_with_affix(form, affix.scoped, affix.scope or scope)
 
         return form
 
@@ -235,7 +267,10 @@ class Lexicon:
             return self.extend_with_affixes(
                 form,
                 scope,
-                *(definition.get_var().prefixes + definition.get_var().suffixes),
+                *(
+                    [Scoped(prefix) for prefix in definition.get_var().prefixes]
+                    + [Scoped(suffix) for suffix in definition.get_var().suffixes]
+                ),  # todo: different
             )
         else:
             match definition.affix:
@@ -270,7 +305,12 @@ class Lexicon:
         self, var: Var, form: DefaultWord, scope: Scope = Scope()
     ) -> ResolvedForm:
         return self.extend_with_affixes(
-            self.resolve(form, scope), scope, *(var.prefixes + var.suffixes)
+            self.resolve(form, scope),
+            scope,
+            *(
+                [Scoped(affix) for affix in var.prefixes]
+                + [Scoped(affix) for affix in var.suffixes]
+            ),  # todo: different?
         )
 
     def get_vars(self, name: TemplateName | None) -> tuple[Var, ...]:

@@ -4,6 +4,7 @@ import pytest
 
 from pyconlang.domain import (
     Component,
+    DefaultFusion,
     Fusion,
     Joiner,
     Lexeme,
@@ -57,18 +58,6 @@ def test_scope() -> None:
 def test_base_unit() -> None:
     assert parse(rule, "@era1") == Rule("era1")
     assert parse(lexeme, "<name of the-form>") == Lexeme("name of the-form")
-    assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
-        "name of the-form"
-    ).with_scope(Scope())
-    assert parse(scoped_lexeme, "<name of the-form>%") == Scoped[Lexeme](
-        Lexeme("name of the-form"), Scope()
-    )
-    assert parse(scoped_lexeme, "<name of the-form>%modern") == Scoped[Lexeme](
-        Lexeme("name of the-form"), Scope("modern")
-    )
-    assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
-        "name of the-form"
-    ).with_scope(Scope("modern"))
     assert parse(morpheme, "*proto") == Morpheme("proto")
     assert parse(base_unit, "*proto") == Morpheme("proto")
     assert parse(morpheme, "*protó") == Morpheme("protó")
@@ -86,32 +75,32 @@ def test_affix() -> None:
 
 
 def test_fusion() -> None:
-    assert parse(default_fusion, "DEF.<stone>%modern.PL.ACC") == Fusion(
+    assert parse(default_fusion, "DEF.<stone>%modern.PL.ACC") == DefaultFusion(
         Lexeme("stone").with_scope(Scope("modern")),
-        (Prefix("DEF"),),
+        (Scoped(Prefix("DEF")),),
         (
-            Suffix("PL"),
-            Suffix("ACC"),
+            Scoped(Suffix("PL")),
+            Scoped(Suffix("ACC")),
         ),
     )
 
-    assert parse(default_fusion, "DEF.<stone>.PL.ACC") == Fusion(
+    assert parse(default_fusion, "DEF.<stone>.PL.ACC") == DefaultFusion(
         Lexeme("stone").with_scope(),
-        (Prefix("DEF"),),
+        (Scoped(Prefix("DEF")),),
         (
-            Suffix("PL"),
-            Suffix("ACC"),
+            Scoped(Suffix("PL")),
+            Scoped(Suffix("ACC")),
         ),
     )
 
-    assert parse(default_fusion, "*proto@era1") == Fusion(
+    assert parse(default_fusion, "*proto@era1") == DefaultFusion(
         Morpheme("proto", Rule("era1"))
     )
 
-    assert parse(default_fusion, "DEF.*proto@era1.PL") == Fusion(
+    assert parse(default_fusion, "DEF.*proto@era1.PL") == DefaultFusion(
         Morpheme("proto", Rule("era1")),
-        (Prefix("DEF"),),
-        (Suffix("PL"),),
+        (Scoped(Prefix("DEF")),),
+        (Scoped(Suffix("PL")),),
     )
 
 
@@ -123,7 +112,7 @@ def test_joiner() -> None:
 
 
 def test_compound() -> None:
-    assert parse(default_word, "*foo") == Component(Fusion(Morpheme("foo"), ()))
+    assert parse(default_word, "*foo") == Component(DefaultFusion(Morpheme("foo"), ()))
     assert parse(default_word, "*foo +! *bar") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.tail(),
@@ -150,6 +139,26 @@ def test_compound() -> None:
     )
 
 
+def test_scoped() -> None:
+    assert parse(scoped_lexeme, "<name of the-form>%") == Lexeme(
+        "name of the-form"
+    ).with_scope(Scope())
+
+    assert parse(base_unit, "<name of the-form>%modern") == Lexeme(
+        "name of the-form"
+    ).with_scope(Scope("modern"))
+
+    assert parse(default_fusion, "<name of the-form>%.PL") == DefaultFusion(
+        Lexeme("name of the-form").with_scope(Scope()), (), (Scoped(Suffix("PL")),)
+    )
+
+    assert parse(default_fusion, "<name of the-form>%.PL%modern") == DefaultFusion(
+        Lexeme("name of the-form").with_scope(Scope()),
+        (),
+        (Scoped(Suffix("PL"), Scope("modern")),),
+    )
+
+
 def test_sentence() -> None:
     with pytest.raises(PyrsecError):
         parse_sentence("*aka..")
@@ -161,8 +170,12 @@ def test_sentence() -> None:
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong").with_scope(), ())),
-            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
-            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+            Component(
+                Fusion(Lexeme("with space").with_scope(), (Scoped(Prefix("COL")),), ())
+            ),
+            Component(
+                Fusion(Morpheme("taka", Rule("start")), (), (Scoped(Suffix("PL")),))
+            ),
         ],
     )
 
@@ -173,8 +186,12 @@ def test_sentence() -> None:
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong").with_scope(), ())),
-            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
-            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+            Component(
+                Fusion(Lexeme("with space").with_scope(), (Scoped(Prefix("COL")),), ())
+            ),
+            Component(
+                Fusion(Morpheme("taka", Rule("start")), (), (Scoped(Suffix("PL")),))
+            ),
         ],
     )
 
@@ -185,8 +202,12 @@ def test_sentence() -> None:
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong").with_scope(), ())),
-            Component(Fusion(Lexeme("with space").with_scope(), (Prefix("COL"),), ())),
-            Component(Fusion(Morpheme("taka", Rule("start")), (), (Suffix("PL"),))),
+            Component(
+                Fusion(Lexeme("with space").with_scope(), (Scoped(Prefix("COL")),), ())
+            ),
+            Component(
+                Fusion(Morpheme("taka", Rule("start")), (), (Scoped(Suffix("PL")),))
+            ),
         ],
     )
 
