@@ -63,7 +63,7 @@ class AffixDefinition:
     form: DefaultWord | VarFusion | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
         default_factory=tuple
-    )  # todo: or Form - can bare Proto appear?
+    )  # todo: or DefaultWord - can bare Morpheme appear?
     description: str = field(default="")
 
     def get_era(self) -> Rule | None:
