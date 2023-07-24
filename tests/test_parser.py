@@ -191,7 +191,7 @@ def test_sentence() -> None:
     )
 
 
-def test_definables() -> None:
+def test_definables(metadata: None) -> None:
     with pytest.raises(PyrsecError):
         parse_definables("..")
 

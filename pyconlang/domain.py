@@ -208,8 +208,6 @@ Word = Component[Compoundable] | Compound[Compoundable]
 
 DefaultWord = Word[DefaultFusion]
 
-# Unit = Morpheme | Lexeme | Fusion | Compound[Fusion]
-
 Describable = Lexeme | Affix | Morpheme | Scoped[Lexeme]
 Describable2 = Morpheme | Scoped[Affix] | Fusion[Scoped[Lexeme]]
 Record = DefaultWord | DefaultFusion | Describable
@@ -256,10 +254,7 @@ class Tags:
 
     @cached_property
     def scope(self) -> Scope:
-        if "scope" in self.map:
-            return Scope(self.map["scope"])
-
-        return Scope(Metadata.default().scope)
+        return Scope(self.map.get("scope", Metadata.default().scope))
 
     def __str__(self) -> str:
         return "{" + " ".join(str(tag) for tag in self.tags) + "}"
