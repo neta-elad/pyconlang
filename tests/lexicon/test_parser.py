@@ -318,6 +318,15 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
+            tags=Tags(frozenset({Tag("scope", "modern")})),
+            affix=Suffix("LARGE"),
+            era=None,
+            form=Component(Fusion(Morpheme("ha"))),
+            sources=(),
+            description="large object",
+        ),
+        AffixDefinition(
+            stressed=False,
             tags=Tags(),
             affix=Suffix("LARGE"),
             era=None,

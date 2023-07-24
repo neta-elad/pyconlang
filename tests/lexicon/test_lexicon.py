@@ -124,6 +124,16 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
     assert parsed_lexicon.resolve(
+        Component(
+            Fusion(
+                Lexeme("stone").with_scope(),
+                (),
+                (Scoped(Suffix("LARGE"), Scope("modern")),),
+            )
+        )
+    ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ha")))
+
+    assert parsed_lexicon.resolve(
         Compound(
             Component(Fusion(Lexeme("stone").with_scope())),
             Joiner.tail(),

@@ -45,6 +45,7 @@ def sample_lexicon() -> str:
             plural for inanimate
         affix % .COL *ma collective
         
+        affix %modern .LARGE *ha large object
         affix .LARGE $.COL.PL large plural
         affix % STONE. <stone>.COL made of stone
         
