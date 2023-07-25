@@ -111,7 +111,7 @@ def word(compoundable: Parser[str, Compoundable]) -> Parser[str, Word[Compoundab
     def word_parser(
         parser: Parser[str, Word[Compoundable]]
     ) -> Parser[str, Word[Compoundable]]:
-        bracketed_word = string('"') >> parser << string('"')
+        bracketed_word = token(string("{")) >> parser << token(string("}"))
         component = compoundable[Component[Compoundable]]
         component_or_bracketed = bracketed_word ^ component
         joined = (component_or_bracketed & token(joiner) & component_or_bracketed)[

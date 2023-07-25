@@ -169,7 +169,7 @@ def test_affix_definition() -> None:
     )
 
     assert parse(
-        affix_definition, 'affix COL. "<big> !+ <pile>.PL" collective form'
+        affix_definition, "affix COL. { <big> !+ <pile>.PL } collective form"
     ) == AffixDefinition(
         stressed=False,
         tags=Tags(),

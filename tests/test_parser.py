@@ -123,12 +123,12 @@ def test_compound() -> None:
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(default_word, '"*foo !+@era *bar"') == default_compound(
+    assert parse(default_word, "{ *foo !+@era *bar }") == default_compound(
         Component(Fusion(Morpheme("foo"), ())),
         Joiner.head(Rule("era")),
         Component(Fusion(Morpheme("bar"))),
     )
-    assert parse(default_word, '"*foo +!@era *bar" !+ *baz') == default_compound(
+    assert parse(default_word, "{ *foo +!@era *bar } !+ *baz") == default_compound(
         default_compound(
             Component(Fusion(Morpheme("foo"), ())),
             Joiner.tail(Rule("era")),

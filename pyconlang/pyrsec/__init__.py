@@ -2,7 +2,7 @@ import re
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 _I = TypeVar("_I", contravariant=True)
 _U = TypeVar("_U", covariant=True)
@@ -35,8 +35,24 @@ Value = Success[_U] | Failure
 RawParser = Callable[[_I, int], Value[_U]]
 
 
+@dataclass
 class PyrsecError(Exception):
-    ...
+    text: Any
+    index: int
+    expected: str
+
+    def location(self) -> int | tuple[int, int]:
+        if isinstance(self.text, str):
+            line, last_ln = self.text.count("\n", 0, self.index), self.text.rfind(
+                "\n", 0, self.index
+            )
+            col = self.index - (last_ln + 1)
+            return (line, col)
+        else:
+            return self.index
+
+    def __str__(self) -> str:
+        return f"Expected {self.expected} at {self.location()} in `{self.text}`"
 
 
 class Parser(Generic[_I, _U]):
@@ -182,7 +198,7 @@ class Parser(Generic[_I, _U]):
             case Success():
                 return value.value
             case Failure():
-                raise PyrsecError(value.expected)
+                raise PyrsecError(text, value.index, value.expected)
 
 
 @dataclass
@@ -199,7 +215,7 @@ class ForwardParser(Parser[_I, _U]):
 
     def __call__(self, text: _I, index: int) -> Value[_U]:
         if self.parser is None:
-            raise PyrsecError("Using uninitialized ForwardParser")
+            raise PyrsecError(text, index, "Using uninitialized ForwardParser")
         return self.parser(text, index)
 
 
