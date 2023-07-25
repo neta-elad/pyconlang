@@ -236,7 +236,7 @@ class Lexicon:
         return self.extend_with_affixes(
             self.resolve_any(fusion.stem, scope),
             scope,
-            *(fusion.prefixes + fusion.suffixes),
+            *fusion.affixes(),
         )
 
     def resolve_compound(
