@@ -101,6 +101,11 @@ class Scoped(Generic[ScopedT]):
     scope: Scope | None = field(default=None)
 
     def __str__(self) -> str:
+        if (
+            isinstance(self.scoped, Tree) and self.scope is not None
+        ):  # todo: ugly workaround
+            return f"{self.scope} {self.scoped}"
+
         return f"{self.scoped}{self.scope or ''}"
 
 

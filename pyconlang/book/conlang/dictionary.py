@@ -86,8 +86,6 @@ class ConlangDictionary(Preprocessor):
         return list(map(self.show_entry, self.translator.lexicon.entries))
 
     def show_entry(self, entry: Entry) -> str:
-        # sources = _join_morphemes(self.translator.lexicon.resolve(entry.form))
-
         forms = [
             f"r[{self.show_var(var, str(entry.form))}]"
             for var in self.translator.lexicon.get_vars(entry.template)
@@ -104,7 +102,5 @@ class ConlangDictionary(Preprocessor):
             stem = f"{prefix}{stem}"
         for suffix in var.suffixes:
             stem = f"{stem}{suffix}"
-        # for affix in var.prefixes + var.suffixes:
-        #     stem = affix.combine(stem, affix.name)
 
         return stem

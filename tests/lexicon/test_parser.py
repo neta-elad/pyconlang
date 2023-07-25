@@ -92,12 +92,17 @@ def test_entry() -> None:
     )
 
     assert parse(
-        entry, "entry %ultra-modern <dust> %modern <gravel> (n.) dust, sand"
+        entry, "entry %ultra-modern <dust> % <gravel>.PL (n.) dust, sand"
     ) == Entry(
         None,
         Tags(frozenset({Tag("scope", "ultra-modern")})),
         Fusion(Lexeme("dust")),
-        Scoped(Component(Fusion(Lexeme("gravel").with_scope())), Scope("modern")),
+        Scoped(
+            Component(
+                Fusion(Lexeme("gravel").with_scope(), (), (Scoped(Suffix("PL")),))
+            ),
+            Scope(),
+        ),
         PartOfSpeech("n"),
         "dust, sand",
     )
@@ -271,6 +276,14 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             "big, great",
         ),
         Entry(
+            None,
+            Tags(frozenset({Tag("scope")})),
+            Fusion(Lexeme("big"), (), (Suffix("PL"),)),
+            Scoped(Component(Fusion(Morpheme("sama")))),
+            PartOfSpeech("adj"),
+            "large people",
+        ),
+        Entry(
             TemplateName("plural"),
             Tags(frozenset({Tag("scope")})),
             Fusion(Lexeme("stone")),
@@ -331,10 +344,15 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         Entry(
             None,
             Tags(frozenset({Tag("scope", "ultra-modern")})),
-            Fusion(Lexeme("dust")),
-            Scoped(Component(Fusion(Lexeme("gravel").with_scope())), Scope("modern")),
+            Fusion(Lexeme("council")),
+            Scoped(
+                Component(
+                    Fusion(Lexeme("big").with_scope(), (), (Scoped(Suffix("PL")),))
+                ),
+                Scope(),
+            ),
             PartOfSpeech("n"),
-            "dust, sand",
+            "council",
         ),
     }
 

@@ -155,12 +155,8 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     ) == Compound(Component(Morpheme("apak")), Joiner.head(), Component(Morpheme("ma")))
 
     assert parsed_lexicon.resolve(
-        Component(Fusion(Lexeme("dust").with_scope())), Scope("ultra-modern")
-    ) == Compound(
-        Component(Morpheme("kapa")),
-        Joiner.head(Rule("era1")),
-        Component(Morpheme("iki", Rule("era1"))),
-    )
+        Component(Fusion(Lexeme("council").with_scope())), Scope("ultra-modern")
+    ) == Component(Morpheme("sama"))
 
 
 def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
