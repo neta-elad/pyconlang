@@ -112,14 +112,14 @@ scope_definition_with_path = (base_scope_definition & token(path))[
 
 scope_definition = scope_definition_with_path ^ scope_definition_without_path
 
-record = entry ^ affix_definition ^ template ^ scope_definition
+record = entry | affix_definition | template | scope_definition
 
 include = string("include") >> token(path)
 
-meaningful_segment = record ^ include
+meaningful_segment = record | include
 
 comment = regex(r"\s*#.*")
 
 lexicon_line = (
-    (meaningful_segment ^ whitespace()[lambda _: None]) << -comment << (eol() ^ eof())
+    (meaningful_segment | whitespace()[lambda _: None]) << -comment << (eol() ^ eof())
 )

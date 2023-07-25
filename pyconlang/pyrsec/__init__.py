@@ -42,7 +42,7 @@ class PyrsecError(Exception):
     expected: str
 
     def location(self) -> int | tuple[int, int]:
-        if isinstance(self.text, str):
+        if isinstance(self.text, str) and self.text.count("\n") > 0:
             line, last_ln = self.text.count("\n", 0, self.index), self.text.rfind(
                 "\n", 0, self.index
             )

@@ -251,8 +251,19 @@ def test_lexicon_line() -> None:
     assert parse(lexicon_line, " \t\n") is None
     assert parse(lexicon_line, " \t # and a comment") is None
 
-    with pytest.raises(PyrsecError):
+
+def test_errors() -> None:
+    with pytest.raises(PyrsecError) as e:
         parse(lexicon_line, "lang bla")
+
+    assert e.value.index == 0
+    assert e.value.expected == "eof"
+
+    with pytest.raises(PyrsecError) as e:
+        parse(lexicon_line, "entry <bla *ka")
+
+    assert e.value.index == 14
+    assert e.value.expected == ">"
 
 
 def test_lexicon(parsed_lexicon: Lexicon) -> None:
