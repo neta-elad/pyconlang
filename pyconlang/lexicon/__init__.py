@@ -216,7 +216,6 @@ class Lexicon:
         for k in range(max_total_length, -1, -1):
             for i in range(max(0, k - suffixes), 1 + min(k, prefixes)):
                 j = k - i
-                # override_scope = fusion.stem.scope or scope  # todo: don't do this, use compound scoped
                 this_fusion = fusion[i:, :j]
                 this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
                 if (

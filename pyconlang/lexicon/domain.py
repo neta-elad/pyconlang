@@ -83,9 +83,10 @@ class AffixDefinition:
         return self.form is not None and isinstance(self.form, Fusion)
 
     def get_form(self) -> Scoped[DefaultWord]:
-        if self.form is not None and not isinstance(self.form, Fusion):
+        if self.form is not None:
+            assert isinstance(self.form, Scoped)
             return self.form
-        elif self.sources:  # todo: this does not make complete sense
+        elif self.sources:
             return Scoped(
                 reduce(
                     lambda head, tail: Compound(head, Joiner.head(), tail),
