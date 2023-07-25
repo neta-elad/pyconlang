@@ -175,7 +175,8 @@ class Lexicon:
             case Scoped():
                 return self.resolve_any(form.scoped, form.scope or scope)
             case Lexeme():
-                return self.resolve(self.get_entry(form, scope).form, scope)
+                entry_form = self.get_entry(form, scope).form
+                return self.resolve(entry_form.scoped, entry_form.scope or scope)
             case _:
                 return self.resolve(form, scope)
 
@@ -222,12 +223,13 @@ class Lexicon:
                     this_lexeme_fusion is not None
                     and (scope, this_lexeme_fusion) in self.entry_mapping
                 ):
+                    entry_form = self.entry_mapping[(scope, this_lexeme_fusion)].form
                     return self.extend_with_affixes(
                         self.resolve(
-                            self.entry_mapping[(scope, this_lexeme_fusion)].form,
-                            scope,
+                            entry_form.scoped,
+                            entry_form.scope or scope,
                         ),
-                        scope,
+                        entry_form.scope or scope,
                         *fusion[:i, j:].affixes(),
                     )
 
@@ -267,17 +269,21 @@ class Lexicon:
                 *definition.get_var().affixes(),
             )
         else:
+            definition_form = definition.get_form()
+            resolved_form = self.resolve(
+                definition_form.scoped, definition_form.scope or scope
+            )
             match definition.affix:
                 case Prefix():
                     if definition.stressed:
                         return Compound(
-                            self.resolve(definition.get_form(), scope),
+                            resolved_form,
                             Joiner.head(definition.get_era()),
                             form,
                         )
                     else:
                         return Compound(
-                            self.resolve(definition.get_form(), scope),
+                            resolved_form,
                             Joiner.tail(definition.get_era()),
                             form,
                         )
@@ -286,13 +292,13 @@ class Lexicon:
                         return Compound(
                             form,
                             Joiner.tail(definition.get_era()),
-                            self.resolve(definition.get_form(), scope),
+                            resolved_form,
                         )
                     else:
                         return Compound(
                             form,
                             Joiner.head(definition.get_era()),
-                            self.resolve(definition.get_form(), scope),
+                            resolved_form,
                         )
 
     def substitute(  # todo: remove?
@@ -314,7 +320,7 @@ class Lexicon:
 
             raise MissingTemplate(name.name)
 
-    def form(self, record: Definable, scope: Scope = Scope()) -> DefaultWord:
+    def form(self, record: Definable, scope: Scope = Scope()) -> Scoped[DefaultWord]:
         match record.scoped:
             case Prefix() | Suffix():
                 return self.get_affix(record.scoped, record.scope or scope).get_form()

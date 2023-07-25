@@ -92,7 +92,7 @@ class Suffix(AffixBase):
 Affix = Prefix | Suffix
 
 
-ScopedT = TypeVar("ScopedT", Lexeme, Prefix, Suffix)
+ScopedT = TypeVar("ScopedT")  # , Lexeme, Prefix, Suffix)
 
 
 @dataclass(eq=True, frozen=True)

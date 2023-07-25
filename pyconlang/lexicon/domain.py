@@ -46,7 +46,7 @@ class Entry:
     template: TemplateName | None
     tags: Tags
     lexeme: LexemeFusion
-    form: DefaultWord
+    form: Scoped[DefaultWord]
     part_of_speech: PartOfSpeech
     definition: str
 
@@ -60,7 +60,7 @@ class AffixDefinition:
     tags: Tags
     affix: Affix
     era: Rule | None = field(default=None)
-    form: DefaultWord | VarFusion | None = field(default=None)
+    form: Scoped[DefaultWord] | VarFusion | None = field(default=None)
     sources: tuple[Lexeme, ...] = field(
         default_factory=tuple
     )  # todo: or DefaultWord - can bare Morpheme appear?
@@ -70,27 +70,30 @@ class AffixDefinition:
         if self.era is not None:
             return self.era
         elif (
-            isinstance(self.form, Component)
-            and isinstance(self.form.form, Fusion)
-            and isinstance(self.form.form.stem, Morpheme)
+            isinstance(self.form, Scoped)
+            and isinstance(self.form.scoped, Component)
+            and isinstance(self.form.scoped.form, Fusion)
+            and isinstance(self.form.scoped.form.stem, Morpheme)
         ):
-            return self.form.form.stem.era
+            return self.form.scoped.form.stem.era
         else:
             return None
 
     def is_var(self) -> bool:
         return self.form is not None and isinstance(self.form, Fusion)
 
-    def get_form(self) -> DefaultWord:
+    def get_form(self) -> Scoped[DefaultWord]:
         if self.form is not None and not isinstance(self.form, Fusion):
             return self.form
-        elif self.sources:
-            return reduce(
-                lambda head, tail: Compound(head, Joiner.head(), tail),
-                map(
-                    lambda source: cast(DefaultWord, Component(Fusion(source))),
-                    self.sources,
-                ),
+        elif self.sources:  # todo: this does not make complete sense
+            return Scoped(
+                reduce(
+                    lambda head, tail: Compound(head, Joiner.head(), tail),
+                    map(
+                        lambda source: cast(DefaultWord, Component(Fusion(source))),
+                        self.sources,
+                    ),
+                )
             )
         else:
             raise AffixDefinitionMissingForm(self)

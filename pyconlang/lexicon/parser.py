@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Literal, cast
 
-from ..domain import Lexeme, PartOfSpeech
+from ..domain import Lexeme, PartOfSpeech, Scoped
 from ..parser import (
     affix,
     default_word,
@@ -10,6 +10,7 @@ from ..parser import (
     lexeme,
     lexeme_fusion,
     non_default_scope,
+    opt_scope,
     opt_tags,
     rule,
     scoped_prefix,
@@ -64,7 +65,11 @@ rest_of_line = regex(r"[^#\n]*")[str.strip]
 
 lexical_sources = string("(") >> (~token(lexeme))[tuple[Lexeme]] << string(")")
 
-affix_form = default_word ^ var
+entry_form = (token(opt_scope) & token(default_word))[
+    lambda pair: Scoped(pair[1], pair[0])
+]
+
+affix_form = entry_form ^ var
 
 affix_definition = (
     (
@@ -84,7 +89,7 @@ entry = (
     string("entry") >> -token(template_name)
     & opt_tags
     & token(lexeme_fusion)
-    & token(default_word)
+    & token(entry_form)
     & token(part_of_speech)
     & rest_of_line
 )[lift6(Entry)]

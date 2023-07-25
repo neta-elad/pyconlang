@@ -58,7 +58,7 @@ def test_entry() -> None:
         None,
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Morpheme("kipu", Rule("era1")))),
+        Scoped(Component(Fusion(Morpheme("kipu", Rule("era1"))))),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -69,7 +69,11 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))),
+        Scoped(
+            Component(
+                Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))
+            )
+        ),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -80,9 +84,22 @@ def test_entry() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Lexeme("heavy").with_scope(), (), (Scoped(Suffix("PL")),))),
+        Scoped(
+            Component(Fusion(Lexeme("heavy").with_scope(), (), (Scoped(Suffix("PL")),)))
+        ),
         PartOfSpeech("adj"),
         "strong, stable",
+    )
+
+    assert parse(
+        entry, "entry %ultra-modern <dust> %modern <gravel> (n.) dust, sand"
+    ) == Entry(
+        None,
+        Tags(frozenset({Tag("scope", "ultra-modern")})),
+        Fusion(Lexeme("dust")),
+        Scoped(Component(Fusion(Lexeme("gravel").with_scope())), Scope("modern")),
+        PartOfSpeech("n"),
+        "dust, sand",
     )
 
 
@@ -104,7 +121,7 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Suffix("PL"),
         era=Rule("era"),
-        form=Component(Fusion(Morpheme("proto"))),
+        form=Scoped(Component(Fusion(Morpheme("proto")))),
         sources=(Lexeme("big"), Lexeme("pile")),
         description="plural for inanimate",
     )
@@ -115,7 +132,7 @@ def test_affix_definition() -> None:
         stressed=False,
         tags=Tags(),
         affix=Suffix("PL"),
-        form=Component(Fusion(Morpheme("proto", Rule("era")))),
+        form=Scoped(Component(Fusion(Morpheme("proto", Rule("era"))))),
         description="plural for inanimate",
     )
 
@@ -139,7 +156,9 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Prefix("COL"),
         era=None,
-        form=Component(Fusion(Lexeme("big").with_scope(), (), (Scoped(Suffix("PL")),))),
+        form=Scoped(
+            Component(Fusion(Lexeme("big").with_scope(), (), (Scoped(Suffix("PL")),)))
+        ),
         sources=(),
         description="collective form",
     )
@@ -151,10 +170,14 @@ def test_affix_definition() -> None:
         tags=Tags(),
         affix=Prefix("COL"),
         era=None,
-        form=Compound(
-            Component(Fusion(Lexeme("big").with_scope())),
-            Joiner.head(),
-            Component(Fusion(Lexeme("pile").with_scope(), (), (Scoped(Suffix("PL")),))),
+        form=Scoped(
+            Compound(
+                Component(Fusion(Lexeme("big").with_scope())),
+                Joiner.head(),
+                Component(
+                    Fusion(Lexeme("pile").with_scope(), (), (Scoped(Suffix("PL")),))
+                ),
+            )
         ),
         sources=(),
         description="collective form",
@@ -200,7 +223,7 @@ def test_lexicon_line() -> None:
         tags=Tags(),
         affix=Suffix("PL"),
         era=Rule("era"),
-        form=Component(Fusion(Morpheme("proto"))),
+        form=Scoped(Component(Fusion(Morpheme("proto")))),
         sources=(Lexeme("big"), Lexeme("pile")),
         description="plural for inanimate",
     )
@@ -211,7 +234,11 @@ def test_lexicon_line() -> None:
         TemplateName("plural"),
         Tags(),
         Fusion(Lexeme("strong")),
-        Component(Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))),
+        Scoped(
+            Component(
+                Fusion(Morpheme("kipu", Rule("era1")), (), (Scoped(Suffix("PL")),))
+            )
+        ),
         PartOfSpeech("adj"),
         "strong, stable",
     )
@@ -231,7 +258,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("strong")),
-            Component(Fusion(Morpheme("kipu", Rule("era1")))),
+            Scoped(Component(Fusion(Morpheme("kipu", Rule("era1"))))),
             PartOfSpeech("adj"),
             "strong, stable",
         ),
@@ -239,7 +266,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("big")),
-            Component(Fusion(Morpheme("iki"))),
+            Scoped(Component(Fusion(Morpheme("iki")))),
             PartOfSpeech("adj"),
             "big, great",
         ),
@@ -247,7 +274,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             TemplateName("plural"),
             Tags(frozenset({Tag("scope")})),
             Fusion(Lexeme("stone")),
-            Component(Fusion(Morpheme("apak"))),
+            Scoped(Component(Fusion(Morpheme("apak")))),
             PartOfSpeech("n"),
             "stone, pebble",
         ),
@@ -255,7 +282,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(frozenset({Tag("scope", "modern")})),
             Fusion(Lexeme("stone")),
-            Component(Fusion(Morpheme("kapa"))),
+            Scoped(Component(Fusion(Morpheme("kapa")))),
             PartOfSpeech("n"),
             "stone, pebble (modern)",
         ),
@@ -263,8 +290,10 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("gravel")),
-            Component(
-                Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
+            Scoped(
+                Component(
+                    Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
+                )
             ),
             PartOfSpeech("n"),
             "gravel",
@@ -273,8 +302,12 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags.from_set_and_scope(set(), Scope("ultra-modern")),
             Fusion(Lexeme("gravel")),
-            Component(
-                Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("DIST-PL")),))
+            Scoped(
+                Component(
+                    Fusion(
+                        Lexeme("stone").with_scope(), (), (Scoped(Suffix("DIST-PL")),)
+                    )
+                )
             ),
             PartOfSpeech("n"),
             "gravel (ultra-modern)",
@@ -283,7 +316,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("pile")),
-            Component(Fusion(Morpheme("ma"))),
+            Scoped(Component(Fusion(Morpheme("ma")))),
             PartOfSpeech("n"),
             "pile",
         ),
@@ -291,9 +324,17 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             None,
             Tags(),
             Fusion(Lexeme("gravel"), (), (Suffix("PL"),)),
-            Component(Fusion(Morpheme("ka"))),
+            Scoped(Component(Fusion(Morpheme("ka")))),
             PartOfSpeech("n"),
             "gravel (plural)",
+        ),
+        Entry(
+            None,
+            Tags(frozenset({Tag("scope", "ultra-modern")})),
+            Fusion(Lexeme("dust")),
+            Scoped(Component(Fusion(Lexeme("gravel").with_scope())), Scope("modern")),
+            PartOfSpeech("n"),
+            "dust, sand",
         ),
     }
 
@@ -303,7 +344,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             tags=Tags(frozenset({Tag("scope")})),
             affix=Suffix("PL"),
             era=None,
-            form=Component(Fusion(Morpheme("iki", Rule("era1")))),
+            form=Scoped(Component(Fusion(Morpheme("iki", Rule("era1"))))),
             sources=(Lexeme("big"), Lexeme("pile")),
             description="plural for inanimate",
         ),
@@ -312,7 +353,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             tags=Tags(frozenset({Tag("scope")})),
             affix=Suffix("COL"),
             era=None,
-            form=Component(Fusion(Morpheme(form="ma", era=None))),
+            form=Scoped(Component(Fusion(Morpheme(form="ma", era=None)))),
             sources=(),
             description="collective",
         ),
@@ -321,7 +362,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             tags=Tags(frozenset({Tag("scope", "modern")})),
             affix=Suffix("LARGE"),
             era=None,
-            form=Component(Fusion(Morpheme("ha"))),
+            form=Scoped(Component(Fusion(Morpheme("ha")))),
             sources=(),
             description="large object",
         ),
@@ -346,11 +387,13 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             affix=Prefix("STONE"),
             tags=Tags(frozenset({Tag("scope")})),
             era=None,
-            form=Component(
-                Fusion(
-                    stem=Lexeme(name="stone").with_scope(),
-                    prefixes=(),
-                    suffixes=(Scoped(Suffix("COL")),),
+            form=Scoped(
+                Component(
+                    Fusion(
+                        stem=Lexeme(name="stone").with_scope(),
+                        prefixes=(),
+                        suffixes=(Scoped(Suffix("COL")),),
+                    )
                 )
             ),
             sources=(),
