@@ -222,13 +222,14 @@ class Lexicon:
                     this_lexeme_fusion is not None
                     and (scope, this_lexeme_fusion) in self.entry_mapping
                 ):
-                    entry_form = self.entry_mapping[(scope, this_lexeme_fusion)].form
+                    entry = self.entry_mapping[(scope, this_lexeme_fusion)]
+                    entry_form = entry.form
                     return self.extend_with_affixes(
                         self.resolve(
                             entry_form.scoped,
-                            entry_form.scope or scope,
+                            entry_form.scope or entry.tags.scope or scope,
                         ),
-                        entry_form.scope or scope,
+                        scope,
                         *fusion[:i, j:].affixes(),
                     )
 
