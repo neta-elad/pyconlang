@@ -5,7 +5,9 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
+from ...domain import Scope
 from ...lexicon.domain import Entry, VarFusion
+from ...parser import scope as scope_parser
 from ...translate import Translator
 
 
@@ -58,20 +60,24 @@ class ConlangGrouper(Preprocessor):
 
 class ConlangDictionary(Preprocessor):
     translator: Translator
-    cache: list[str]
+    cache: dict[Scope, list[str]]
+    pattern: re.Pattern[str]
 
     def __init__(self, md: Markdown, translator: Translator) -> None:
         super().__init__(md)
 
         self.translator = translator
         self.cache = self.build_cache()
+        self.pattern = re.compile(r"^!dictionary:(?P<scope>%[A-Za-z0-9-]*|%%)$")
 
     def run(self, lines: list[str]) -> list[str]:
         new_lines = []
         for line in lines:
-            if line.strip() == "!dictionary":
+            if (match := re.match(self.pattern, line.strip())) is not None:
+                raw_scope = match.group("scope")
+                parsed_scope = scope_parser.parse_or_raise(raw_scope)
                 new_lines.append("!group")
-                new_lines.extend(self.dictionary)
+                new_lines.extend(self.dictionary[parsed_scope or Scope.default()])
                 new_lines.append("!group")
             else:
                 new_lines.append(line)
@@ -79,22 +85,28 @@ class ConlangDictionary(Preprocessor):
         return new_lines
 
     @path_cached_property(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
-    def dictionary(self) -> list[str]:
+    def dictionary(self) -> dict[Scope, list[str]]:
         return self.build_cache()
 
-    def build_cache(self) -> list[str]:
-        return list(map(self.show_entry, self.translator.lexicon.entries))
+    def build_cache(self) -> dict[Scope, list[str]]:
+        return {
+            scope.scope: list(
+                map(
+                    self.show_entry,
+                    self.translator.lexicon.entries_by_scope[scope.scope],
+                )
+            )
+            for scope in self.translator.lexicon.scopes
+        }
 
     def show_entry(self, entry: Entry) -> str:
+        form = str(entry.scoped_lexeme)
         forms = [
-            f"r[{self.show_var(var, str(entry.form))}]"
+            f"r[{self.show_var(var, form)}]"
             for var in self.translator.lexicon.get_vars(entry.template)
         ]
 
-        return (
-            ", ".join(forms)
-            + f" [ph({entry.form})] pr[{entry.form}] {entry.description()}"
-        )
+        return ", ".join(forms) + f" [ph({form})] pr[{form}] {entry.description()}"
 
     @staticmethod
     def show_var(var: VarFusion, stem: str) -> str:

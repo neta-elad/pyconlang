@@ -127,6 +127,15 @@ class Lexicon:
             if not definition.is_var()
         }
 
+    @cached_property
+    def entries_by_scope(self) -> dict[Scope, set[Entry]]:
+        result: dict[Scope, set[Entry]] = {}
+        for entry in self.entries:
+            result.setdefault(entry.tags.scope, set())
+            result[entry.tags.scope].add(entry)
+
+        return result
+
     def get_entry(self, lexeme: Lexeme, scope: Scope = Scope()) -> Entry:
         fusion = Fusion(lexeme)
         if (scope, fusion) in self.entry_mapping:

@@ -22,6 +22,10 @@ class Rule:
 class Scope:
     scope: str = field(default="")
 
+    @classmethod
+    def default(cls) -> "Scope":
+        return Scope(Metadata.default().scope)
+
     def __str__(self) -> str:
         return f"%{self.scope}"
 
@@ -275,7 +279,7 @@ class Tags:
 
     @cached_property
     def scope(self) -> Scope:
-        return Scope(self.map.get("scope", Metadata.default().scope))
+        return Scope(self.map.get("scope", Scope.default().scope))
 
     def __str__(self) -> str:
         return "{" + " ".join(str(tag) for tag in self.tags) + "}"

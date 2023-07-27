@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from functools import reduce
+from functools import cached_property, reduce
 from pathlib import Path
 from typing import Literal, cast
 
@@ -49,6 +49,10 @@ class Entry:
     form: Scoped[DefaultWord]
     part_of_speech: PartOfSpeech
     definition: str
+
+    @cached_property
+    def scoped_lexeme(self) -> Scoped[LexemeFusion]:
+        return Scoped(self.lexeme, self.tags.scope)
 
     def description(self) -> str:
         return f"{self.part_of_speech} {self.definition}"
