@@ -128,11 +128,26 @@ class Lexicon:
         }
 
     @cached_property
-    def entries_by_scope(self) -> dict[Scope, set[Entry]]:
+    def entries_by_scope(
+        self,
+    ) -> dict[Scope, set[Entry]]:  # todo: merge with entry mapping?
         result: dict[Scope, set[Entry]] = {}
         for entry in self.entries:
             result.setdefault(entry.tags.scope, set())
             result[entry.tags.scope].add(entry)
+
+        return result
+
+    @cached_property
+    def affixes_by_scope(
+        self,
+    ) -> dict[Scope, set[AffixDefinition]]:  # todo: merge with affix mapping?
+        result: dict[Scope, set[AffixDefinition]] = {}
+        for affix in self.affixes:
+            if affix.is_var():
+                continue
+            result.setdefault(affix.tags.scope, set())
+            result[affix.tags.scope].add(affix)
 
         return result
 

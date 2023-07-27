@@ -291,6 +291,17 @@ def test_dictionary(simple_pyconlang: Path) -> None:
     assert i_index < k_index < entry_index
 
 
+def test_affixes(simple_pyconlang: Path) -> None:
+    html = read()
+
+    assert '<h1 id="affixes-table">Affixes Table</h1>' in html
+    assert (
+        "<td>-<strong>ishima</strong></td>\n"
+        "<td>iʃima</td>\n"
+        "<td>distributive plural</td>"
+    ) in html
+
+
 def test_unicode_escape(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",

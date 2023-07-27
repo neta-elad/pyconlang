@@ -5,8 +5,8 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
-from ...domain import Scope
-from ...lexicon.domain import Entry, VarFusion
+from ...domain import Scope, Suffix
+from ...lexicon.domain import AffixDefinition, Entry, VarFusion
 from ...parser import scope as scope_parser
 from ...translate import Translator
 
@@ -116,3 +116,62 @@ class ConlangDictionary(Preprocessor):
             stem = f"{stem}{suffix}"
 
         return stem
+
+
+class ConlangAffixes(Preprocessor):
+    translator: Translator
+    cache: dict[Scope, list[str]]
+    pattern: re.Pattern[str]
+
+    def __init__(self, md: Markdown, translator: Translator) -> None:
+        super().__init__(md)
+
+        self.translator = translator
+        self.cache = self.build_cache()
+        self.pattern = re.compile(r"^!affixes:(?P<scope>%[A-Za-z0-9-]*|%%)$")
+
+    def run(self, lines: list[str]) -> list[str]:
+        new_lines = []
+        for line in lines:
+            if (match := re.match(self.pattern, line.strip())) is not None:
+                raw_scope = match.group("scope")
+                parsed_scope = scope_parser.parse_or_raise(raw_scope)
+                new_lines.extend(self.affixes[parsed_scope or Scope.default()])
+            else:
+                new_lines.append(line)
+
+        return new_lines
+
+    @path_cached_property(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
+    def affixes(self) -> dict[Scope, list[str]]:
+        return self.build_cache()
+
+    def build_cache(self) -> dict[Scope, list[str]]:
+        return {
+            scope.scope: self.build_scope(scope.scope)
+            for scope in self.translator.lexicon.scopes
+        }
+
+    def build_scope(self, scope: Scope) -> list[str]:
+        if scope not in self.translator.lexicon.affixes_by_scope:
+            return []
+
+        return ["|Affix|Phonetic|Description|", "|-|-|-|"] + list(
+            map(
+                show_affix,
+                sorted(
+                    self.translator.lexicon.affixes_by_scope[scope],
+                    key=lambda affix: affix.description,
+                ),
+            )
+        )
+
+
+def show_affix(affix: AffixDefinition) -> str:
+    form = str(affix.to_scoped_lexeme_fusion())  # todo: add sources
+    combined = f"r[{form}]-"
+
+    if isinstance(affix.affix, Suffix):  # todo: ugly
+        combined = f"-r[{form}]"
+
+    return f"|{combined}|ph({form})|{affix.description}|"

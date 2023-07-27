@@ -3,16 +3,6 @@
 
 # Markup examples
 
-!boxed
-
-This two paragraphs
-
-are going to be boxed.
-
-!boxed
-
-This one too
-{: .boxed }
 
 Smart quotes like 'this' and "this"
 

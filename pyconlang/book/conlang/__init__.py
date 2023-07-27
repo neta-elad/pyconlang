@@ -18,7 +18,7 @@ from .before_after_macros import (
     BeforeAfterPhoneticMacro,
     BeforeAfterRomanizedMacro,
 )
-from .dictionary import ConlangDictionary, ConlangGrouper
+from .dictionary import ConlangAffixes, ConlangDictionary, ConlangGrouper
 from .raw_macros import (
     RawDefinitionMacro,
     RawPhoneticMacro,
@@ -112,4 +112,8 @@ class Conlang(Extension):
 
         md.preprocessors.register(
             ConlangDictionary(md, self.translator), "conlang-dictionary", 40
+        )
+
+        md.preprocessors.register(
+            ConlangAffixes(md, self.translator), "conlang-affixes", 40
         )

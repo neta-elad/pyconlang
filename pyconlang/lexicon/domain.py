@@ -119,6 +119,9 @@ class AffixDefinition:
             self.description,
         )
 
+    def to_scoped_lexeme_fusion(self) -> Scoped[LexemeFusion]:
+        return Scoped(self.affix.to_fusion(), self.tags.scope)
+
 
 @dataclass(eq=True, frozen=True)
 class ScopeDefinition:
