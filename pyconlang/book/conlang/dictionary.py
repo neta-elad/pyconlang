@@ -5,7 +5,7 @@ from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
 from ...cache import path_cached_property
-from ...domain import Scope, Suffix
+from ...domain import Scope
 from ...lexicon.domain import AffixDefinition, Entry, VarFusion
 from ...parser import scope as scope_parser
 from ...translate import Translator

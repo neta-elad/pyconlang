@@ -18,6 +18,7 @@ from ..domain import (
     Lexeme,
     LexemeFusion,
     Morpheme,
+    NonScopedDefinable,
     Prefix,
     Record,
     ResolvedForm,
@@ -26,6 +27,7 @@ from ..domain import (
     ScopedAffix,
     Suffix,
 )
+from ..metadata import Metadata
 from ..parser import continue_lines
 from .domain import (
     AffixDefinition,
@@ -352,15 +354,20 @@ class Lexicon:
             case Lexeme():
                 return self.get_entry(record.scoped, record.scope or scope).form
 
-    def define(self, record: Definable, scope: Scope = Scope()) -> str:
-        match record.scoped:
+    def describe(self, record: NonScopedDefinable, scope: Scope = Scope()) -> str:
+        match record:
             case Prefix() | Suffix():
-                return self.get_affix(record.scoped, record.scope or scope).description
+                return self.get_affix(record, scope).description
 
             case Lexeme():
-                return self.get_entry(
-                    record.scoped, record.scope or scope
-                ).description()
+                return self.get_entry(record, scope).description()
+
+    def define(self, record: Definable, scope: Scope = Scope()) -> str:
+        actual_scope = record.scope or scope
+        scope_description = ""
+        if actual_scope.name != Metadata.default().scope:
+            scope_description = f" [{actual_scope.name or '<ROOT>'}]"
+        return f"{self.describe(record.scoped, actual_scope)}{scope_description}"
 
     def lookup(
         self, record: Record, scope: Scope = Scope()

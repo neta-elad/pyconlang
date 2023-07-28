@@ -116,7 +116,7 @@ def test_lookup(simple_repl: Evaluator) -> None:
         .PL: plural for inanimate
         
         Records for <stone>.PL
-        <stone>: (n.) stone, pebble (modern)
+        <stone>: (n.) stone, pebble
         .PL: plural for inanimate
         """
     )

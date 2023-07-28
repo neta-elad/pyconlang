@@ -308,7 +308,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             Fusion(Lexeme("stone")),
             Scoped(Component(Fusion(Morpheme("kapa")))),
             PartOfSpeech("n"),
-            "stone, pebble (modern)",
+            "stone, pebble",
         ),
         Entry(
             None,
@@ -334,7 +334,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
                 )
             ),
             PartOfSpeech("n"),
-            "gravel (ultra-modern)",
+            "gravel",
         ),
         Entry(
             None,

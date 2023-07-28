@@ -64,7 +64,7 @@ def sample_lexicon() -> str:
         # here is how to use a template
         entry &plural % <stone> *apak (n.) stone, pebble
         
-        entry %modern <stone> *kapa (n.) stone, pebble (modern)
+        entry %modern <stone> *kapa (n.) stone, pebble
         
         entry <gravel> <stone>.PL (n.) gravel
         
@@ -72,7 +72,7 @@ def sample_lexicon() -> str:
         
         entry % <big>.PL *sama (adj.) large people
         
-        entry %ultra-modern <gravel> <stone>.DIST-PL (n.) gravel (ultra-modern)
+        entry %ultra-modern <gravel> <stone>.DIST-PL (n.) gravel
         
         entry <gravel>.PL *ka (n.) gravel (plural)
         

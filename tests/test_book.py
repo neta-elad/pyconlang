@@ -142,20 +142,20 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
     assert "<strong>kaba</strong>" in html
     assert "<strong>shiga</strong>" in html
     assert "<strong>kabaigi kaba shiga</strong>" in html
-    assert "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>" in html
-    assert "<ruby><strong>kibiishimi</strong> <rt>[kibiiʃimi]</rt></ruby>" in html
+    assert "<ruby><strong>shiga</strong><rt>[ʃiga]</rt></ruby>" in html
+    assert "<ruby><strong>kibiishimi</strong><rt>[kibiiʃimi]</rt></ruby>" in html
     assert "<em>*kapa</em>" in html
     assert "<em>*kika</em>" in html
     assert "<em>*iki</em>" in html
     assert "<em>*kapa</em> + <em>*iki</em>" in html
 
-    assert '<abbr title="(n.) stone, pebble (modern)">stone</abbr>' in html
+    assert '<abbr title="(n.) stone, pebble">stone</abbr>' in html
     assert '.<abbr title="plural for inanimate">PL</abbr>' in html
     assert (
         '<abbr title="(n.) gravel">gravel</abbr>.<abbr title="collective">COL</abbr>'
         in html
     )
-    assert '<abbr title="(n.) gravel (ultra-modern)">gravel</abbr>' in html
+    assert '<abbr title="(n.) gravel [ultra-modern]">gravel</abbr>' in html
 
 
 def test_before_after(simple_pyconlang: Path) -> None:
@@ -175,12 +175,10 @@ def test_before_after(simple_pyconlang: Path) -> None:
     assert "<em>*kapa</em> &gt; <strong>kaba</strong>" in html
     assert "<strong>kaba</strong> &lt; <em>*kapa</em>" in html
     assert (
-        "<em>*kika</em> &gt; <ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby>"
-        in html
+        "<em>*kika</em> &gt; <ruby><strong>shiga</strong><rt>[ʃiga]</rt></ruby>" in html
     )
     assert (
-        "<ruby><strong>shiga</strong> <rt>[ʃiga]</rt></ruby> &lt; <em>*kika</em>"
-        in html
+        "<ruby><strong>shiga</strong><rt>[ʃiga]</rt></ruby> &lt; <em>*kika</em>" in html
     )
 
 
@@ -201,21 +199,21 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     html = read()
 
     assert (
-        "<th><ruby><strong>kabaigi</strong> <rt>[kabaigi]</rt></ruby></th>\n"
-        "<th><ruby><strong>ka</strong> <rt>[ka]</rt></ruby></th>" in html
+        "<th><ruby><strong>kabaigi</strong><rt>[kabaigi]</rt></ruby></th>\n"
+        "<th><ruby><strong>ka</strong><rt>[ka]</rt></ruby></th>" in html
     )
 
     assert (
-        '<td><abbr title="(n.) stone, pebble (modern)">stone</abbr>.<abbr title="plural for inanimate">PL</abbr></td>\n'
+        '<td><abbr title="(n.) stone, pebble">stone</abbr>.<abbr title="plural for inanimate">PL</abbr></td>\n'
         '<td><abbr title="(n.) gravel">gravel</abbr>.<abbr title="plural for inanimate">PL</abbr></td>'
         in html
     )
 
     assert (
-        "<th><ruby><strong>kibiishimi</strong> <rt>[kibiiʃimi]</rt></ruby></th>" in html
+        "<th><ruby><strong>kibiishimi</strong><rt>[kibiiʃimi]</rt></ruby></th>" in html
     )
 
-    assert '<td><abbr title="(n.) gravel (ultra-modern)">gravel</abbr></td>' in html
+    assert '<td><abbr title="(n.) gravel [ultra-modern]">gravel</abbr></td>' in html
 
 
 def test_metadata(simple_pyconlang: Path) -> None:
@@ -274,8 +272,7 @@ def test_dictionary(simple_pyconlang: Path) -> None:
     )
 
     assert (
-        "<p><strong>kaba</strong> [kaba] <em>*kapa</em> (n.) stone, pebble (modern)</p>"
-        in html
+        "<p><strong>kaba</strong> [kaba] <em>*kapa</em> (n.) stone, pebble</p>" in html
     )
 
     assert "<p><strong>ishi</strong> [iʃi] <em>*iki</em> (adj.) big, great</p>" in html
@@ -298,7 +295,7 @@ def test_affixes(simple_pyconlang: Path) -> None:
 
     assert '<h1 id="affixes-table">Affixes Table</h1>' in html
     assert (
-        "<td>-<ruby><strong>ishima</strong> <rt>[iʃima]</rt></ruby></td>\n"
+        "<td>-<ruby><strong>ishima</strong><rt>[iʃima]</rt></ruby></td>\n"
         "<td>distributive plural</td>\n"
         "<td><em>*iki</em>, <em>*ma</em></td>"
     ) in html

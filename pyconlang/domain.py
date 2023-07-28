@@ -20,14 +20,14 @@ class Rule:
 
 @dataclass(eq=True, frozen=True)
 class Scope:
-    scope: str = field(default="")
+    name: str = field(default="")
 
     @classmethod
     def default(cls) -> "Scope":
         return Scope(Metadata.default().scope)
 
     def __str__(self) -> str:
-        return f"%{self.scope}"
+        return f"%{self.name}"
 
 
 @dataclass(eq=True, frozen=True)
@@ -114,6 +114,7 @@ class Scoped(Generic[ScopedT]):
 
 ScopedAffix = Scoped[Prefix] | Scoped[Suffix]
 Definable = Scoped[Lexeme] | ScopedAffix
+NonScopedDefinable = Lexeme | Affix
 
 BaseUnit = Morpheme | Scoped[Lexeme]
 
@@ -254,7 +255,7 @@ class Tags:
     def from_set_and_scope(cls, tags: set[Tag], scope: Scope | None = None) -> Self:
         tags = set(tags)
         if scope is not None:
-            scope_tag = Tag("scope", scope.scope)
+            scope_tag = Tag("scope", scope.name)
             tags.add(scope_tag)
         return cls(frozenset(tags))
 
@@ -274,7 +275,7 @@ class Tags:
 
     @cached_property
     def scope(self) -> Scope:
-        return Scope(self.map.get("scope", Scope.default().scope))
+        return Scope(self.map.get("scope", Scope.default().name))
 
     def __str__(self) -> str:
         return "{" + " ".join(str(tag) for tag in self.tags) + "}"
