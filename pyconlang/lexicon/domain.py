@@ -33,10 +33,6 @@ class TemplateName:
 Var = Literal["$"]  # todo: should var be just a string template?
 VarFusion = Fusion[Var, Scoped[Prefix], Scoped[Suffix]]
 
-# def get_form(var: VarFusion) -> Scoped[DefaultWord]:
-#     assert len(var.affixes()) > 0
-#
-
 
 @dataclass(eq=True, frozen=True)
 class Template:
