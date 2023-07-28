@@ -298,9 +298,9 @@ def test_affixes(simple_pyconlang: Path) -> None:
 
     assert '<h1 id="affixes-table">Affixes Table</h1>' in html
     assert (
-        "<td>-<strong>ishima</strong></td>\n"
-        "<td>iʃima</td>\n"
-        "<td>distributive plural</td>"
+        "<td>-<ruby><strong>ishima</strong> <rt>[iʃima]</rt></ruby></td>\n"
+        "<td>distributive plural</td>\n"
+        "<td><em>*iki</em>, <em>*ma</em></td>"
     ) in html
 
 

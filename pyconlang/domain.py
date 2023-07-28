@@ -67,8 +67,12 @@ class PartOfSpeech:
 class AffixBase(ABC):
     name: str
 
+    def combine(self, stem: str, name: str, syllable_break: str | None = ".") -> str:
+        head, tail = self.order(stem, name)
+        return combine(head, tail, syllable_break)
+
     @abstractmethod
-    def combine(self, stem: str, name: str) -> str:
+    def order(self, stem: str, name: str) -> tuple[str, str]:
         ...
 
     def to_lexeme(self) -> Lexeme:
@@ -83,14 +87,14 @@ class AffixBase(ABC):
 
 @dataclass(eq=True, frozen=True)
 class Prefix(AffixBase):
-    def combine(self, stem: str, name: str) -> str:
-        return combine(name, stem, ".")
+    def order(self, stem: str, name: str) -> tuple[str, str]:
+        return (name, stem)
 
 
 @dataclass(eq=True, frozen=True)
 class Suffix(AffixBase):
-    def combine(self, stem: str, name: str) -> str:
-        return combine(stem, name, ".")
+    def order(self, stem: str, name: str) -> tuple[str, str]:
+        return (stem, name)
 
 
 Affix = Prefix | Suffix

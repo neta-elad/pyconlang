@@ -160,7 +160,7 @@ class ConlangAffixes(Preprocessor):
         if scope not in self.translator.lexicon.affixes_by_scope:
             return []
 
-        return ["|Affix|Phonetic|Description|", "|-|-|-|"] + list(
+        return ["|Affix|Description|Sources|", "|-|-|-|"] + list(
             map(
                 show_affix,
                 sorted(
@@ -172,10 +172,8 @@ class ConlangAffixes(Preprocessor):
 
 
 def show_affix(affix: AffixDefinition) -> str:
-    form = str(affix.to_scoped_lexeme_fusion())  # todo: add sources
-    combined = f"r[{form}]-"
+    form = str(affix.to_scoped_lexeme_fusion())
+    combined = affix.affix.combine("-", f"ph[{form}]", "")
+    sources = ", ".join(map(lambda source: f"pr[{source}]", affix.sources))
 
-    if isinstance(affix.affix, Suffix):  # todo: ugly
-        combined = f"-r[{form}]"
-
-    return f"|{combined}|ph({form})|{affix.description}|"
+    return f"|{combined}|{affix.description}|{sources}|"
