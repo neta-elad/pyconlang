@@ -155,7 +155,6 @@ class Fusion(Generic[Fusible, AnyPrefix, AnySuffix]):
 
 
 DefaultFusion = Fusion[BaseUnit, Scoped[Prefix], Scoped[Suffix]]
-ScopedLexemeFusion = Fusion[Scoped[Lexeme], Prefix, Suffix]
 LexemeFusion = Fusion[Lexeme, Prefix, Suffix]
 
 Compoundable = TypeVar("Compoundable", DefaultFusion, Morpheme, covariant=True)
@@ -231,9 +230,6 @@ DefaultWord = Word[DefaultFusion]
 
 Describable = (
     Lexeme | Affix | Morpheme | Scoped[Lexeme] | Scoped[Prefix] | Scoped[Suffix]
-)
-Describable2 = (
-    Morpheme | Scoped[Prefix] | Scoped[Suffix] | Fusion[Scoped[Lexeme], Prefix, Suffix]
 )
 Record = DefaultWord | DefaultFusion | Describable
 

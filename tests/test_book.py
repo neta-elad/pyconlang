@@ -266,6 +266,8 @@ def test_grouping(simple_pyconlang: Path) -> None:
 def test_dictionary(simple_pyconlang: Path) -> None:
     html = read()
 
+    assert "<p><strong>ka</strong> [ka] <em>*ka</em> (n.) gravel (plural)</p>" in html
+
     assert (
         "<p><strong>kabaigi</strong> [kabaigi] <em>*kapa</em> + <em>*iki</em> (n.) gravel</p>"
         in html

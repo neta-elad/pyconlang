@@ -75,6 +75,10 @@ def sample_lexicon() -> str:
         entry %ultra-modern <gravel> <stone>.DIST-PL (n.) gravel (ultra-modern)
         
         entry <gravel>.PL *ka (n.) gravel (plural)
+        
+        affix % 1SG. *po 1sg
+        affix % 2SG. *mo 2sg
+        entry 1SG.<eat> *ta (v.) I eat
         """
     )
 

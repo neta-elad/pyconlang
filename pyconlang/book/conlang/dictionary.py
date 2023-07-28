@@ -100,13 +100,17 @@ class ConlangDictionary(Preprocessor):
         }
 
     def show_entry(self, entry: Entry) -> str:
-        form = str(entry.scoped_lexeme)
+        scope = entry.tags.scope
+        form = str(entry.lexeme)
         forms = [
-            f"r[{self.show_var(var, form)}]"
+            f"r[{scope} {self.show_var(var, form)}]"
             for var in self.translator.lexicon.get_vars(entry.template)
         ]
 
-        return ", ".join(forms) + f" [ph({form})] pr[{form}] {entry.description()}"
+        return (
+            ", ".join(forms)
+            + f" [ph({scope} {form})] pr[{scope} {form}] {entry.description()}"
+        )
 
     @staticmethod
     def show_var(var: VarFusion, stem: str) -> str:

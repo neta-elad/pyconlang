@@ -365,6 +365,14 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             PartOfSpeech("n"),
             "council",
         ),
+        Entry(
+            None,
+            Tags(),
+            Fusion(Lexeme("eat"), ((Prefix("1SG")),), ()),
+            Scoped(Component(Fusion(Morpheme("ta")))),
+            PartOfSpeech("v"),
+            "I eat",
+        ),
     }
 
     assert parsed_lexicon.affixes == {
@@ -436,6 +444,20 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
             form=None,
             sources=(Lexeme("big"), Lexeme("pile")),
             description="distributive plural",
+        ),
+        AffixDefinition(
+            stressed=False,
+            tags=Tags.from_set_and_scope(set(), Scope()),
+            affix=Prefix("1SG"),
+            form=Scoped(Component(Fusion(Morpheme("po")))),
+            description="1sg",
+        ),
+        AffixDefinition(
+            stressed=False,
+            tags=Tags.from_set_and_scope(set(), Scope()),
+            affix=Prefix("2SG"),
+            form=Scoped(Component(Fusion(Morpheme("mo")))),
+            description="2sg",
         ),
     }
 

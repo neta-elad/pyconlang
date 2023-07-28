@@ -178,6 +178,15 @@ def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
         Component(Morpheme("ka")),
     )
 
+    assert parsed_lexicon.resolve(
+        Component(
+            DefaultFusion(
+                Lexeme("eat").with_scope(),
+                (Scoped(Prefix("1SG")), Scoped(Prefix("2SG"))),
+            )
+        )
+    ) == Compound(Component(Morpheme("mo")), Joiner.tail(), Component(Morpheme("ta")))
+
 
 def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(

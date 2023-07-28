@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from functools import cached_property, reduce
+from functools import reduce
 from pathlib import Path
 from typing import Literal, cast
 
@@ -33,6 +33,10 @@ class TemplateName:
 Var = Literal["$"]  # todo: should var be just a string template?
 VarFusion = Fusion[Var, Scoped[Prefix], Scoped[Suffix]]
 
+# def get_form(var: VarFusion) -> Scoped[DefaultWord]:
+#     assert len(var.affixes()) > 0
+#
+
 
 @dataclass(eq=True, frozen=True)
 class Template:
@@ -49,10 +53,6 @@ class Entry:
     form: Scoped[DefaultWord]
     part_of_speech: PartOfSpeech
     definition: str
-
-    @cached_property
-    def scoped_lexeme(self) -> Scoped[LexemeFusion]:
-        return Scoped(self.lexeme, self.tags.scope)
 
     def description(self) -> str:
         return f"{self.part_of_speech} {self.definition}"

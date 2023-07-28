@@ -240,7 +240,7 @@ class Lexicon:
         for k in range(max_total_length, -1, -1):
             for i in range(max(0, k - suffixes), 1 + min(k, prefixes)):
                 j = k - i
-                this_fusion = fusion[i:, :j]
+                this_fusion = fusion[:i, :j]
                 this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
                 if (
                     this_lexeme_fusion is not None
@@ -254,7 +254,7 @@ class Lexicon:
                             entry_form.scope or entry.tags.scope or scope,
                         ),
                         scope,
-                        *fusion[:i, j:].affixes(),
+                        *fusion[i:, j:].affixes(),
                     )
 
         return self.extend_with_affixes(
