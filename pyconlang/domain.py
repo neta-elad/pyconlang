@@ -1,5 +1,6 @@
 from abc import ABC, ABCMeta, abstractmethod
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cached_property
@@ -23,8 +24,8 @@ class Scope:
     name: str = field(default="")
 
     @classmethod
-    def default(cls) -> "Scope":
-        return Scope(Metadata.default().scope)
+    def default(cls) -> Self:
+        return cls(Metadata.default().scope)
 
     def __str__(self) -> str:
         return f"%{self.name}"
@@ -133,15 +134,15 @@ class Fusion(Generic[Fusible, AnyPrefix, AnySuffix]):
 
     @classmethod
     def from_prefixes_and_suffixes(
-        cls, prefixes: list[AnyPrefix], stem: Fusible, suffixes: list[AnySuffix]
-    ) -> "Fusion[Fusible, AnyPrefix, AnySuffix]":
-        return cls(stem, tuple(reversed(prefixes)), tuple(suffixes))
+        cls, prefixes: Iterable[AnyPrefix], stem: Fusible, suffixes: Iterable[AnySuffix]
+    ) -> Self:
+        return cls(stem, tuple(reversed(list(prefixes))), tuple(suffixes))
 
-    def __getitem__(
-        self, affixes: tuple[slice, slice]
-    ) -> "Fusion[Fusible, AnyPrefix, AnySuffix]":
+    def __getitem__(self, affixes: tuple[slice, slice]) -> Self:
         prefixes, suffixes = affixes
-        return Fusion(self.stem, self.prefixes[prefixes], self.suffixes[suffixes])
+        return self.from_prefixes_and_suffixes(
+            self.prefixes[prefixes], self.stem, self.suffixes[suffixes]
+        )
 
     def affixes(self) -> tuple[AnyPrefix | AnySuffix, ...]:
         return self.prefixes + self.suffixes
@@ -195,11 +196,11 @@ class Joiner:
     era: Rule | None = field(default=None)
 
     @classmethod
-    def head(cls, era: Rule | None = None) -> "Joiner":
+    def head(cls, era: Rule | None = None) -> Self:
         return cls(JoinerStress.HEAD, era)
 
     @classmethod
-    def tail(cls, era: Rule | None = None) -> "Joiner":
+    def tail(cls, era: Rule | None = None) -> Self:
         return cls(JoinerStress.TAIL, era)
 
     def __str__(self) -> str:

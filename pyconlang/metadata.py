@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, field
 from functools import cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import toml
 
@@ -18,12 +18,12 @@ class Metadata:
     scope: str = field(default="")
 
     @classmethod
-    def from_file(cls, path: Path = METADATA_PATH) -> "Metadata":
+    def from_file(cls, path: Path = METADATA_PATH) -> Self:
         return cls(**toml.loads(path.read_text()))
 
     @classmethod
     @cache
-    def default(cls) -> "Metadata":
+    def default(cls) -> Self:
         return cls.from_file()
 
     def to_dict(self) -> dict[str, Any]:

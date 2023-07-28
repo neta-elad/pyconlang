@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
+from typing import Self
 
 from .. import CHANGES_PATH, LEXICON_PATH
 from ..domain import (
@@ -49,15 +50,15 @@ class Lexicon:
     scopes: set[ScopeDefinition]
 
     @classmethod
-    def from_path(cls, path: Path = LEXICON_PATH) -> "Lexicon":
+    def from_path(cls, path: Path = LEXICON_PATH) -> Self:
         return cls.from_string(path.read_text(), path.parent)
 
     @classmethod
-    def from_string(cls, string: str, parent: Path = Path()) -> "Lexicon":
+    def from_string(cls, string: str, parent: Path = Path()) -> Self:
         return cls.from_lines(string.splitlines(), parent)
 
     @classmethod
-    def from_lines(cls, lines: Iterable[str], parent: Path) -> "Lexicon":
+    def from_lines(cls, lines: Iterable[str], parent: Path) -> Self:
         return cls.from_iterable(
             cls.resolve_paths(parse_lexicon(continue_lines(lines)), parent)
         )
@@ -101,7 +102,7 @@ class Lexicon:
     @classmethod
     def from_iterable(
         cls, iterable: Iterable[Entry | AffixDefinition | Template | ScopeDefinition]
-    ) -> "Lexicon":
+    ) -> Self:
         entries = set()
         affixes = set()
         templates = set()
