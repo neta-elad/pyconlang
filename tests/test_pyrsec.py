@@ -4,10 +4,12 @@ from pyconlang.pyrsec import (
     Failure,
     PyrsecError,
     Success,
-    eof,
+    chars,
+    full,
     lift2,
     regex,
     string,
+    strings,
     token,
 )
 
@@ -25,6 +27,22 @@ def test_string() -> None:
 
     with pytest.raises(PyrsecError):
         longer.parse_or_raise("short")
+
+
+def test_strings() -> None:
+    me, you = strings(["me", "you"])
+    assert me.parse("me") == Success(2, "me")
+    assert me.parse("you") == Failure(0, "me")
+    assert you.parse("me") == Failure(0, "you")
+    assert you.parse("you") == Success(3, "you")
+
+
+def test_chars() -> None:
+    lpar, rpar = chars("()")
+    assert lpar.parse("(") == Success(1, "(")
+    assert lpar.parse(")") == Failure(0, "(")
+    assert rpar.parse("(") == Failure(0, ")")
+    assert rpar.parse(")") == Success(1, ")")
 
 
 def test_regex() -> None:
@@ -59,7 +77,7 @@ def test_parse_all() -> None:
 
     assert number.parse("123 foo") == Success(4, 123)
 
-    number_all = number << eof()
+    number_all = full(number)
 
     assert number_all.parse("123") == Success(3, 123)
     assert number_all.parse("123 foo") == Failure(4, "eof")
