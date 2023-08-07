@@ -1,4 +1,5 @@
-from ..pyrsec import default, lift4, regex, string, token
+from pyrsercomb import default, lift4, regex, string, token
+
 from .domain import TraceLine
 
 word = regex(r"[^\s:]+")

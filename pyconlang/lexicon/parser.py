@@ -2,6 +2,20 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Literal, cast
 
+from pyrsercomb import (
+    default,
+    eof,
+    eol,
+    lift2,
+    lift3,
+    lift6,
+    lift7,
+    regex,
+    string,
+    token,
+    whitespace,
+)
+
 from ..domain import Lexeme, PartOfSpeech, Scoped
 from ..parser import (
     affix,
@@ -15,19 +29,6 @@ from ..parser import (
     rule,
     scoped_prefix,
     scoped_suffix,
-)
-from ..pyrsec import (
-    default,
-    eof,
-    eol,
-    lift2,
-    lift3,
-    lift6,
-    lift7,
-    regex,
-    string,
-    token,
-    whitespace,
 )
 from .domain import (
     AffixDefinition,

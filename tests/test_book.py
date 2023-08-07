@@ -2,10 +2,10 @@ from inspect import cleandoc
 from pathlib import Path
 
 import pytest
+from pyrsercomb import PyrsercombError
 
 from pyconlang import PYCONLANG_PATH
 from pyconlang.book import compile_book
-from pyconlang.pyrsec import PyrsecError
 
 
 def test_details(simple_pyconlang: Path) -> None:
@@ -344,7 +344,7 @@ def test_errors(simple_pyconlang: Path) -> None:
         """,
     )
 
-    with pytest.raises(PyrsecError):
+    with pytest.raises(PyrsercombError):
         read()
 
     write(
@@ -354,7 +354,7 @@ def test_errors(simple_pyconlang: Path) -> None:
         """,
     )
 
-    with pytest.raises(PyrsecError):
+    with pytest.raises(PyrsercombError):
         read()
 
 

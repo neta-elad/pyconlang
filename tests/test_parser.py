@@ -1,6 +1,7 @@
 from typing import TypeVar
 
 import pytest
+from pyrsercomb import Parser, PyrsercombError
 
 from pyconlang.domain import (
     Component,
@@ -35,7 +36,6 @@ from pyconlang.parser import (
     scoped_affix,
     scoped_lexeme,
 )
-from pyconlang.pyrsec import Parser, PyrsecError
 
 from . import default_compound, default_sentence
 
@@ -160,7 +160,7 @@ def test_scoped() -> None:
 
 
 def test_sentence() -> None:
-    with pytest.raises(PyrsecError):
+    with pytest.raises(PyrsercombError):
         parse_sentence("*aka..")
 
     assert parse_sentence(
@@ -213,7 +213,7 @@ def test_sentence() -> None:
 
 
 def test_definables(metadata: None) -> None:
-    with pytest.raises(PyrsecError):
+    with pytest.raises(PyrsercombError):
         parse_definables("..")
 
     assert parse_definables("<strong> COL. .PL").words == [

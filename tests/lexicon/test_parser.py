@@ -2,6 +2,7 @@ from inspect import cleandoc
 from pathlib import Path
 
 import pytest
+from pyrsercomb import PyrsercombError
 
 from pyconlang.domain import (
     Component,
@@ -43,7 +44,6 @@ from pyconlang.lexicon.parser import (
     var,
 )
 from pyconlang.parser import affix
-from pyconlang.pyrsec import PyrsecError
 
 from ..test_parser import parse
 
@@ -253,13 +253,13 @@ def test_lexicon_line() -> None:
 
 
 def test_errors() -> None:
-    with pytest.raises(PyrsecError) as e:
+    with pytest.raises(PyrsercombError) as e:
         parse(lexicon_line, "lang bla")
 
     assert e.value.index == 0
     assert e.value.expected == "eof"
 
-    with pytest.raises(PyrsecError) as e:
+    with pytest.raises(PyrsercombError) as e:
         parse(lexicon_line, "entry <bla *ka")
 
     assert e.value.index == 14

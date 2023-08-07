@@ -1,6 +1,8 @@
 from collections.abc import Iterable
 from typing import TypeVar
 
+from pyrsercomb import Parser, default, eof, fix, lift2, lift3, regex, string, token
+
 from .domain import (
     AnyPrefix,
     AnySuffix,
@@ -27,7 +29,6 @@ from .domain import (
     Tags,
     Word,
 )
-from .pyrsec import Parser, default, eof, fix, lift2, lift3, regex, string, token
 
 T = TypeVar("T")
 
