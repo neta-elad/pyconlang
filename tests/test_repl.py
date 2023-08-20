@@ -1,115 +1,79 @@
 from collections.abc import Generator
 from inspect import cleandoc
 from pathlib import Path
-from typing import Protocol
 
 import pytest
 from prompt_toolkit.input import PipeInput
 from pytest import CaptureFixture
 
 from pyconlang.metadata import Metadata
-from pyconlang.repl import create_session
+from pyconlang.repl import Mode, ReplSession, create_session
 from pyconlang.repl import run as run_repl
 
 
-class Evaluator(Protocol):
-    def __call__(self, line: str) -> str:
-        ...
-
-
 @pytest.fixture
-def simple_repl(
-    capsys: CaptureFixture[str], simple_pyconlang: Path
-) -> Generator[Evaluator, None, None]:
+def simple_repl(simple_pyconlang: Path) -> Generator[ReplSession, None, None]:
     with create_session() as session:
-
-        def evaluate(line: str) -> str:
-            session.onecmd(line)
-            return capsys.readouterr().out.strip()
-
-        yield evaluate
+        yield session
 
 
 @pytest.fixture
 def repl_with_archaic_default(
-    capsys: CaptureFixture[str], simple_pyconlang: Path
-) -> Generator[Evaluator, None, None]:
+    simple_pyconlang: Path,
+) -> Generator[ReplSession, None, None]:
     metadata = Metadata.default()
     metadata.scope = "archaic"
     metadata.save()
+
     with create_session() as session:
+        yield session
 
-        def evaluate(line: str) -> str:
-            session.onecmd(line)
-            return capsys.readouterr().out.strip()
-
-        yield evaluate
     metadata.scope = "modern"
     metadata.save()
 
 
-def test_basic(simple_repl: Evaluator) -> None:
-    assert simple_repl("*apaki") == "abashi"
-    assert simple_repl("<big>") == "ishi"
-    assert simple_repl("d <big>") == "ishi"
-    assert simple_repl("d") == "ishi"
-    assert simple_repl("<big>.PL") == "ishiigi"
-    assert simple_repl("*apak +! *i") == "abashi"
-    assert simple_repl("*apak +!@era1 *i") == "abagi"
+def test_basic(simple_repl: ReplSession) -> None:
+    assert simple_repl.run_line("*apaki") == "abashi [abaʃi]"
+    assert simple_repl.run_line("<big>") == "ishi [iʃi]"
+    assert simple_repl.run_line("<big>", Mode.NORMAL) == "ishi [iʃi]"
+    assert simple_repl.run_line("<big>.PL") == "ishiigi [iʃiigi]"
+    assert simple_repl.run_line("*apak +! *i") == "abashi [abaʃi]"
+    assert simple_repl.run_line("*apak +!@era1 *i") == "abagi [abagi]"
+    assert simple_repl.run_line("<stone>") == "kaba [kaba]"
+    assert simple_repl.run_line("% <stone>") == "apak [apak]"
 
 
-def test_default_scope(repl_with_archaic_default: Evaluator) -> None:
-    assert repl_with_archaic_default("p <stone>") == "apak"
-    assert repl_with_archaic_default("p %modern <stone>") == "kaba"
-    assert repl_with_archaic_default("p STONE.<stone>") == "apakmaapak"
-    assert repl_with_archaic_default("p %modern STONE.<stone>") == "kabamagaba"
-    assert repl_with_archaic_default("t <stone>") == ""
-    assert repl_with_archaic_default("t %modern <stone>") == (
+def test_default_scope(repl_with_archaic_default: ReplSession) -> None:
+    assert repl_with_archaic_default.run_line("<stone>") == "apak [apak]"
+    assert repl_with_archaic_default.run_line("%modern <stone>") == "kaba [kaba]"
+    assert (
+        repl_with_archaic_default.run_line("STONE.<stone>") == "apakmaapak [apakmaapak]"
+    )
+    assert (
+        repl_with_archaic_default.run_line("%modern STONE.<stone>")
+        == "kabamagaba [kabamagaba]"
+    )
+    assert repl_with_archaic_default.run_line("<stone>", Mode.TRACE) == ""
+    assert repl_with_archaic_default.run_line("%modern <stone>", Mode.TRACE) == (
         "kapa\nkapa => kaba (intervocalic-voicing)"
     )
 
 
-def test_phonetic(simple_repl: Evaluator) -> None:
-    assert simple_repl("p *apaki") == "abaʃi"
-    assert simple_repl("*apaki") == "abashi"
-    assert simple_repl("p") == "abaʃi"
-    assert simple_repl("phonetic *apaki") == "abaʃi"
-    assert simple_repl("phonetic <big>.PL") == "iʃiigi"
-    assert simple_repl("p <stone>") == "kaba"
-    assert simple_repl("p % <stone>") == "apak"
-
-
-def test_simple(simple_repl: Evaluator) -> None:
-    assert simple_repl("*apakí") == "abashí"
-    assert simple_repl("s") == "abashi"
-    assert simple_repl("s *apakí") == "abashi"
-    assert simple_repl("simple *apakí") == "abashi"
-
-
-def test_gloss(simple_repl: Evaluator) -> None:
-    assert simple_repl("<big>.PL") == "ishiigi"
-    assert simple_repl("g") == "ishiigi  \n <big>.PL"
-    assert simple_repl("g <big>.PL") == "ishiigi  \n <big>.PL"
-    assert simple_repl("gloss <big>.PL") == "ishiigi  \n <big>.PL"
+def test_gloss(simple_repl: ReplSession) -> None:
+    assert simple_repl.run_line("<big>.PL", Mode.GLOSS) == " ishiigi  \n <big>.PL "
 
     assert (
-        simple_repl("gloss <stone> <big>.PL")
-        == "kaba     ishiigi  \n <stone>   <big>.PL"
+        simple_repl.run_line("<stone> <big>.PL", Mode.GLOSS)
+        == "  kaba     ishiigi  \n <stone>   <big>.PL "
     )
 
 
-def test_lookup(simple_repl: Evaluator) -> None:
-    assert simple_repl("<big>.PL") == "ishiigi"
-    assert simple_repl("l") == "<big>: (adj.) big, great\n.PL: plural for inanimate"
+def test_lookup(simple_repl: ReplSession) -> None:
     assert (
-        simple_repl("l <big>.PL")
+        simple_repl.run_line("<big>.PL", Mode.LOOKUP)
         == "<big>: (adj.) big, great\n.PL: plural for inanimate"
     )
-    assert (
-        simple_repl("lookup <big>.PL")
-        == "<big>: (adj.) big, great\n.PL: plural for inanimate"
-    )
-    assert simple_repl("lookup <big>.PL <stone>.PL") == cleandoc(
+    assert simple_repl.run_line("<big>.PL <stone>.PL", Mode.LOOKUP) == cleandoc(
         """
         Records for <big>.PL
         <big>: (adj.) big, great
@@ -122,23 +86,8 @@ def test_lookup(simple_repl: Evaluator) -> None:
     )
 
 
-def test_trace(simple_repl: Evaluator) -> None:
-    assert simple_repl("<big>") == "ishi"
-    assert simple_repl("t") == cleandoc(
-        """
-        iki
-        iki => iʃi (palatalization)
-        iʃi => ishi (Romanizer)
-        """
-    )
-    assert simple_repl("t <big>") == cleandoc(
-        """
-        iki
-        iki => iʃi (palatalization)
-        iʃi => ishi (Romanizer)
-        """
-    )
-    assert simple_repl("trace <big>") == cleandoc(
+def test_trace(simple_repl: ReplSession) -> None:
+    assert simple_repl.run_line("<big>", Mode.TRACE) == cleandoc(
         """
         iki
         iki => iʃi (palatalization)
@@ -146,7 +95,7 @@ def test_trace(simple_repl: Evaluator) -> None:
         """
     )
 
-    assert simple_repl("trace <big>.PL") == cleandoc(
+    assert simple_repl.run_line("<big>.PL", Mode.TRACE) == cleandoc(
         """
         iki
         iki => iʃi (palatalization)
@@ -156,7 +105,7 @@ def test_trace(simple_repl: Evaluator) -> None:
         """
     )
 
-    assert simple_repl("trace <big> <stone>") == cleandoc(
+    assert simple_repl.run_line("<big> <stone>", Mode.TRACE) == cleandoc(
         """
         iki
         iki => iʃi (palatalization)
@@ -177,12 +126,12 @@ def test_repl_interactive(
 
     captured = capsys.readouterr()
 
-    assert captured.out == "abashi\nGoodbye.\n"
+    assert captured.out == "abashi [abaʃi]\nGoodbye.\n"
 
 
 def test_repl_command(capsys: CaptureFixture[str], simple_pyconlang: Path) -> None:
-    run_repl("p *apaki *baki")
+    run_repl("*apaki *baki")
 
     captured = capsys.readouterr()
 
-    assert captured.out == "abaʃi baʃi\n"
+    assert captured.out == "abashi [abaʃi] bashi [baʃi]\n"
