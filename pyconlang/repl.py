@@ -228,7 +228,10 @@ class ReplSession:
             observer.join()
 
     def run_line(self, line: str, mode: Mode | None = None) -> str:
-        return (mode or self.mode)(self.translator, line)
+        try:
+            return (mode or self.mode)(self.translator, line)
+        except Exception as e:
+            return f"{type(e).__name__}: {e}"
 
     def line(self, line: str) -> str:
         self.last_line = line or self.last_line
