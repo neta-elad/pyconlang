@@ -8,39 +8,18 @@ from pyconlang import PYCONLANG_PATH
 from pyconlang.book import compile_book
 
 
-def test_details(simple_pyconlang: Path) -> None:
-    write(
-        simple_pyconlang / "grammar.md",
-        """
-    !details:The summary
-    
-    The information is here
-    and here
-    
-    !details
-    """,
-    )
-
-    html = read()
-
-    assert (
-        "<details>\n<summary>The summary</summary>\n<p>The information is here\nand here</p>\n</details>"
-        in html
-    )
-
-
 def test_table(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "book.md",
         """
-    |c1,1-2|<|c1,3|c1,4|
-    |-------|-|----|-----|
-    |c2,1|c2,2|c2-3,3|c2,4|
-    |c3-5,1-2 >|<|  ^   |c3,4|
-    |    ^   |<|c4,3|c4,4|
-    |    ^   |<|c5,3|c5,4|
-    
-    """,
+        |c1,1-2|<|c1,3|c1,4|
+        |-------|-|----|-----|
+        |c2,1|c2,2|c2-3,3|c2,4|
+        |c3-5,1-2 >|<|  ^   |c3,4|
+        |    ^   |<|c4,3|c4,4|
+        |    ^   |<|c5,3|c5,4|
+        
+        """,
     )
 
     html = read()
@@ -57,21 +36,21 @@ def test_container(simple_pyconlang: Path) -> None:
         simple_pyconlang / "grammar.md",
         """
     
-    &{test span1}{: .inline }
-    
-    &{
-    
-    test div
-    
-    }{: .block }
-    
-    &{
-    
-    test div clean
-    
-    }
-    
-    """,
+        &{test span1}{: .inline }
+        
+        &{
+        
+        test div
+        
+        }{: .block }
+        
+        &{
+        
+        test div clean
+        
+        }
+        
+        """,
     )
 
     html = read()

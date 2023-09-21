@@ -16,7 +16,7 @@ from ..errors import pass_exception
 from ..metadata import Metadata
 from ..translate import Translator
 from .any_table_header import AnyTableHeader
-from .block import Boxed, Details
+from .block import Boxed
 from .conlang import Conlang
 from .multi import MultiExtension
 from .skipline import SkipLine
@@ -46,9 +46,12 @@ class Compiler:
                 "pymdownx.escapeall",
                 "pymdownx.caret",
                 "pymdownx.tilde",
+                "pymdownx.saneheaders",
+                "pymdownx.tasklist",
+                "pymdownx.blocks.details",
+                "pymdownx.blocks.tab",
                 SkipLine(),
                 Boxed(),
-                Details(),
                 MultiExtension(""),
                 SpanTable(),
                 AnyTableHeader(),
