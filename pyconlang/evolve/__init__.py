@@ -2,12 +2,12 @@ from collections.abc import Generator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Generic, Iterator, MutableMapping, Self, TypeVar, cast
+from typing import MutableMapping, Self, cast
 from unicodedata import normalize
 
 from .. import CHANGES_GLOB, CHANGES_PATH
 from ..cache import PersistentDict
-from ..domain import Component, Morpheme, ResolvedForm
+from ..domain import ResolvedForm
 from ..lexurgy import LexurgyClient
 from ..lexurgy.domain import (
     LexurgyErrorResponse,
@@ -20,40 +20,11 @@ from .arrange import AffixArranger, arranger_for
 from .batch import Batcher, ComponentQuery, CompoundQuery, Query, segment_by_start_end
 from .domain import Evolved
 from .errors import LexurgyError
-
-Evolvable = str | Morpheme | ResolvedForm
+from .tuple_mapping_view import TupleMappingView
 
 QueryTrace = tuple[str, list[TraceLine]]
 Trace = list[QueryTrace]
 EvolvedWithTrace = tuple[Evolved, Trace]
-
-_K1 = TypeVar("_K1")
-_K2 = TypeVar("_K2")
-_V = TypeVar("_V")
-
-
-@dataclass
-class TupleMappingView(Generic[_K1, _K2, _V], MutableMapping[_K2, _V]):
-    underlying_mapping: MutableMapping[tuple[_K1, _K2], _V]
-    first: _K1
-
-    def __getitem__(self, item: _K2) -> _V:
-        return self.underlying_mapping[(self.first, item)]
-
-    def __setitem__(self, key: _K2, value: _V) -> None:
-        self.underlying_mapping[(self.first, key)] = value
-
-    def __delitem__(self, key: _K2) -> None:
-        del self.underlying_mapping[(self.first, key)]
-
-    def __len__(self) -> int:
-        return len({key for key in self.underlying_mapping if key[0] == self.first})
-
-    def __iter__(self) -> Iterator[_K2]:
-        return iter(key[1] for key in self.underlying_mapping if key[0] == self.first)
-
-    def __contains__(self, item: object) -> bool:
-        return (self.first, item) in self.underlying_mapping
 
 
 @dataclass
@@ -81,7 +52,7 @@ class Evolver:
         return LexurgyClient.for_changes(changes)
 
     def trace(
-        self, forms: Sequence[Evolvable], *, changes: Path = CHANGES_PATH
+        self, forms: Sequence[ResolvedForm], *, changes: Path = CHANGES_PATH
     ) -> list[EvolvedWithTrace]:
         self.evolve(forms, trace=True, changes=changes)
 
@@ -91,7 +62,7 @@ class Evolver:
             self.query_cache, changes
         )
 
-        for form in self.normalize_forms(forms, changes):
+        for form in self.rearrange_forms(forms, changes):
             query = self.batcher.builder(self.arranger(changes)).build_query(form)
             result.append((cache[query], self.get_trace(query, changes=changes)))
 
@@ -119,13 +90,13 @@ class Evolver:
 
     def evolve(
         self,
-        forms: Sequence[Evolvable],
+        forms: Sequence[ResolvedForm],
         *,
         trace: bool = False,
         changes: Path = CHANGES_PATH,
     ) -> list[Evolved]:
         cache = TupleMappingView(self.query_cache, changes)
-        resolved_forms = self.normalize_forms(forms, changes)
+        resolved_forms = self.rearrange_forms(forms, changes)
 
         mapping, layers = self.batcher.builder(self.arranger(changes)).build_and_order(
             resolved_forms
@@ -168,18 +139,13 @@ class Evolver:
 
         return result
 
-    def normalize_form(self, form: Evolvable, changes: Path) -> ResolvedForm:
-        if isinstance(form, str):
-            form = Morpheme(form)
-        if isinstance(form, Morpheme):
-            form = Component(form)
-
+    def rearrange(self, form: ResolvedForm, changes: Path) -> ResolvedForm:
         return self.arranger(changes).rearrange(form)
 
-    def normalize_forms(
-        self, forms: Sequence[Evolvable], changes: Path
+    def rearrange_forms(
+        self, forms: Sequence[ResolvedForm], changes: Path
     ) -> Sequence[ResolvedForm]:
-        return [self.normalize_form(form, changes) for form in forms]
+        return [self.rearrange(form, changes) for form in forms]
 
     def evolve_words(
         self,

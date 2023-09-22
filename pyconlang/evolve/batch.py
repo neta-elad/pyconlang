@@ -1,6 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
-from typing import Protocol
+from dataclasses import dataclass, field, replace
 
 from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
 from ..unicode import combine, remove_primary_stress
@@ -8,13 +7,7 @@ from .arrange import AffixArranger
 from .domain import Evolved
 from .errors import BadAffixation
 
-
-class QueryCache(Protocol):
-    def __getitem__(self, query: "Query") -> Evolved:
-        ...
-
-    def __contains__(self, item: "Query") -> bool:
-        ...
+QueryCache = Mapping["Query", Evolved]
 
 
 @dataclass(eq=True, frozen=True)
@@ -27,7 +20,7 @@ class ComponentQuery:
         return self.query
 
     def set_end(self, end: str | None) -> "ComponentQuery":
-        return ComponentQuery(self.query, start=self.start, end=end)
+        return replace(self, end=end)
 
 
 @dataclass(eq=True, frozen=True)
@@ -65,12 +58,7 @@ class CompoundQuery:
         return combine(head, tail)
 
     def set_end(self, end: str | None) -> "CompoundQuery":
-        return CompoundQuery(
-            self.head,
-            self.joiner,
-            self.tail,
-            end=end,
-        )
+        return replace(self, end=end)
 
     def is_dependent(self) -> bool:
         """non-immediate query"""
@@ -83,21 +71,16 @@ DependableQuery = str | Query
 
 @dataclass
 class QueryWalker:
-    queries: dict[int, Query] = field(default_factory=dict)
-    layers: dict[int, int] = field(default_factory=dict)
+    layers: dict[Query, int] = field(default_factory=dict)
     max_layer: int = field(default=0)
 
     def set_layer(self, query: Query, layer: int = 0) -> None:
-        self.layers[id(query)] = layer
-        self.queries[id(query)] = query
+        self.layers[query] = layer
 
     def get_layer(self, query: DependableQuery) -> int:
         if isinstance(query, str):
             return 0
-        return self.layers[id(query)]
-
-    def get_query(self, query_id: int) -> Query:
-        return self.queries[query_id]
+        return self.layers[query]
 
     def walk_query(self, query: Query) -> None:
         match query:
@@ -118,20 +101,17 @@ class QueryWalker:
         # when start != end
         # or start == end == None *and* it is in the original list
 
-        ids = {id(query) for query in queries}
+        query_set = set(queries)
 
         for query in queries:
             self.walk_query(query)
 
-        result: list[list[Query]] = []
-        for _i in range(1 + self.max_layer):
-            result.append([])
+        result: list[list[Query]] = [[] for _i in range(1 + self.max_layer)]
 
-        for query_id, layer in self.layers.items():
-            query = self.get_query(query_id)
+        for query, layer in self.layers.items():
             if query.start != query.end:
                 result[layer].append(query)
-            elif query.start is None and id(query) in ids:
+            elif query.start is None and query in query_set:
                 result[layer].append(query)
 
         return result

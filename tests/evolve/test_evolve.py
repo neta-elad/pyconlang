@@ -46,12 +46,12 @@ def test_evolve_words(
 
 
 def test_evolve_forms(simple_evolver: Evolver, modern_changes_path: Path) -> None:
-    assert simple_evolver.evolve([Morpheme("apaki")], changes=modern_changes_path) == [
-        Evolved("apaki", "abashi", "abaʃi")
-    ]
+    assert simple_evolver.evolve(
+        [Component(Morpheme("apaki"))], changes=modern_changes_path
+    ) == [Evolved("apaki", "abashi", "abaʃi")]
 
     assert simple_evolver.evolve(
-        [Morpheme("apaki", Rule("era1"))], changes=modern_changes_path
+        [Component(Morpheme("apaki", Rule("era1")))], changes=modern_changes_path
     ) == [Evolved("apaki", "abagi", "abagi")]
 
     assert simple_evolver.evolve(
@@ -143,7 +143,9 @@ def test_explicit_syllables(simple_evolver: Evolver, modern_changes_path: Path) 
 
 
 def test_trace(simple_evolver: Evolver, modern_changes_path: Path) -> None:
-    assert simple_evolver.trace([Morpheme("apaki")], changes=modern_changes_path) == [
+    assert simple_evolver.trace(
+        [Component(Morpheme("apaki"))], changes=modern_changes_path
+    ) == [
         (
             Evolved("apaki", "abashi", "abaʃi"),
             [
