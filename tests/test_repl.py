@@ -91,7 +91,7 @@ def test_trace(simple_repl: ReplSession) -> None:
         """
         iki
         iki => iʃi (palatalization)
-        iʃi => ishi (Romanizer)
+        iʃi => ishi (modern)
         """
     )
 
@@ -101,7 +101,7 @@ def test_trace(simple_repl: ReplSession) -> None:
         iki => iʃi (palatalization)
         iʃiiki
         iʃiiki => iʃiigi (intervocalic-voicing)
-        iʃiigi => ishiigi (Romanizer)
+        iʃiigi => ishiigi (modern)
         """
     )
 
@@ -109,7 +109,7 @@ def test_trace(simple_repl: ReplSession) -> None:
         """
         iki
         iki => iʃi (palatalization)
-        iʃi => ishi (Romanizer)
+        iʃi => ishi (modern)
         kapa
         kapa => kaba (intervocalic-voicing)
         """

@@ -172,9 +172,26 @@ class Evolver:
                 raise LexurgyError(response.message)
 
             case LexurgyResponse():
-                moderns = [normalize("NFD", word) for word in response.words]
+                modern_name = changes.stem
 
-                if "phonetic" in response.intermediates:
+                if modern_name in response.intermediates:
+                    moderns = [
+                        normalize("NFD", word)
+                        for word in response.intermediates[modern_name]
+                    ]
+                else:
+                    moderns = [normalize("NFD", word) for word in response.words]
+
+                # todo: different way to remove syllable breaks?
+                moderns = [modern.replace(".", "") for modern in moderns]
+
+                phonetic_name = f"{modern_name}-phonetic"
+                if phonetic_name in response.intermediates:
+                    phonetics = [
+                        normalize("NFD", word)
+                        for word in response.intermediates[phonetic_name]
+                    ]
+                elif "phonetic" in response.intermediates:
                     phonetics = [
                         normalize("NFD", word)
                         for word in response.intermediates["phonetic"]

@@ -154,7 +154,7 @@ def test_trace(simple_evolver: Evolver, modern_changes_path: Path) -> None:
                     [
                         TraceLine("palatalization", "apaki", "apaki", "apaʃi"),
                         TraceLine("intervocalic-voicing", "apaki", "apaʃi", "abaʃi"),
-                        TraceLine("Romanizer", "apaki", "abaʃi", "abashi"),
+                        TraceLine("modern", "apaki", "abaʃi", "abashi"),
                     ],
                 )
             ],
@@ -181,7 +181,7 @@ def test_trace(simple_evolver: Evolver, modern_changes_path: Path) -> None:
                         TraceLine(
                             "intervocalic-voicing", "maapaʃi", "maapaʃi", "maabaʃi"
                         ),
-                        TraceLine("Romanizer", "maapaʃi", "maabaʃi", "maabashi"),
+                        TraceLine("modern", "maapaʃi", "maabaʃi", "maabashi"),
                     ],
                 ),
             ],

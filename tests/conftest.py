@@ -108,13 +108,6 @@ def base_changes() -> str:
 def romanizer_changes() -> str:
     return cleandoc(
         """
-        romanizer-phonetic:
-            unchanged
-    
-        syllables:
-            clear
-    
-        romanizer:
             [+stressed vowel] => [*stressed]
             ʃ => sh
         """
@@ -126,16 +119,21 @@ def archaic_changes() -> str:
     return cleandoc(
         """
         #include "base.lsc"
+        
+        romanizer-archaic-phonetic:
+            unchanged
+            
+        romanizer-archaic:
         #include "romanizer.lsc"
         """
     )
 
 
 @pytest.fixture
-def modern_base_changes() -> str:
+def modern_changes() -> str:
     return cleandoc(
         """
-        #include "base.lsc"
+        #include "archaic.lsc"
 
         palatalization:
             k => ʃ / _ i
@@ -151,15 +149,11 @@ def modern_base_changes() -> str:
 
         era2:
             unchanged
-        """
-    )
-
-
-@pytest.fixture
-def modern_changes() -> str:
-    return cleandoc(
-        """
-        #include "modern-base.lsc"
+        
+        romanizer-modern-phonetic:
+            unchanged
+            
+        romanizer-modern:
         #include "romanizer.lsc"
         """
     )
@@ -169,11 +163,15 @@ def modern_changes() -> str:
 def ultra_modern_changes() -> str:
     return cleandoc(
         """
-        #include "modern-base.lsc"
+        #include "modern.lsc"
         
         ultra-modern:
             [vowel] => [high]
 
+        romanizer-ultra-modern-phonetic:
+            unchanged
+            
+        romanizer-ultra-modern:
         #include "romanizer.lsc"
         """
     )
@@ -202,7 +200,10 @@ def romanizer_path(changes_path: Path, romanizer_changes: str) -> Path:
 
 @pytest.fixture
 def archaic_changes_path(
-    changes_path: Path, romanizer_path: Path, archaic_changes: str
+    changes_path: Path,
+    base_changes_path: Path,
+    romanizer_path: Path,
+    archaic_changes: str,
 ) -> Path:
     path = changes_path / "archaic.lsc"
     path.write_text(archaic_changes)
@@ -210,18 +211,9 @@ def archaic_changes_path(
 
 
 @pytest.fixture
-def modern_base_changes_path(
-    changes_path: Path, base_changes_path: Path, modern_base_changes: str
-) -> Path:
-    path = changes_path / "modern-base.lsc"
-    path.write_text(modern_base_changes)
-    return path
-
-
-@pytest.fixture
 def modern_changes_path(
     changes_path: Path,
-    modern_base_changes_path: Path,
+    archaic_changes_path: Path,
     romanizer_path: Path,
     modern_changes: str,
 ) -> Path:
@@ -233,7 +225,7 @@ def modern_changes_path(
 @pytest.fixture
 def ultra_modern_changes_path(
     changes_path: Path,
-    modern_base_changes_path: Path,
+    modern_changes_path: Path,
     romanizer_path: Path,
     ultra_modern_changes: str,
 ) -> Path:
