@@ -52,7 +52,7 @@ class Evolver:
         return LexurgyClient.for_changes(changes)
 
     def trace(
-        self, forms: Sequence[ResolvedForm], *, changes: Path = CHANGES_PATH
+        self, forms: Sequence[ResolvedForm], *, changes: Path
     ) -> list[EvolvedWithTrace]:
         self.evolve(forms, trace=True, changes=changes)
 
@@ -68,7 +68,7 @@ class Evolver:
 
         return result
 
-    def get_trace(self, query: Query, *, changes: Path = CHANGES_PATH) -> Trace:
+    def get_trace(self, query: Query, *, changes: Path) -> Trace:
         trace_cache: Mapping[Query, list[TraceLine]] = TupleMappingView(
             self.trace_cache, changes
         )
@@ -93,7 +93,7 @@ class Evolver:
         forms: Sequence[ResolvedForm],
         *,
         trace: bool = False,
-        changes: Path = CHANGES_PATH,
+        changes: Path,
     ) -> list[Evolved]:
         cache = TupleMappingView(self.query_cache, changes)
         resolved_forms = self.rearrange_forms(forms, changes)
@@ -154,7 +154,7 @@ class Evolver:
         start: str | None = None,
         end: str | None = None,
         trace: bool = False,
-        changes: Path = CHANGES_PATH,
+        changes: Path,
     ) -> tuple[list[Evolved], Mapping[str, list[TraceLine]]]:
         if not words:
             return [], {}
