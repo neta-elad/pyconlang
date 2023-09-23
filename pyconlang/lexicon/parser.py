@@ -84,7 +84,7 @@ affix_definition = (
     )
 )[lift7(AffixDefinition)]
 
-part_of_speech = (string("(") >> regex(r"[A-Za-z]+") << string(".)"))[PartOfSpeech]
+part_of_speech = (string("(") >> regex(r"[A-Za-z0-9]+") << string(".)"))[PartOfSpeech]
 
 entry = (
     string("entry") >> -token(template_name)
