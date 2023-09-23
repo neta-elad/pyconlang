@@ -169,7 +169,7 @@ class Evolver:
 
         match response:
             case LexurgyErrorResponse():
-                raise LexurgyError(response.message + ";".join(response.stack_trace))
+                raise LexurgyError(response.message)
 
             case LexurgyResponse():
                 modern_name = changes.stem
