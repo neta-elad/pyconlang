@@ -182,9 +182,6 @@ class Evolver:
                 else:
                     moderns = [normalize("NFD", word) for word in response.words]
 
-                # todo: different way to remove syllable breaks?
-                moderns = [modern.replace(".", "") for modern in moderns]
-
                 phonetic_name = f"{modern_name}-phonetic"
                 if phonetic_name in response.intermediates:
                     phonetics = [
@@ -198,6 +195,9 @@ class Evolver:
                     ]
                 else:
                     phonetics = moderns
+
+                # todo: different way to remove syllable breaks?
+                moderns = [modern.replace(".", "") for modern in moderns]
 
                 assert len(phonetics) == len(moderns)
 
