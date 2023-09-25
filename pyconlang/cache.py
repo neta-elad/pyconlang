@@ -121,6 +121,27 @@ def path_cache(*paths: AnyPath) -> Callable[[Callable[_P, _T]], PathCachedFunc[_
     return wrapper
 
 
+def path_cached_method(
+    *paths: AnyPath,
+) -> Callable[[Callable[_P, _T]], Callable[_P, _T]]:
+    def wrapper(func: Callable[_P, _T]) -> Callable[_P, _T]:
+        caches: dict[int, PathCachedFunc[_P, _T]] = {}
+
+        def wrapped(self: Any, *args: _P.args, **kwargs: _P.kwargs) -> _T:
+            if id(self) not in caches:
+
+                def wrapped_func(*inner_args: _P.args, **inner_kwargs: _P.kwargs) -> _T:
+                    return func(self, *inner_args, **inner_kwargs)
+
+                caches[id(self)] = PathCachedFunc(list(paths), wrapped_func)
+
+            return caches[id(self)](*args, **kwargs)
+
+        return cast(Callable[_P, _T], wrapped)
+
+    return wrapper
+
+
 class PathCachedProperty(Generic[_C, _T]):
     paths: list[AnyPath]
     func: Callable[[_C], _T]
