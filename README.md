@@ -224,8 +224,8 @@ will turn out as
     - [ ] Saving session
     - [x] Search for a word
     - [ ] Var in lookup `$.PL`
-  - [ ] Working with book
-    - [ ] Compile
+  - [x] Working with book
+    - [x] Compile
 - [ ] More powerful affixes:
   - [ ] Branched affixes (depending on stem phonology / config)
   - [x] Frozen affixes (i.e. affixes defined in the modern language)
@@ -261,7 +261,6 @@ will turn out as
   - [x] Batch evolve, using dependency graph?
   - [x] Better cache
   - [x] On-the-fly affixes? Syntax for compounding two words without an explicit affix
-  - [ ] ? Change the order of lexeme and template name, and make record declarations optional
   - [x] Affixes with empty stem
   - [ ] Vars/forms with rules `$.PL@proto`
 - [ ] `translator`: Automatic translation according to gloss
@@ -275,12 +274,12 @@ will turn out as
 - [ ] `book`: Generate a grammar/lexicon reference with less boilerplate
   - [x] Conlang-to-English lexicon, with entries, affixes and templates:
   - [x] Only rebuild lexicon when changed
-  - [ ] Affixes list
+  - [x] Affixes list
   - [ ] Phonology tables
   - [ ] Conjugation tables
   - [x] Inline translation
   - [x] Robust against errors
   - [x] Block translation
-  - [ ] Options for block/inline translation
-    - [ ] Show before/after
+  - [x] Options for block/inline translation
+    - [x] Show before/after
     - [x] Phonetic/modern/gloss
