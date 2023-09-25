@@ -5,31 +5,29 @@ from typing import Any, Self
 
 import toml
 
-METADATA_PATH = Path("metadata.toml")
-
-# todo: rename metadata and implement better
+CONFIG_PATH = Path("pyconlang.toml")
 
 
 @dataclass
-class Metadata:
+class Config:
     name: str = field(default="")
     author: str = field(default="")
     syllables: bool = field(default=False)
     scope: str = field(default="")
 
     @classmethod
-    def from_file(cls, path: Path = METADATA_PATH) -> Self:
+    def from_file(cls, path: Path = CONFIG_PATH) -> Self:
         return cls(**toml.loads(path.read_text()))
-
-    @classmethod
-    @cache
-    def default(cls) -> Self:
-        return cls.from_file()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
-    def save(self, path: Path = METADATA_PATH, overwrite: bool = True) -> None:
+    def save(self, path: Path = CONFIG_PATH, overwrite: bool = True) -> None:
         if path.exists() and not overwrite:
             return
         path.write_text(toml.dumps(self.to_dict()))
+
+
+@cache
+def config() -> Config:
+    return Config.from_file()

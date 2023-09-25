@@ -8,7 +8,7 @@ from . import PYCONLANG_PATH
 from .assets import LEXURGY_VERSION
 from .book import compile_book
 from .book import watch as watch_book
-from .metadata import Metadata
+from .config import Config
 from .repl import run as run_repl
 
 
@@ -65,7 +65,7 @@ def init(
         if not target.exists() or overwrite:
             shutil.copyfile(str(file), target)
 
-    Metadata(name=name, author=author).save(overwrite=overwrite)
+    Config(name=name, author=author).save(overwrite=overwrite)
 
 
 @run.command

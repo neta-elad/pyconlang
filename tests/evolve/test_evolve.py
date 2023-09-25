@@ -1,10 +1,13 @@
+from dataclasses import replace
 from pathlib import Path
 
+from pyconlang.config import config
 from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.domain import Evolved
 from pyconlang.lexurgy.domain import TraceLine
-from pyconlang.metadata import Metadata
+
+from .. import config_as
 
 
 def test_evolve_words(
@@ -128,18 +131,17 @@ def test_stress(simple_evolver: Evolver, modern_changes_path: Path) -> None:
 
 
 def test_explicit_syllables(simple_evolver: Evolver, modern_changes_path: Path) -> None:
-    Metadata.default().syllables = True
-    assert simple_evolver.evolve(
-        [
-            Compound(
-                Component(Morpheme("mˈa")),
-                Joiner.head(Rule("era2")),
-                Component(Morpheme("apˈak")),
-            )
-        ],
-        changes=modern_changes_path,
-    ) == [Evolved("mˈi.abik", "miabik", "mˈi.abik")]
-    Metadata.default().syllables = False
+    with config_as(replace(config(), syllables=True)):
+        assert simple_evolver.evolve(
+            [
+                Compound(
+                    Component(Morpheme("mˈa")),
+                    Joiner.head(Rule("era2")),
+                    Component(Morpheme("apˈak")),
+                )
+            ],
+            changes=modern_changes_path,
+        ) == [Evolved("mˈi.abik", "miabik", "mˈi.abik")]
 
 
 def test_trace(simple_evolver: Evolver, modern_changes_path: Path) -> None:

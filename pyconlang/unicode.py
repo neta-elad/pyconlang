@@ -1,6 +1,6 @@
 from wcwidth import wcswidth
 
-from .metadata import Metadata
+from .config import config
 
 PRIMARY_STRESS = "\u02c8"
 
@@ -29,7 +29,7 @@ def combine(head: str, tail: str, syllable_break: str | None = None) -> str:
 
 
 def default_syllable_break() -> str:
-    if Metadata.default().syllables:
+    if config().syllables:
         return "."
     else:
         return ""

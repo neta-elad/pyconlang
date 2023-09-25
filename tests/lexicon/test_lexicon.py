@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pyconlang.config import Config
 from pyconlang.domain import (
     Component,
     Compound,
@@ -20,7 +21,7 @@ from pyconlang.lexicon.domain import TemplateName, VarFusion
 from .. import default_compound
 
 
-def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_resolve(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(
             Fusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("DIST-PL")),))
@@ -159,7 +160,7 @@ def test_resolve(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     ) == Component(Morpheme("sama"))
 
 
-def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_resolve_fusions(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.resolve(
         Component(Fusion(Lexeme("gravel").with_scope(), (), (Scoped(Suffix("PL")),)))
     ) == Component(Morpheme("ka"))
@@ -188,7 +189,7 @@ def test_resolve_fusions(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     ) == Compound(Component(Morpheme("mo")), Joiner.tail(), Component(Morpheme("ta")))
 
 
-def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_substitute_var(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.substitute(
         VarFusion("$", (), ()), Component(Fusion(Morpheme("apak")))
     ) == Component(Morpheme("apak"))
@@ -228,7 +229,7 @@ def test_substitute_var(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_templates(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.get_vars(None) == (VarFusion("$", (), ()),)
 
     assert parsed_lexicon.get_vars(TemplateName("plural")) == (
@@ -237,13 +238,13 @@ def test_templates(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_define(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_define(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.define(Scoped(Suffix("PL"))) == "plural for inanimate"
 
     assert parsed_lexicon.define(Scoped(Lexeme("stone"))) == "(n.) stone, pebble"
 
 
-def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_form(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.form(Scoped(Suffix("PL"))) == Scoped(
         Component(DefaultFusion(Morpheme(form="iki", era=Rule(name="era1"))))
     )
@@ -259,7 +260,7 @@ def test_form(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     )
 
 
-def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_lookup(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.lookup(Suffix("PL")) == [
         (Suffix("PL"), "plural for inanimate")
     ]
@@ -324,7 +325,7 @@ def test_lookup(root_metadata: None, parsed_lexicon: Lexicon) -> None:
     ]
 
 
-def test_scopes(root_metadata: None, parsed_lexicon: Lexicon) -> None:
+def test_scopes(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.parent(Scope("modern")) == Scope()
     assert parsed_lexicon.parent(Scope("ultra-modern")) == Scope("modern")
     assert parsed_lexicon.changes_for(Scope()) == Path("changes/archaic.lsc")

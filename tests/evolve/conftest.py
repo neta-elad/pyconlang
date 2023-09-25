@@ -4,6 +4,7 @@ from typing import Generator, Protocol
 
 import pytest
 
+from pyconlang.config import Config
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.arrange import AffixArranger
 from pyconlang.evolve.batch import Batcher
@@ -64,7 +65,7 @@ def ultra_modern_evolve(
 
 
 @pytest.fixture
-def batcher(metadata: None) -> Batcher:
+def batcher(modern_config: Config) -> Batcher:
     return Batcher()
 
 

@@ -12,8 +12,8 @@ from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
 from .. import PYCONLANG_PATH
+from ..config import config
 from ..errors import pass_exception
-from ..metadata import Metadata
 from ..translate import Translator
 from .any_table_header import AnyTableHeader
 from .block import Boxed
@@ -74,12 +74,12 @@ class Compiler:
         self.converter.reset()
         content = Template(self.converter.convert(input_markdown))
 
-        metadata = Metadata.default().to_dict()
+        substitutions = config().to_dict()
 
-        metadata["content"] = content.safe_substitute(**metadata)
+        substitutions["content"] = content.safe_substitute(**substitutions)
 
         (PYCONLANG_PATH / "output.html").write_text(
-            template.safe_substitute(**metadata)
+            template.safe_substitute(**substitutions)
         )
 
 

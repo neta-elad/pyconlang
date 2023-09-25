@@ -1,6 +1,8 @@
 from contextlib import contextmanager
+from dataclasses import fields, replace
 from typing import Generator
 
+from pyconlang.config import Config, config
 from pyconlang.domain import (
     Compound,
     DefaultFusion,
@@ -10,7 +12,6 @@ from pyconlang.domain import (
     Sentence,
     Tags,
 )
-from pyconlang.metadata import Metadata
 
 
 def default_compound(
@@ -24,8 +25,13 @@ def default_sentence(tags: Tags, words: list[DefaultWord]) -> DefaultSentence:
 
 
 @contextmanager
-def metadata_as(metadata: Metadata) -> Generator[None, None, None]:
-    original = getattr(Metadata, "default")
-    setattr(Metadata, "default", lambda: metadata)
+def config_as(new_config: Config) -> Generator[None, None, None]:
+    original_config = replace(config())
+    update_config(new_config)
     yield
-    setattr(Metadata, "default", original)
+    update_config(original_config)
+
+
+def update_config(new_config: Config) -> None:
+    for field in fields(Config):
+        setattr(config(), field.name, getattr(new_config, field.name))

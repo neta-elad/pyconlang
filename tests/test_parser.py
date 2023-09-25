@@ -3,6 +3,7 @@ from typing import TypeVar
 import pytest
 from pyrsercomb import Parser, PyrsercombError
 
+from pyconlang.config import Config
 from pyconlang.domain import (
     Component,
     DefaultFusion,
@@ -212,7 +213,7 @@ def test_sentence() -> None:
     )
 
 
-def test_definables(metadata: None) -> None:
+def test_definables(modern_config: Config) -> None:
     with pytest.raises(PyrsercombError):
         parse_definables("..")
 

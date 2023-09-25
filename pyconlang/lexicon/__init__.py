@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Self
 
 from .. import CHANGES_PATH, LEXICON_PATH
+from ..config import config
 from ..domain import (
     Affix,
     Component,
@@ -28,7 +29,6 @@ from ..domain import (
     ScopedAffix,
     Suffix,
 )
-from ..metadata import Metadata
 from ..parser import continue_lines
 from .domain import (
     AffixDefinition,
@@ -366,7 +366,7 @@ class Lexicon:
     def define(self, record: Definable, scope: Scope = Scope()) -> str:
         actual_scope = record.scope or scope
         scope_description = ""
-        if actual_scope.name != Metadata.default().scope:
+        if actual_scope.name != config().scope:
             scope_description = f" [{actual_scope.name or '<ROOT>'}]"
         return f"{self.describe(record.scoped, actual_scope)}{scope_description}"
 

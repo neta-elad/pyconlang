@@ -6,7 +6,7 @@ import pytest
 from prompt_toolkit.input import PipeInput
 from pytest import CaptureFixture
 
-from pyconlang.metadata import Metadata
+from pyconlang.config import config
 from pyconlang.repl import Mode, ReplSession, create_session
 from pyconlang.repl import run as run_repl
 
@@ -21,15 +21,14 @@ def simple_repl(simple_pyconlang: Path) -> Generator[ReplSession, None, None]:
 def repl_with_archaic_default(
     simple_pyconlang: Path,
 ) -> Generator[ReplSession, None, None]:
-    metadata = Metadata.default()
-    metadata.scope = "archaic"
-    metadata.save()
+    config().scope = "archaic"
+    config().save()
 
     with create_session() as session:
         yield session
 
-    metadata.scope = "modern"
-    metadata.save()
+    config().scope = "modern"
+    config().save()
 
 
 def test_basic(simple_repl: ReplSession) -> None:

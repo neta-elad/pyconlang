@@ -6,8 +6,8 @@ from enum import Enum, auto
 from functools import cached_property
 from typing import Generic, Self, TypeVar
 
+from .config import config
 from .errors import DoubleTagDefinition
-from .metadata import Metadata
 from .unicode import combine
 
 
@@ -25,7 +25,7 @@ class Scope:
 
     @classmethod
     def default(cls) -> Self:
-        return cls(Metadata.default().scope)
+        return cls(config().scope)
 
     def __str__(self) -> str:
         return f"%{self.name}"

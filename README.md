@@ -227,7 +227,7 @@ will turn out as
   - [ ] Working with book
     - [ ] Compile
 - [ ] More powerful affixes:
-  - [ ] Branched affixes (depending on stem phonology / metadata)
+  - [ ] Branched affixes (depending on stem phonology / config)
   - [x] Frozen affixes (i.e. affixes defined in the modern language)
   - [ ] Affixes with sound changes (e.g. voice initial consonant)
   - [x] Standalone affixes

@@ -11,9 +11,9 @@ from prompt_toolkit.input import PipeInput, create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
 from pyconlang.cli import init
-from pyconlang.metadata import Metadata
+from pyconlang.config import Config, config
 
-from . import metadata_as
+from . import config_as
 
 
 @pytest.fixture
@@ -252,31 +252,31 @@ def simple_pyconlang(
     modern_changes_path: Path,
     ultra_modern_changes_path: Path,
     simple_lexicon: Path,
-    metadata: None,
+    modern_config: Config,
 ) -> Path:
     return tmp_pyconlang
 
 
 @pytest.fixture
-def default_metadata() -> Metadata:
-    return Metadata(name="TestLang", author="Mr. Tester")
+def default_config(tmp_pyconlang: Path) -> Config:
+    return config()
 
 
 @pytest.fixture
-def metadata(
-    default_metadata: Metadata,
+def modern_config(
+    default_config: Config,
 ) -> Generator[None, None, None]:
-    """Set up global Metadata.default() with scope = modern"""
-    with metadata_as(replace(default_metadata, scope="modern")):
+    """Set up global config() with scope = modern"""
+    with config_as(replace(default_config, scope="modern")):
         yield
 
 
 @pytest.fixture
-def root_metadata(
-    default_metadata: Metadata,
+def root_config(
+    default_config: Config,
 ) -> Generator[None, None, None]:
-    """Set up global Metadata.default() with scope = <root>"""
-    with metadata_as(replace(default_metadata, scope="")):
+    """Set up global config() with scope = <root>"""
+    with config_as(replace(default_config, scope="")):
         yield
 
 

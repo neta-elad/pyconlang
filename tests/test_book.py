@@ -195,7 +195,7 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
     assert '<td><abbr title="(n.) gravel [ultra-modern]">gravel</abbr></td>' in html
 
 
-def test_metadata(simple_pyconlang: Path) -> None:
+def test_config(simple_pyconlang: Path) -> None:
     write(
         simple_pyconlang / "grammar.md",
         """
