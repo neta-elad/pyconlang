@@ -4,7 +4,7 @@ from markdown import Markdown
 from markdown.preprocessors import Preprocessor
 
 from ... import CHANGES_GLOB, CHANGES_PATH, LEXICON_GLOB, LEXICON_PATH
-from ...cache import path_cached_property
+from ...cache import path_cached_method
 from ...domain import Scope
 from ...lexicon.domain import AffixDefinition, Entry, VarFusion
 from ...parser import scope as scope_parser
@@ -67,7 +67,6 @@ class ConlangDictionary(Preprocessor):
         super().__init__(md)
 
         self.translator = translator
-        self.cache = self.build_cache()
         self.pattern = re.compile(r"^!dictionary:(?P<scope>%[A-Za-z0-9-]*|%%)$")
 
     def run(self, lines: list[str]) -> list[str]:
@@ -77,28 +76,23 @@ class ConlangDictionary(Preprocessor):
                 raw_scope = match.group("scope")
                 parsed_scope = scope_parser.parse_or_raise(raw_scope)
                 new_lines.append("!group")
-                new_lines.extend(self.dictionary[parsed_scope or Scope.default()])
+                new_lines.extend(self.show_scope(parsed_scope or Scope.default()))
                 new_lines.append("!group")
             else:
                 new_lines.append(line)
 
         return new_lines
 
-    @path_cached_property(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
-    def dictionary(self) -> dict[Scope, list[str]]:
-        return self.build_cache()
-
-    def build_cache(self) -> dict[Scope, list[str]]:
-        return {
-            scope.scope: list(
-                map(
-                    self.show_entry,
-                    self.translator.lexicon.entries_by_scope[scope.scope],
-                )
+    @path_cached_method(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
+    def show_scope(self, scope: Scope) -> list[str]:
+        return list(
+            map(
+                self.show_entry,
+                self.translator.lexicon.entries_by_scope[scope],
             )
-            for scope in self.translator.lexicon.scopes
-        }
+        )
 
+    @path_cached_method(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
     def show_entry(self, entry: Entry) -> str:
         scope = entry.tags.scope
         form = str(entry.lexeme)
@@ -131,7 +125,6 @@ class ConlangAffixes(Preprocessor):
         super().__init__(md)
 
         self.translator = translator
-        self.cache = self.build_cache()
         self.pattern = re.compile(r"^!affixes:(?P<scope>%[A-Za-z0-9-]*|%%)$")
 
     def run(self, lines: list[str]) -> list[str]:
@@ -140,29 +133,20 @@ class ConlangAffixes(Preprocessor):
             if (match := re.match(self.pattern, line.strip())) is not None:
                 raw_scope = match.group("scope")
                 parsed_scope = scope_parser.parse_or_raise(raw_scope)
-                new_lines.extend(self.affixes[parsed_scope or Scope.default()])
+                new_lines.extend(self.show_scope(parsed_scope or Scope.default()))
             else:
                 new_lines.append(line)
 
         return new_lines
 
-    @path_cached_property(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
-    def affixes(self) -> dict[Scope, list[str]]:
-        return self.build_cache()
-
-    def build_cache(self) -> dict[Scope, list[str]]:
-        return {
-            scope.scope: self.build_scope(scope.scope)
-            for scope in self.translator.lexicon.scopes
-        }
-
-    def build_scope(self, scope: Scope) -> list[str]:
+    @path_cached_method(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
+    def show_scope(self, scope: Scope) -> list[str]:
         if scope not in self.translator.lexicon.affixes_by_scope:
             return []
 
         return ["|Affix|Description|Sources|", "|-|-|-|"] + list(
             map(
-                show_affix,
+                self.show_affix,
                 sorted(
                     self.translator.lexicon.affixes_by_scope[scope],
                     key=lambda affix: affix.description,
@@ -170,10 +154,10 @@ class ConlangAffixes(Preprocessor):
             )
         )
 
+    @path_cached_method(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
+    def show_affix(self, affix: AffixDefinition) -> str:
+        form = str(affix.to_scoped_lexeme_fusion())
+        combined = affix.affix.combine("-", f"ph[{form}]", "")
+        sources = ", ".join(map(lambda source: f"pr[{source}]", affix.sources))
 
-def show_affix(affix: AffixDefinition) -> str:
-    form = str(affix.to_scoped_lexeme_fusion())
-    combined = affix.affix.combine("-", f"ph[{form}]", "")
-    sources = ", ".join(map(lambda source: f"pr[{source}]", affix.sources))
-
-    return f"|{combined}|{affix.description}|{sources}|"
+        return f"|{combined}|{affix.description}|{sources}|"
