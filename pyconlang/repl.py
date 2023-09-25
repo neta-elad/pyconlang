@@ -135,9 +135,6 @@ class ReplSession:
             }
         )
 
-    def on_key_press(self, event: KeyPressEvent) -> None:
-        self.debug = str(event)
-
     @cached_property
     def session_bindings(self) -> KeyBindings:
         bindings = KeyBindings()
@@ -183,7 +180,7 @@ class ReplSession:
     def rprompt(self) -> HTML:
         mode_str = "/".join(
             [
-                f"<b>{mode.name[0]}{mode.name[1:].lower()}</b>"
+                f"<b>{mode.name.capitalize()}</b>"
                 if mode is self.mode
                 else mode.name[0]
                 for mode in Mode
