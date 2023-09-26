@@ -10,6 +10,7 @@ from prompt_toolkit.application import create_app_session
 from prompt_toolkit.input import PipeInput, create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
+from pyconlang import LEXICON_PATH, SRC_PATH
 from pyconlang.cli import init
 from pyconlang.config import Config, config, config_as, file_config
 
@@ -34,9 +35,9 @@ def tmp_pyconlang(tmpdir: Path) -> Generator[Path, None, None]:
 def sample_lexicon() -> str:
     return cleandoc(
         """
-        scope % : % 'changes/archaic.lsc'
-        scope %modern : % 'changes/modern.lsc'
-        scope %ultra-modern : %modern 'changes/ultra-modern.lsc'
+        scope % : % 'src/archaic.lsc'
+        scope %modern : % 'src/modern.lsc'
+        scope %ultra-modern : %modern 'src/ultra-modern.lsc'
         
         template &plural $ $.PL # this is a template
         
@@ -178,8 +179,8 @@ def ultra_modern_changes() -> str:
 
 @pytest.fixture
 def changes_path(tmp_pyconlang: Path) -> Path:
-    path = tmp_pyconlang / "changes"
-    path.mkdir()
+    path = tmp_pyconlang / SRC_PATH
+    path.mkdir(parents=True, exist_ok=True)
     return path
 
 
@@ -238,7 +239,7 @@ def simple_lexicon(
     tmp_pyconlang: Path,
     sample_lexicon: str,
 ) -> Path:
-    lexicon_path = tmp_pyconlang / "lexicon.pycl"
+    lexicon_path = tmp_pyconlang / LEXICON_PATH
     lexicon_path.write_text(sample_lexicon)
 
     return lexicon_path

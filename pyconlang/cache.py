@@ -37,7 +37,9 @@ AnyPath = Path | Glob | str
 def resolve_any_path(path: AnyPath) -> Iterable[Path]:
     match path:
         case Path():
-            return (path,)
+            if path.exists():
+                return (path,)
+            return tuple()
         case str():
             return Path().glob(path)
         case _:
@@ -68,9 +70,7 @@ class PathCachedFunc(Generic[_P, _T]):
     func: Callable[_P, _T]
     st_mtimes: dict[Path, float] | None = field(default=None)
     checksums: dict[Path, bytes] | None = field(default=None)
-    value: dict[int, _T] = field(
-        default_factory=dict
-    )  # | type[_NotFound] = field(default=_NotFound)
+    value: dict[int, _T] = field(default_factory=dict)
     lock: RLock = field(default_factory=RLock, init=False)
 
     def all_paths(self) -> list[Path]:

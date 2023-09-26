@@ -24,8 +24,8 @@ You can ~delete~ and +insert+ stuff.
 
 !skip and you can comment out lines
 
-@{description.md}@
-@{grammar.md}@
-@{lexicon.md}@
+@{book/description.md}@
+@{book/grammar.md}@
+@{book/lexicon.md}@
 
 

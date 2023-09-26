@@ -1,7 +1,9 @@
+import shutil
 import sys
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
+from functools import cache, cached_property
 from pathlib import Path
 from string import Template
 from threading import Thread
@@ -11,8 +13,9 @@ from markdown import Markdown
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
-from .. import PYCONLANG_PATH
-from ..config import config
+from .. import PYCONLANG_PATH, SRC_GLOB, SRC_PATH
+from ..cache import resolve_any_path
+from ..config import config, config_scope_as
 from ..errors import pass_exception
 from ..translate import Translator
 from .any_table_header import AnyTableHeader
@@ -23,9 +26,11 @@ from .skipline import SkipLine
 from .span_table import SpanTable
 from .unicode import UnicodeEscape
 
+LAYOUT_PATH = SRC_PATH / "layout.html"
+OUT_PATH = PYCONLANG_PATH / "out"
+
 
 class Compiler:
-    converter: Markdown
     conlang: Conlang
 
     @classmethod
@@ -36,7 +41,10 @@ class Compiler:
 
     def __init__(self, translator: Translator) -> None:
         self.conlang = Conlang(translator)
-        self.converter = Markdown(
+
+    @cache
+    def converter_for(self, path: Path) -> Markdown:
+        return Markdown(
             extensions=[
                 "extra",
                 "smarty",
@@ -60,6 +68,7 @@ class Compiler:
             ],
             extension_configs={
                 "mdx_include": {
+                    "base_path": str(path.parent),
                     "syntax_left": r"@\{",
                     "syntax_right": r"\}@",
                     "content_cache_clean_local": True,
@@ -68,19 +77,43 @@ class Compiler:
             },
         )
 
-    def compile(self) -> None:
-        template = Template(Path("template.html").read_text())
-        input_markdown = Path("book.md").read_text()
-        self.converter.reset()
-        content = Template(self.converter.convert(input_markdown))
+    @cached_property
+    def template(self) -> Template:
+        return Template(LAYOUT_PATH.read_text())
 
-        substitutions = config().to_dict()
+    def compile(self) -> None:
+        if OUT_PATH.exists():
+            shutil.rmtree(OUT_PATH)
+        for file in resolve_any_path(SRC_GLOB):
+            self.compile_file(file)
+
+    def compile_file(self, file: Path) -> None:
+        assert file.suffixes == [".out", ".md"]
+        assert file.is_relative_to(SRC_PATH)
+
+        relative = file.relative_to(SRC_PATH)
+
+        stem = file.stem[:-4]
+
+        scope = config().scope
+        if stem.startswith("%"):
+            stem = scope = stem[1:]
+
+        if stem == relative.parent.stem:
+            relative = relative.parent
+
+        target = OUT_PATH / relative.with_name(f"{stem}.html")
+
+        self.converter_for(file).reset()
+
+        with config_scope_as(scope):
+            content = Template(self.converter_for(file).convert(file.read_text()))
+            substitutions = config().to_dict()
 
         substitutions["content"] = content.safe_substitute(**substitutions)
 
-        (PYCONLANG_PATH / "output.html").write_text(
-            template.safe_substitute(**substitutions)
-        )
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(self.template.safe_substitute(**substitutions))
 
 
 class Handler(PatternMatchingEventHandler):
@@ -93,7 +126,7 @@ class Handler(PatternMatchingEventHandler):
     last_error: Exception | None
 
     def __init__(self, compiler: Compiler, silent: bool = False):
-        super().__init__(["*.md", "*.lsc", "template.html", "*.pycl"])
+        super().__init__(["*.md", "*.lsc", "layout.html", "*.pycl"])
         self.compiler = compiler
         self.silent = silent
         self.last_run = 0.0
@@ -144,7 +177,7 @@ def watch() -> None:
     with Compiler.new() as compiler:
         handler = Handler(compiler)
         observer = Observer()
-        observer.schedule(handler, ".", recursive=True)
+        observer.schedule(handler, str(SRC_PATH), recursive=True)
         observer.start()
         try:
             while True:

@@ -331,10 +331,10 @@ def test_lookup(root_config: Config, parsed_lexicon: Lexicon) -> None:
 def test_scopes(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.parent(Scope("modern")) == Scope()
     assert parsed_lexicon.parent(Scope("ultra-modern")) == Scope("modern")
-    assert parsed_lexicon.changes_for(Scope()) == Path("changes/archaic.lsc")
-    assert parsed_lexicon.changes_for(Scope("modern")) == Path("changes/modern.lsc")
+    assert parsed_lexicon.changes_for(Scope()) == Path("src/archaic.lsc")
+    assert parsed_lexicon.changes_for(Scope("modern")) == Path("src/modern.lsc")
     assert parsed_lexicon.changes_for(Scope("ultra-modern")) == Path(
-        "changes/ultra-modern.lsc"
+        "src/ultra-modern.lsc"
     )
 
 

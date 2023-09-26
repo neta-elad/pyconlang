@@ -51,7 +51,7 @@ class Lexicon:
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> Self:
-        return cls.from_iterable(cls.resolve_path(path, path.parent))
+        return cls.from_iterable(cls.resolve_path(path, Path()))
 
     @classmethod
     def from_string(cls, string: str, parent: Path = Path()) -> Self:

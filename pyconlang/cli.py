@@ -1,5 +1,6 @@
 import shutil
 from importlib.resources import files
+from importlib.resources.abc import Traversable
 from pathlib import Path
 
 import click
@@ -56,16 +57,23 @@ def init(
     if lexurgy_only:
         return
 
-    for file in files("pyconlang.assets.template").iterdir():
-        target = directory / file.name
+    copy_recursive(directory / "src", overwrite, files("pyconlang.assets.template"))
+
+    Config(name=name, author=author).save(overwrite=overwrite)
+
+
+def copy_recursive(parent: Path, overwrite: bool, traversable: Traversable) -> None:
+    for file in traversable.iterdir():
+        target = parent / file.name
+        if file.is_dir():
+            copy_recursive(target, overwrite, file)
 
         if not file.is_file():
             continue
 
         if not target.exists() or overwrite:
+            target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(str(file), target)
-
-    Config(name=name, author=author).save(overwrite=overwrite)
 
 
 @run.command

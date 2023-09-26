@@ -4,13 +4,12 @@ from pathlib import Path
 import pytest
 from pyrsercomb import PyrsercombError
 
-from pyconlang import PYCONLANG_PATH
-from pyconlang.book import compile_book
+from pyconlang.book import OUT_PATH, compile_book
 
 
 def test_table(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
         |c1,1-2|<|c1,3|c1,4|
         |-------|-|----|-----|
@@ -33,7 +32,7 @@ def test_table(simple_pyconlang: Path) -> None:
 
 def test_container(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "grammar.md",
+        simple_pyconlang / "src/grammar.md",
         """
     
         &{test span1}{: .inline }
@@ -62,7 +61,7 @@ def test_container(simple_pyconlang: Path) -> None:
 
 def test_raw_macros(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
           
           r(<stone>) r(*kika) 
@@ -94,7 +93,7 @@ def test_raw_macros(simple_pyconlang: Path) -> None:
 
 def test_advanced_macros(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
 
           r[<stone>] r[*kika] 
@@ -139,7 +138,7 @@ def test_advanced_macros(simple_pyconlang: Path) -> None:
 
 def test_before_after(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
           >r[<stone>]
           >ph[*kika]
@@ -163,7 +162,7 @@ def test_before_after(simple_pyconlang: Path) -> None:
 
 def test_gloss_table(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "grammar.md",
+        simple_pyconlang / "src/grammar.md",
         """
           
           g[<stone>.PL <gravel>.PL]
@@ -197,7 +196,7 @@ def test_gloss_table(simple_pyconlang: Path) -> None:
 
 def test_config(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "grammar.md",
+        simple_pyconlang / "src/grammar.md",
         """
           this $name is written by ${author}!
           """,
@@ -210,7 +209,7 @@ def test_config(simple_pyconlang: Path) -> None:
 
 def test_grouping(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "grammar.md",
+        simple_pyconlang / "src/grammar.md",
         cleandoc(
             """
           
@@ -282,7 +281,7 @@ def test_affixes(simple_pyconlang: Path) -> None:
 
 def test_unicode_escape(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
           
           \\u0041\\u0043\\u0045
@@ -300,7 +299,7 @@ def test_unicode_escape(simple_pyconlang: Path) -> None:
 
 def test_skip(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
         ! this line appears
         !! this one doesn't
@@ -317,7 +316,7 @@ def test_skip(simple_pyconlang: Path) -> None:
 
 def test_errors(simple_pyconlang: Path) -> None:
     write(
-        simple_pyconlang / "book.md",
+        simple_pyconlang / "src/index.out.md",
         """
         r[<book]
         """,
@@ -327,7 +326,7 @@ def test_errors(simple_pyconlang: Path) -> None:
         read()
 
     write(
-        simple_pyconlang / "lexicon.pycl",
+        simple_pyconlang / "src/lexicon.pycl",
         """
         bla
         """,
@@ -344,4 +343,4 @@ def write(path: Path, text: str) -> None:
 def read() -> str:
     compile_book()
 
-    return (PYCONLANG_PATH / "output.html").read_text()
+    return (OUT_PATH / "index.html").read_text()
