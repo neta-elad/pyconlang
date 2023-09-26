@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from pyconlang.config import Config
+import pytest
+
+from pyconlang.config import Config, config_as
 from pyconlang.domain import (
     Component,
     Compound,
@@ -17,6 +19,7 @@ from pyconlang.domain import (
 )
 from pyconlang.lexicon import Lexicon
 from pyconlang.lexicon.domain import TemplateName, VarFusion
+from pyconlang.lexicon.errors import MissingLexeme
 
 from .. import default_compound
 
@@ -333,3 +336,52 @@ def test_scopes(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.changes_for(Scope("ultra-modern")) == Path(
         "changes/ultra-modern.lsc"
     )
+
+
+def test_default_scope(
+    root_config: Config, modern_config: Config, sample_lexicon: str
+) -> None:
+    root_scope = Scope(root_config.scope)
+    modern_scope = Scope(modern_config.scope)
+    with config_as(root_config):
+        parsed_lexicon = Lexicon.from_string(sample_lexicon)
+        assert (
+            parsed_lexicon.get_entry(Lexeme("pile"), root_scope).tags.scope
+            == root_scope
+        )
+        assert (
+            parsed_lexicon.get_entry(Lexeme("pile"), modern_scope).tags.scope
+            == root_scope
+        )
+
+    with config_as(modern_config):
+        parsed_lexicon = Lexicon.from_string(sample_lexicon)
+        assert (
+            parsed_lexicon.get_entry(Lexeme("pile"), modern_scope).tags.scope
+            == modern_scope
+        )
+        with pytest.raises(MissingLexeme):
+            parsed_lexicon.get_entry(Lexeme("pile"), root_scope)
+
+
+def test_scope_from_filename(
+    root_config: Config, modern_config: Config, sample_lexicon: str, tmpdir: Path
+) -> None:
+    root_scope = Scope(root_config.scope)
+    modern_scope = Scope(modern_config.scope)
+    root_file = tmpdir / f"{root_scope}"
+    modern_file = tmpdir / f"{modern_scope}"
+    root_file.write_text(sample_lexicon)
+    modern_file.write_text(sample_lexicon)
+
+    root_lexicon = Lexicon.from_path(root_file)
+    assert root_lexicon.get_entry(Lexeme("pile"), root_scope).tags.scope == root_scope
+    assert root_lexicon.get_entry(Lexeme("pile"), modern_scope).tags.scope == root_scope
+
+    modern_lexicon = Lexicon.from_path(modern_file)
+    assert (
+        modern_lexicon.get_entry(Lexeme("pile"), modern_scope).tags.scope
+        == modern_scope
+    )
+    with pytest.raises(MissingLexeme):
+        modern_lexicon.get_entry(Lexeme("pile"), root_scope)

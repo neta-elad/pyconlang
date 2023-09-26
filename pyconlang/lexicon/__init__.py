@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Self
 
 from .. import CHANGES_PATH, LEXICON_PATH
-from ..config import config
+from ..config import config, config_scope_as
 from ..domain import (
     Affix,
     Component,
@@ -51,7 +51,7 @@ class Lexicon:
 
     @classmethod
     def from_path(cls, path: Path = LEXICON_PATH) -> Self:
-        return cls.from_string(path.read_text(), path.parent)
+        return cls.from_iterable(cls.resolve_path(path, path.parent))
 
     @classmethod
     def from_string(cls, string: str, parent: Path = Path()) -> Self:
@@ -90,14 +90,26 @@ class Lexicon:
     ) -> Iterable[Entry | AffixDefinition | Template | ScopeDefinition]:
         match line:
             case Path():
-                path = cls.resolve_if_relative(line, parent)
-                return cls.resolve_paths(
-                    parse_lexicon(continue_lines(path.read_text().splitlines())),
-                    path.parent,
-                )
+                return cls.resolve_path(line, parent)
 
             case _:
                 return [line]
+
+    @classmethod
+    def resolve_path(
+        cls, path: Path, parent: Path
+    ) -> Iterable[Entry | AffixDefinition | Template | ScopeDefinition]:
+        path = cls.resolve_if_relative(path, parent)
+        file_scope = config().scope
+        if path.stem.startswith("%"):
+            file_scope = path.stem[1:]
+        with config_scope_as(file_scope):
+            return list(
+                cls.resolve_paths(
+                    parse_lexicon(continue_lines(path.read_text().splitlines())),
+                    path.parent,
+                )
+            )
 
     @classmethod
     def from_iterable(

@@ -56,7 +56,7 @@ def test_entry_parts() -> None:
 def test_entry() -> None:
     assert parse(entry, "entry <strong> *kipu@era1 (adj.) strong, stable") == Entry(
         None,
-        Tags(),
+        Tags.default(),
         Fusion(Lexeme("strong")),
         Scoped(Component(Fusion(Morpheme("kipu", Rule("era1"))))),
         PartOfSpeech("adj"),
@@ -67,7 +67,7 @@ def test_entry() -> None:
         entry, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Tags(),
+        Tags.default(),
         Fusion(Lexeme("strong")),
         Scoped(
             Component(
@@ -82,7 +82,7 @@ def test_entry() -> None:
         entry, "entry &plural <strong> <heavy>.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Tags(),
+        Tags.default(),
         Fusion(Lexeme("strong")),
         Scoped(
             Component(Fusion(Lexeme("heavy").with_scope(), (), (Scoped(Suffix("PL")),)))
@@ -123,7 +123,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         stressed=True,
-        tags=Tags(),
+        tags=Tags.default(),
         affix=Suffix("PL"),
         era=Rule("era"),
         form=Scoped(Component(Fusion(Morpheme("proto")))),
@@ -135,7 +135,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix .PL *proto@era plural for inanimate"
     ) == AffixDefinition(
         stressed=False,
-        tags=Tags(),
+        tags=Tags.default(),
         affix=Suffix("PL"),
         form=Scoped(Component(Fusion(Morpheme("proto", Rule("era"))))),
         description="plural for inanimate",
@@ -158,7 +158,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix COL. <big>.PL collective form"
     ) == AffixDefinition(
         stressed=False,
-        tags=Tags(),
+        tags=Tags.default(),
         affix=Prefix("COL"),
         era=None,
         form=Scoped(
@@ -172,7 +172,7 @@ def test_affix_definition() -> None:
         affix_definition, "affix COL. { <big> !+ <pile>.PL } collective form"
     ) == AffixDefinition(
         stressed=False,
-        tags=Tags(),
+        tags=Tags.default(),
         affix=Prefix("COL"),
         era=None,
         form=Scoped(
@@ -218,14 +218,14 @@ def test_lexicon_line() -> None:
     )
 
     assert parse(lexicon_line, "template &name $") == Template(
-        TemplateName("name"), Tags(), (VarFusion("$"),)
+        TemplateName("name"), Tags.default(), (VarFusion("$"),)
     )
 
     assert parse(
         lexicon_line, "affix ! .PL @era *proto (<big> <pile>) plural for inanimate"
     ) == AffixDefinition(
         stressed=True,
-        tags=Tags(),
+        tags=Tags.default(),
         affix=Suffix("PL"),
         era=Rule("era"),
         form=Scoped(Component(Fusion(Morpheme("proto")))),
@@ -237,7 +237,7 @@ def test_lexicon_line() -> None:
         lexicon_line, "entry &plural <strong> *kipu@era1.PL (adj.) strong, stable"
     ) == Entry(
         TemplateName("plural"),
-        Tags(),
+        Tags.default(),
         Fusion(Lexeme("strong")),
         Scoped(
             Component(
@@ -272,7 +272,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.entries == {
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("strong")),
             Scoped(Component(Fusion(Morpheme("kipu", Rule("era1"))))),
             PartOfSpeech("adj"),
@@ -280,7 +280,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("big")),
             Scoped(Component(Fusion(Morpheme("iki")))),
             PartOfSpeech("adj"),
@@ -312,7 +312,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("gravel")),
             Scoped(
                 Component(
@@ -338,7 +338,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("pile")),
             Scoped(Component(Fusion(Morpheme("ma")))),
             PartOfSpeech("n"),
@@ -346,7 +346,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("gravel"), (), (Suffix("PL"),)),
             Scoped(Component(Fusion(Morpheme("ka")))),
             PartOfSpeech("n"),
@@ -367,7 +367,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         Entry(
             None,
-            Tags(),
+            Tags.default(),
             Fusion(Lexeme("eat"), ((Prefix("1SG")),), ()),
             Scoped(Component(Fusion(Morpheme("ta")))),
             PartOfSpeech("v"),
@@ -405,7 +405,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
-            tags=Tags(),
+            tags=Tags.default(),
             affix=Suffix("LARGE"),
             era=None,
             form=VarFusion(
@@ -438,7 +438,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
         ),
         AffixDefinition(
             stressed=False,
-            tags=Tags(),
+            tags=Tags.default(),
             affix=Suffix("DIST-PL"),
             era=None,
             form=None,
@@ -464,7 +464,7 @@ def test_lexicon(parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.templates == {
         Template(
             TemplateName("plural"),
-            Tags(),
+            Tags.default(),
             (VarFusion("$", (), ()), VarFusion("$", (), (Scoped(Suffix("PL")),))),
         )
     }
@@ -527,7 +527,7 @@ def test_include_mechanism(
 
 def test_template() -> None:
     assert parse(template, "template &name $") == Template(
-        TemplateName("name"), Tags(), (VarFusion("$"),)
+        TemplateName("name"), Tags.default(), (VarFusion("$"),)
     )
     assert parse(template, "template &name { foo bar:baz } %modern $") == Template(
         TemplateName("name"),

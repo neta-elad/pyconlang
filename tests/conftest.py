@@ -11,13 +11,11 @@ from prompt_toolkit.input import PipeInput, create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
 from pyconlang.cli import init
-from pyconlang.config import Config, config
-
-from . import config_as
+from pyconlang.config import Config, config, config_as, file_config
 
 
 @pytest.fixture
-def tmpdir() -> Generator[Path, None, None]:
+def tmpdir() -> Generator[Path, None, None]:  # todo: use tmp_path?
     with tempfile.TemporaryDirectory() as tmpdir:
         os.chdir(tmpdir)
         yield Path(tmpdir)
@@ -28,7 +26,8 @@ def tmp_pyconlang(tmpdir: Path) -> Generator[Path, None, None]:
     assert init.callback is not None
     init.callback(tmpdir, "TestLang", "Mr. Tester", False, False)
 
-    yield tmpdir
+    with file_config():
+        yield tmpdir
 
 
 @pytest.fixture
@@ -265,19 +264,21 @@ def default_config(tmp_pyconlang: Path) -> Config:
 @pytest.fixture
 def modern_config(
     default_config: Config,
-) -> Generator[None, None, None]:
+) -> Generator[Config, None, None]:
     """Set up global config() with scope = modern"""
-    with config_as(replace(default_config, scope="modern")):
-        yield
+    modern_config = replace(default_config, scope="modern")
+    with config_as(modern_config):
+        yield modern_config
 
 
 @pytest.fixture
 def root_config(
     default_config: Config,
-) -> Generator[None, None, None]:
+) -> Generator[Config, None, None]:
     """Set up global config() with scope = <root>"""
-    with config_as(replace(default_config, scope="")):
-        yield
+    root_config = replace(default_config, scope="")
+    with config_as(root_config):
+        yield root_config
 
 
 @pytest.fixture(autouse=True, scope="function")

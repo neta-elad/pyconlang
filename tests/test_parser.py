@@ -167,7 +167,7 @@ def test_sentence() -> None:
     assert parse_sentence(
         "*aka <strong> COL.<with space> *taka@start.PL"
     ) == default_sentence(
-        Tags(),
+        Tags.from_set_and_scope(set()),
         [
             Component(Fusion(Morpheme("aka"))),
             Component(Fusion(Lexeme("strong").with_scope(), ())),
@@ -227,7 +227,7 @@ def test_definables(modern_config: Config) -> None:
 
 
 def test_tags() -> None:
-    assert parse(opt_tags, "") == Tags()
+    assert parse(opt_tags, "") == Tags.from_set_and_scope(set())
 
     assert parse(opt_tags, "{foo}") == Tags.from_set_and_scope({Tag("foo")})
     assert parse(opt_tags, "{foo} %%") == Tags.from_set_and_scope({Tag("foo")})

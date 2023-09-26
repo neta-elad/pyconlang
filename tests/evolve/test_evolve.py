@@ -1,13 +1,11 @@
 from dataclasses import replace
 from pathlib import Path
 
-from pyconlang.config import config
+from pyconlang.config import config, config_as
 from pyconlang.domain import Component, Compound, Joiner, Morpheme, Rule
 from pyconlang.evolve import Evolver
 from pyconlang.evolve.domain import Evolved
 from pyconlang.lexurgy.domain import TraceLine
-
-from .. import config_as
 
 
 def test_evolve_words(

@@ -253,11 +253,16 @@ class Tags:
     tags: frozenset[Tag] = field(default_factory=frozenset)
 
     @classmethod
+    def default(cls) -> Self:
+        return cls.from_set_and_scope(set())
+
+    @classmethod
     def from_set_and_scope(cls, tags: set[Tag], scope: Scope | None = None) -> Self:
         tags = set(tags)
+        if scope is None and all(tag.key != "scope" for tag in tags):
+            tags.add(Tag("scope", config().scope))
         if scope is not None:
-            scope_tag = Tag("scope", scope.name)
-            tags.add(scope_tag)
+            tags.add(Tag("scope", scope.name))
         return cls(frozenset(tags))
 
     def __post_init__(self) -> None:

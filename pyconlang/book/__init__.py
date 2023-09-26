@@ -158,7 +158,7 @@ def watch() -> None:
 
 
 def compile_book() -> None:
-    from ..errors import pass_exception
+    from ..errors import pass_exception  # todo: move import outside?
 
     with pass_exception(Compiler.new()) as compiler:
         compiler.compile()

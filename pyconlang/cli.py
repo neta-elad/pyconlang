@@ -8,7 +8,7 @@ from . import PYCONLANG_PATH
 from .assets import LEXURGY_VERSION
 from .book import compile_book
 from .book import watch as watch_book
-from .config import Config
+from .config import Config, with_file_config
 from .repl import run as run_repl
 
 
@@ -70,6 +70,7 @@ def init(
 
 @run.command
 @click.argument("command", nargs=-1)
+@with_file_config
 def repl(command: list[str]) -> None:
     run_repl(" ".join(command))
 
@@ -79,5 +80,5 @@ def book() -> None:
     pass
 
 
-book.command(name="watch")(watch_book)
-book.command(name="compile")(compile_book)
+book.command(name="watch")(with_file_config(watch_book))
+book.command(name="compile")(with_file_config(compile_book))
