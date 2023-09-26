@@ -1,21 +1,23 @@
 import contextlib
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, auto
 from functools import cached_property
 
 from prompt_toolkit import PromptSession
-from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.filters import Condition
+from prompt_toolkit.formatted_text import HTML, AnyFormattedText
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 from prompt_toolkit.styles import Style
 from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 
+from .config import config
 from . import PYCONLANG_PATH
 from .book import Compiler
 from .book import Handler as BookHandler
-from .domain import Describable
+from .domain import Describable, Scope
 from .translate import Translator
 from .unicode import center, length
 
@@ -118,6 +120,12 @@ class Mode(TranslatorAction, Enum):
     LOOKUP = (lookup,)
 
 
+class State(Enum):
+    INPUT = auto()
+    MODE_CHANGING = auto()
+    SCOPE_CHANGING = auto()
+
+
 @dataclass
 class ReplSession:
     translator: Translator
@@ -125,6 +133,7 @@ class ReplSession:
     last_line: str = field(default="")
     counter: int = field(default=0)
     mode: Mode = Mode.NORMAL
+    state: State = State.INPUT
     debug: str = ""
 
     @cached_property
@@ -132,17 +141,55 @@ class ReplSession:
         return Style.from_dict(
             {
                 "rprompt": "bg:#bb0055 #ffffff",
+                "switch": "reverse",
             }
         )
+
+    @cached_property
+    def scopes(self) -> list[Scope]:
+        return list(
+            sorted(
+                (scope.scope for scope in self.translator.lexicon.scopes),
+                key=lambda scope: scope.name,
+            )
+        )
+
+    def mode_changing(self) -> bool:
+        return self.state is State.MODE_CHANGING
+
+    def set_mode_changing(self, _event: KeyPressEvent) -> None:
+        self.state = State.MODE_CHANGING
+
+    def reset_state(self, _event: KeyPressEvent) -> None:
+        self.state = State.INPUT
+
+    def scope_changing(self) -> bool:
+        return self.state is State.SCOPE_CHANGING
+
+    def set_scope_changing(self, _event: KeyPressEvent) -> None:
+        self.state = State.SCOPE_CHANGING
 
     @cached_property
     def session_bindings(self) -> KeyBindings:
         bindings = KeyBindings()
 
-        for i, mode in enumerate(Mode):
-            first_letter = mode.name.lower()[0]
+        bindings.add(
+            "backspace",
+            filter=Condition(self.mode_changing) | Condition(self.scope_changing),
+        )(self.reset_state)
 
-            bindings.add("c-x", first_letter)(self.switch_mode(mode))
+        bindings.add("c-x", eager=True)(self.set_mode_changing)
+        bindings.add("c-y", eager=True)(self.set_scope_changing)
+
+        for i, mode in enumerate(Mode):
+            bindings.add(str(i + 1), filter=Condition(self.mode_changing))(
+                self.switch_mode(mode)
+            )
+
+        for i, scope in enumerate(self.scopes):
+            bindings.add(str(i + 1), filter=Condition(self.scope_changing))(
+                self.switch_scope(scope)
+            )
 
         bindings.add("left")(self.previous_mode)
         bindings.add("right")(self.next_mode)
@@ -152,6 +199,16 @@ class ReplSession:
     def switch_mode(self, mode: Mode) -> Callable[[KeyPressEvent], None]:
         def switch(_event: KeyPressEvent) -> None:
             self.mode = mode
+            if self.state is State.MODE_CHANGING:
+                self.state = State.INPUT
+
+        return switch
+
+    def switch_scope(self, scope: Scope) -> Callable[[KeyPressEvent], None]:
+        def switch(_event: KeyPressEvent) -> None:
+            config().scope = scope.name
+            if self.state is State.SCOPE_CHANGING:
+                self.state = State.INPUT
 
         return switch
 
@@ -177,7 +234,7 @@ class ReplSession:
     def __post_init__(self) -> None:
         super().__init__()
 
-    def rprompt(self) -> HTML:
+    def rprompt(self) -> AnyFormattedText:
         mode_str = "/".join(
             [
                 f"<b>{mode.name.capitalize()}</b>"
@@ -187,20 +244,30 @@ class ReplSession:
             ]
         )
 
-        return HTML(f"&lt;{mode_str}&gt;")
+        return HTML(f"&lt;{mode_str}&gt;<i>{Scope.default()}</i>")
 
-    def bottom_toolbar(self) -> str:
-        if self.debug:
-            return self.debug
-        if self.watcher.last_error is not None:
-            self.counter = 0
-            return f"Error: {self.watcher.last_error}"
-        elif self.watcher.running:
-            self.counter = (self.counter + 1) % 4
-            return "Updating" + ("." * self.counter)
-        else:
-            self.counter = 0
-            return "Up-to-date!"
+    def bottom_toolbar(self) -> AnyFormattedText:
+        match self.state:
+            case State.INPUT:
+                if self.debug:
+                    return self.debug
+                if self.watcher.last_error is not None:
+                    self.counter = 0
+                    return f"Error: {self.watcher.last_error}"
+                elif self.watcher.running:
+                    self.counter = (self.counter + 1) % 4
+                    return "Updating" + ("." * self.counter)
+                else:
+                    self.counter = 0
+                    return "Up-to-date!"
+            case State.MODE_CHANGING:
+                return f"Select mode: " + " ".join(
+                    f"({i + 1}) {mode.name.capitalize()}" for i, mode in enumerate(Mode)
+                )
+            case State.SCOPE_CHANGING:
+                return f"Select scope: " + " ".join(
+                    f"({i + 1}) {scope}" for i, scope in enumerate(self.scopes)
+                )
 
     def run(self) -> None:
         observer = Observer()
@@ -208,7 +275,7 @@ class ReplSession:
         observer.start()
         try:
             while True:
-                line = self.line(self.session.prompt("> "))
+                line = self.line(self.session.prompt(f"> "))
 
                 if self.watcher.changed:
                     self.watcher.changed = False

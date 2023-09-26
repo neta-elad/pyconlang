@@ -1,3 +1,7 @@
+scope % : % "src/changes.lsc"
+scope %archaic : % "src/changes.lsc"
+scope %modern : %archaic "src/changes.lsc"
+
 entry <person> *aːlu (n.) person
 entry <animal> *kiːma (n.) animal
 entry <rock> *t͡ɬete (n.) rock
