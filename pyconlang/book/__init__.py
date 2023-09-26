@@ -26,7 +26,7 @@ from .unicode import UnicodeEscape
 
 class Compiler:
     converter: Markdown
-    lexicon: Conlang
+    conlang: Conlang
 
     @classmethod
     @contextmanager
@@ -35,7 +35,7 @@ class Compiler:
             yield cls(translator)
 
     def __init__(self, translator: Translator) -> None:
-        self.lexicon = Conlang(translator)
+        self.conlang = Conlang(translator)
         self.converter = Markdown(
             extensions=[
                 "extra",
@@ -55,8 +55,8 @@ class Compiler:
                 MultiExtension(""),
                 SpanTable(),
                 AnyTableHeader(),
-                self.lexicon,
                 UnicodeEscape(),
+                self.conlang,
             ],
             extension_configs={
                 "mdx_include": {
