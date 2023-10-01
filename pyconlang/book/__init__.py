@@ -13,7 +13,7 @@ from markdown import Markdown
 from watchdog.events import FileSystemEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 
-from .. import PYCONLANG_PATH, SRC_GLOB, SRC_PATH
+from .. import ASSETS_PATH, PYCONLANG_PATH, SRC_GLOB, SRC_PATH
 from ..cache import resolve_any_path
 from ..config import config, config_scope_as
 from ..errors import pass_exception
@@ -84,6 +84,8 @@ class Compiler:
     def compile(self) -> None:
         if OUT_PATH.exists():
             shutil.rmtree(OUT_PATH)
+        if ASSETS_PATH.exists():
+            shutil.copytree(ASSETS_PATH, OUT_PATH)
         for file in resolve_any_path(SRC_GLOB):
             self.compile_file(file)
 

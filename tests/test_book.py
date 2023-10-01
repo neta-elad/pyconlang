@@ -336,7 +336,14 @@ def test_errors(simple_pyconlang: Path) -> None:
         read()
 
 
+def test_assets(simple_pyconlang: Path) -> None:
+    write(simple_pyconlang / "assets/test.txt", "bla")
+    read()
+    assert (OUT_PATH / "test.txt").read_text() == "bla\n"
+
+
 def write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(cleandoc(text) + "\n")
 
 
