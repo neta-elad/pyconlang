@@ -13,10 +13,10 @@ from prompt_toolkit.styles import Style
 from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 
-from .config import config
 from . import PYCONLANG_PATH
 from .book import Compiler
 from .book import Handler as BookHandler
+from .config import config
 from .domain import Describable, Scope
 from .translate import Translator
 from .unicode import center, length

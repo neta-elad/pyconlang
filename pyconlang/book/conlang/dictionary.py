@@ -36,7 +36,7 @@ class ConlangGrouper(Preprocessor):
         ordered_groups: dict[str, list[str]] = {}
 
         for line in groups:
-            match = re.search(r"\w", line)
+            match = re.search(r"(\w|')", line)
             if match is None:
                 group = "-"
             else:
