@@ -135,41 +135,26 @@ class Lexicon:
         return cls(entries, affixes, templates, scopes)
 
     @cached_property
-    def entry_mapping(self) -> dict[tuple[Scope, LexemeFusion], Entry]:
-        return {(entry.tags.scope, entry.lexeme): entry for entry in self.entries} | {
-            (definition.tags.scope, definition.affix.to_fusion()): definition.to_entry()
-            for definition in self.affixes
-            if not definition.is_var()
-        }
-
-    @cached_property
-    def entries_by_scope(
-        self,
-    ) -> dict[Scope, set[Entry]]:  # todo: merge with entry mapping?
-        result: dict[Scope, set[Entry]] = {}
+    def entry_mapping(self) -> dict[Scope, dict[LexemeFusion, Entry]]:
+        mapping = dict[Scope, dict[LexemeFusion, Entry]]()
         for entry in self.entries:
-            result.setdefault(entry.tags.scope, set())
-            result[entry.tags.scope].add(entry)
+            scope = entry.tags.scope
+            mapping.setdefault(scope, {})
+            mapping[scope][entry.lexeme] = entry
 
-        return result
-
-    @cached_property
-    def affixes_by_scope(
-        self,
-    ) -> dict[Scope, set[AffixDefinition]]:  # todo: merge with affix mapping?
-        result: dict[Scope, set[AffixDefinition]] = {}
         for affix in self.affixes:
             if affix.is_var():
                 continue
-            result.setdefault(affix.tags.scope, set())
-            result[affix.tags.scope].add(affix)
+            scope = affix.tags.scope
+            mapping.setdefault(scope, {})
+            mapping[scope][affix.affix.to_fusion()] = affix.to_entry()
 
-        return result
+        return mapping
 
     def get_entry(self, lexeme: Lexeme, scope: Scope = Scope()) -> Entry:
         fusion = Fusion(lexeme)
-        if (scope, fusion) in self.entry_mapping:
-            return self.entry_mapping[(scope, fusion)]
+        if scope in self.entry_mapping and fusion in self.entry_mapping[scope]:
+            return self.entry_mapping[scope][fusion]
 
         parent = self.parent(scope)
         if scope == parent:
@@ -178,15 +163,18 @@ class Lexicon:
             return self.get_entry(lexeme, parent)
 
     @cached_property
-    def affix_mapping(self) -> dict[tuple[Scope, Affix], AffixDefinition]:
-        return {
-            (definition.tags.scope, definition.affix): definition
-            for definition in self.affixes
-        }
+    def affix_mapping(self) -> dict[Scope, dict[Affix, AffixDefinition]]:
+        mapping = dict[Scope, dict[Affix, AffixDefinition]]()
+        for affix in self.affixes:
+            scope = affix.tags.scope
+            mapping.setdefault(scope, {})
+            mapping[scope][affix.affix] = affix
+
+        return mapping
 
     def get_affix(self, affix: Affix, scope: Scope = Scope()) -> AffixDefinition:
-        if (scope, affix) in self.affix_mapping:
-            return self.affix_mapping[(scope, affix)]
+        if scope in self.affix_mapping and affix in self.affix_mapping[scope]:
+            return self.affix_mapping[scope][affix]
 
         parent = self.parent(scope)
         if scope == parent:
@@ -259,9 +247,10 @@ class Lexicon:
                 this_lexeme_fusion = self.to_lexeme_fusion(this_fusion)
                 if (
                     this_lexeme_fusion is not None
-                    and (scope, this_lexeme_fusion) in self.entry_mapping
+                    and scope in self.entry_mapping
+                    and this_lexeme_fusion in self.entry_mapping[scope]
                 ):
-                    entry = self.entry_mapping[(scope, this_lexeme_fusion)]
+                    entry = self.entry_mapping[scope][this_lexeme_fusion]
                     entry_form = entry.form
                     return self.extend_with_affixes(
                         self.resolve(

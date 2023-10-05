@@ -88,7 +88,7 @@ class ConlangDictionary(Preprocessor):
         return list(
             map(
                 self.show_entry,
-                self.translator.lexicon.entries_by_scope[scope],
+                self.translator.lexicon.entry_mapping[scope].values(),
             )
         )
 
@@ -141,14 +141,14 @@ class ConlangAffixes(Preprocessor):
 
     @path_cached_method(LEXICON_PATH, LEXICON_GLOB, CHANGES_PATH, CHANGES_GLOB)
     def show_scope(self, scope: Scope) -> list[str]:
-        if scope not in self.translator.lexicon.affixes_by_scope:
+        if scope not in self.translator.lexicon.affix_mapping:
             return []
 
         return ["|Affix|Description|Sources|", "|-|-|-|"] + list(
             map(
                 self.show_affix,
                 sorted(
-                    self.translator.lexicon.affixes_by_scope[scope],
+                    self.translator.lexicon.affix_mapping[scope].values(),
                     key=lambda affix: affix.description,
                 ),
             )
