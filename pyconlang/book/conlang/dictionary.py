@@ -102,8 +102,8 @@ class ConlangDictionary(Preprocessor):
         ]
 
         return (
-            ", ".join(forms)
-            + f" [ph({scope} {form})] pr[{scope} {form}] {entry.description()}"
+                ", ".join(forms)
+                + f" [ph({scope} {form})] pr[{scope} {form}] {entry.description()}"
         )
 
     @staticmethod
@@ -147,9 +147,12 @@ class ConlangAffixes(Preprocessor):
         return ["|Affix|Description|Sources|", "|-|-|-|"] + list(
             map(
                 self.show_affix,
-                sorted(
-                    self.translator.lexicon.affix_mapping[scope].values(),
-                    key=lambda affix: affix.description,
+                filter(
+                    lambda affix: not affix.is_var(),  # todo: should var affixes also work?
+                    sorted(
+                        self.translator.lexicon.affix_mapping[scope].values(),
+                        key=lambda affix: affix.description,
+                    )
                 ),
             )
         )
