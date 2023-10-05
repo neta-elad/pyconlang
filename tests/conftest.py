@@ -1,5 +1,4 @@
 import os
-import tempfile
 from collections.abc import Generator
 from dataclasses import replace
 from inspect import cleandoc
@@ -16,19 +15,18 @@ from pyconlang.config import Config, config, config_as, file_config
 
 
 @pytest.fixture
-def tmpdir() -> Generator[Path, None, None]:  # todo: use tmp_path?
-    with tempfile.TemporaryDirectory() as tmpdir:
-        os.chdir(tmpdir)
-        yield Path(tmpdir)
+def cd_tmp_path(tmp_path: Path) -> Generator[Path, None, None]:
+    os.chdir(tmp_path)
+    yield tmp_path
 
 
 @pytest.fixture
-def tmp_pyconlang(tmpdir: Path) -> Generator[Path, None, None]:
+def tmp_pyconlang(cd_tmp_path: Path) -> Generator[Path, None, None]:
     assert init.callback is not None
-    init.callback(tmpdir, "TestLang", "Mr. Tester", False, False)
+    init.callback(cd_tmp_path, "TestLang", "Mr. Tester", False, False)
 
     with file_config():
-        yield tmpdir
+        yield cd_tmp_path
 
 
 @pytest.fixture

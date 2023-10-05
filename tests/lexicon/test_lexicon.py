@@ -365,12 +365,12 @@ def test_default_scope(
 
 
 def test_scope_from_filename(
-    root_config: Config, modern_config: Config, sample_lexicon: str, tmpdir: Path
+    root_config: Config, modern_config: Config, sample_lexicon: str, cd_tmp_path: Path
 ) -> None:
     root_scope = Scope(root_config.scope)
     modern_scope = Scope(modern_config.scope)
-    root_file = tmpdir / f"{root_scope}"
-    modern_file = tmpdir / f"{modern_scope}"
+    root_file = cd_tmp_path / f"{root_scope}"
+    modern_file = cd_tmp_path / f"{modern_scope}"
     root_file.write_text(sample_lexicon)
     modern_file.write_text(sample_lexicon)
 

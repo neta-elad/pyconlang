@@ -492,10 +492,10 @@ def test_include() -> None:
 
 
 def test_include_mechanism(
-    tmpdir: Path, sample_lexicon: str, parsed_lexicon: Lexicon
+    cd_tmp_path: Path, sample_lexicon: str, parsed_lexicon: Lexicon
 ) -> None:
-    main = tmpdir / "main.pycl"
-    subdir = tmpdir / "subdir"
+    main = cd_tmp_path / "main.pycl"
+    subdir = cd_tmp_path / "subdir"
     subdir.mkdir(parents=True, exist_ok=True)
     intermediate = subdir / "inter.pycl"
     included = subdir / "included.pycl"

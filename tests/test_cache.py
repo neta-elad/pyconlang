@@ -11,10 +11,10 @@ from pyconlang.cache import (
 )
 
 
-def test_path_cached_property(tmpdir: Path) -> None:
-    path_a = tmpdir / "a.md"
+def test_path_cached_property(cd_tmp_path: Path) -> None:
+    path_a = cd_tmp_path / "a.md"
     path_a.write_text("hello")
-    path_b = tmpdir / "b.txt"
+    path_b = cd_tmp_path / "b.txt"
     path_b.write_text("hi")
 
     @dataclass
@@ -48,10 +48,10 @@ def test_path_cached_property(tmpdir: Path) -> None:
     assert a2.test == 1
 
 
-def test_path_cached_func(tmpdir: Path) -> None:
-    path_a = tmpdir / "a.md"
+def test_path_cached_func(cd_tmp_path: Path) -> None:
+    path_a = cd_tmp_path / "a.md"
     path_a.write_text("hello")
-    path_b = tmpdir / "b.txt"
+    path_b = cd_tmp_path / "b.txt"
     path_b.write_text("hi")
 
     counter = {"val": 0}
@@ -75,10 +75,10 @@ def test_path_cached_func(tmpdir: Path) -> None:
     assert example(2) == 6
 
 
-def test_path_cached_method(tmpdir: Path) -> None:
-    path_a = tmpdir / "a.md"
+def test_path_cached_method(cd_tmp_path: Path) -> None:
+    path_a = cd_tmp_path / "a.md"
     path_a.write_text("hello")
-    path_b = tmpdir / "b.txt"
+    path_b = cd_tmp_path / "b.txt"
     path_b.write_text("hi")
 
     @dataclass
