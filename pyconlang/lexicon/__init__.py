@@ -340,15 +340,6 @@ class Lexicon:
                             resolved_form,
                         )
 
-    def substitute(  # todo: remove?
-        self, var: VarFusion, form: DefaultWord, scope: Scope = Scope()
-    ) -> ResolvedForm:
-        return self.extend_with_affixes(
-            self.resolve(form, scope),
-            scope,
-            *var.affixes(),
-        )
-
     def get_vars(self, name: TemplateName | None) -> tuple[VarFusion, ...]:
         if name is None:
             return (VarFusion("$", (), ()),)

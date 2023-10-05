@@ -192,46 +192,6 @@ def test_resolve_fusions(root_config: Config, parsed_lexicon: Lexicon) -> None:
     ) == Compound(Component(Morpheme("mo")), Joiner.tail(), Component(Morpheme("ta")))
 
 
-def test_substitute_var(root_config: Config, parsed_lexicon: Lexicon) -> None:
-    assert parsed_lexicon.substitute(
-        VarFusion("$", (), ()), Component(Fusion(Morpheme("apak")))
-    ) == Component(Morpheme("apak"))
-
-    assert parsed_lexicon.substitute(
-        VarFusion("$", (), (Scoped(Suffix("PL")),)), Component(Fusion(Morpheme("apak")))
-    ) == Compound(
-        Component(Morpheme("apak")),
-        Joiner.head(Rule("era1")),
-        Component(Morpheme("iki", Rule("era1"))),
-    )
-
-    assert parsed_lexicon.substitute(
-        VarFusion("$", (), ()),
-        Component(
-            DefaultFusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
-        ),
-    ) == Compound(
-        Component(Morpheme("apak")),
-        Joiner.head(Rule("era1")),
-        Component(Morpheme("iki", Rule("era1"))),
-    )
-
-    assert parsed_lexicon.substitute(
-        VarFusion("$", (), (Scoped(Suffix("PL")),)),
-        Component(
-            DefaultFusion(Lexeme("stone").with_scope(), (), (Scoped(Suffix("PL")),))
-        ),
-    ) == Compound(
-        Compound(
-            Component(Morpheme("apak")),
-            Joiner.head(Rule("era1")),
-            Component(Morpheme("iki", Rule("era1"))),
-        ),
-        Joiner.head(Rule("era1")),
-        Component(Morpheme("iki", Rule("era1"))),
-    )
-
-
 def test_templates(root_config: Config, parsed_lexicon: Lexicon) -> None:
     assert parsed_lexicon.get_vars(None) == (VarFusion("$", (), ()),)
 
