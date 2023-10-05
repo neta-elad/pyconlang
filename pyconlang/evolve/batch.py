@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 
 from ..domain import Component, Compound, Joiner, JoinerStress, ResolvedForm
-from ..unicode import combine, remove_primary_stress
+from ..strings import combine, remove_primary_stress
 from .arrange import AffixArranger
 from .domain import Evolved
 from .errors import BadAffixation

@@ -18,8 +18,8 @@ from .book import Compiler
 from .book import Handler as BookHandler
 from .config import config
 from .domain import Describable, Scope
+from .strings import center, length
 from .translate import Translator
-from .unicode import center, length
 
 HISTORY_PATH = PYCONLANG_PATH / "repl.history"
 

@@ -8,7 +8,7 @@ from typing import Generic, Self, TypeVar
 
 from .config import config
 from .errors import DoubleTagDefinition
-from .unicode import combine
+from .strings import combine
 
 
 @dataclass(eq=True, frozen=True)

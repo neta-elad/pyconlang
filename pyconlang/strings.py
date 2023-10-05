@@ -3,6 +3,7 @@ from wcwidth import wcswidth
 from .config import config
 
 PRIMARY_STRESS = "\u02c8"
+SYLLABLE_BREAK = "."
 
 
 def remove_primary_stress(word: str) -> str:
@@ -30,6 +31,10 @@ def combine(head: str, tail: str, syllable_break: str | None = None) -> str:
 
 def default_syllable_break() -> str:
     if config().syllables:
-        return "."
+        return SYLLABLE_BREAK
     else:
         return ""
+
+
+def remove_syllable_break(word: str) -> str:
+    return word.replace(SYLLABLE_BREAK, "")

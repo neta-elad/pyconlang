@@ -16,6 +16,7 @@ from ..lexurgy.domain import (
     TraceLine,
 )
 from ..lexurgy.tracer import parse_trace_lines
+from ..strings import remove_syllable_break
 from .arrange import AffixArranger, arranger_for
 from .batch import Batcher, ComponentQuery, CompoundQuery, Query, segment_by_start_end
 from .domain import Evolved
@@ -196,8 +197,7 @@ class Evolver:
                 else:
                     phonetics = moderns
 
-                # todo: different way to remove syllable breaks?
-                moderns = [modern.replace(".", "") for modern in moderns]
+                moderns = list(map(remove_syllable_break, moderns))
 
                 assert len(phonetics) == len(moderns)
 
