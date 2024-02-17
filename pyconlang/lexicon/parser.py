@@ -8,6 +8,7 @@ from pyrsercomb import (
     eol,
     lift2,
     lift3,
+    lift4,
     lift6,
     lift7,
     regex,
@@ -111,7 +112,15 @@ scope_definition_with_path = (base_scope_definition & token(path))[
     lift3(ScopeDefinition)
 ]
 
-scope_definition = scope_definition_with_path ^ scope_definition_without_path
+scope_definition_with_path_and_default_era = (
+    base_scope_definition & token(path) & token(rule)
+)[lift4(ScopeDefinition)]
+
+scope_definition = (
+    scope_definition_with_path_and_default_era
+    ^ scope_definition_with_path
+    ^ scope_definition_without_path
+)
 
 record = entry | affix_definition | template | scope_definition
 

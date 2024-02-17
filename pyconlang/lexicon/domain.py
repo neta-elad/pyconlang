@@ -124,3 +124,4 @@ class ScopeDefinition:
     scope: Scope
     parent: Scope
     changes: Path = field(default=CHANGES_PATH)
+    default_era: Rule | None = field(default=None)

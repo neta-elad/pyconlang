@@ -33,7 +33,7 @@ def tmp_pyconlang(cd_tmp_path: Path) -> Generator[Path, None, None]:
 def sample_lexicon() -> str:
     return cleandoc(
         """
-        scope % : % 'src/archaic.lsc'
+        scope % : % 'src/archaic.lsc' @era1
         scope %modern : % 'src/modern.lsc'
         scope %ultra-modern : %modern 'src/ultra-modern.lsc'
         

@@ -32,7 +32,11 @@ def test_resolve(root_config: Config, parsed_lexicon: Lexicon) -> None:
     ) == Compound(
         Component(Morpheme("apak")),
         Joiner.head(),
-        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+        Compound(
+            Component(Morpheme("iki")),
+            Joiner.head(Rule("era1")),
+            Component(Morpheme("ma")),
+        ),
     )
 
     assert parsed_lexicon.resolve(
@@ -66,7 +70,11 @@ def test_resolve(root_config: Config, parsed_lexicon: Lexicon) -> None:
     ) == Compound(
         Component(Morpheme("kapa")),
         Joiner.head(),
-        Compound(Component(Morpheme("iki")), Joiner.head(), Component(Morpheme("ma"))),
+        Compound(
+            Component(Morpheme("iki")),
+            Joiner.head(Rule("era1")),
+            Component(Morpheme("ma")),
+        ),
     )
 
     assert parsed_lexicon.resolve(
@@ -144,7 +152,9 @@ def test_resolve(root_config: Config, parsed_lexicon: Lexicon) -> None:
             Component(Fusion(Morpheme("baka"))),
         )
     ) == Compound(
-        Component(Morpheme("apak")), Joiner.tail(), Component(Morpheme("baka"))
+        Component(Morpheme("apak")),
+        Joiner.tail(Rule("era1")),
+        Component(Morpheme("baka")),
     )
 
     assert parsed_lexicon.resolve(

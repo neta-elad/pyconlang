@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
@@ -24,6 +24,7 @@ from ..domain import (
     Prefix,
     Record,
     ResolvedForm,
+    Rule,
     Scope,
     Scoped,
     ScopedAffix,
@@ -272,9 +273,13 @@ class Lexicon:
     ) -> ResolvedForm:
         head = self.resolve(compound.head, scope)
         tail = self.resolve(compound.tail, scope)
+        joiner = compound.joiner
+        if joiner.era is None and scope in self.default_eras:
+            joiner = replace(joiner, era=self.default_eras[scope])
+
         return Compound(
             head,
-            compound.joiner,
+            joiner,
             tail,
         )
 
@@ -404,6 +409,14 @@ class Lexicon:
     @cached_property
     def changes(self) -> dict[Scope, Path]:
         return {definition.scope: definition.changes for definition in self.scopes}
+
+    @cached_property
+    def default_eras(self) -> dict[Scope, Rule]:
+        return {
+            definition.scope: definition.default_era
+            for definition in self.scopes
+            if definition.default_era is not None
+        }
 
     def parent(self, scope: Scope) -> Scope:
         return self.parents.get(scope, Scope())
