@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 keywords = ["conlang", "conlanging"]
 license = { text = "BSD 3-Clause License" }
 dependencies = [
-    "Markdown==3.4.4",
+    "Markdown==3.6",
     "mdx-include==1.4.2",
     "pymdown-extensions==10.3",
     "prompt-toolkit==3.0.39",
