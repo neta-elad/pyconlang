@@ -1,0 +1,75 @@
+Archaic:
+- simpler
+- analytic / agglutinative
+
+ma + ta + ka
+
+-----Sound changes----> Modern:
+- fusional
+- synthetic
+
+madeg
+
+- Lexicon Compilation Unit
+  ```pyconlang
+  language %kalar/modern
+
+  entry <sit> (<rock>.vbz)%kalar/proto (vi.) 
+  ```
+
+
+* Sound changes as invertible
+
+- Morpheme: smallest unit of meaning
+  - Free morpheme (root / stem)
+  - Bound morphemes:
+    - Types:
+      - Derivational morpheme
+      - Inflectional morpheme
+    - Time of agglutination
+    - Side (prefix/suffix)
+  - Morpheme is expressed by a sequence of phonemes
+    - Or a reference to a morpheme/lexeme (of older language?)
+- Lexeme: unit of lexical meaning
+  - Lexemes are comprised of a root morpheme (/ stem) + derivational morphemes
+  - Lexeme is a set of words, that differ only by inflections (affixes)
+  - Lexeme's set of words has a representative, called lemma
+- Lexicon: set of morphemes + lexemes
+- Language / scope / namespace:
+  - A collection of lexemes
+  - Languages are organized as a forest (i.e., many trees)
+  - Language is defined as:
+    - Lexicon
+    - Sound changes
+    - Optional parent language
+
+- Morpheme
+  - Meaning
+  - Sounds
+- Affix
+  - Morpheme
+  - Time
+  - Side
+- Lexeme
+  - Root morpheme
+  - Affixes (derivational)
+- Lexicon
+  - Morphemes
+  - Affixes
+  - Lexemes
+- Scope
+  - Lexicon
+  - Sound changes
+  - Parent (optional)
+
+- Page
+  - Default scope
+  - Text
+
+- Word
+  - Lexeme
+  - Affixes (inflectional)
+
+- Morpheme sequence
+  - list of morphemes + time
+- Morpheme tree
